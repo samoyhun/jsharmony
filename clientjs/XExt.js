@@ -1633,6 +1633,24 @@ exports = module.exports = function(jsh){
       }
     }
   };
+  XExt.TreeCollapseAll = function (ctrl) {
+    var jctrl = $(ctrl).closest('.xform_ctrl.tree');
+    if(!jctrl.$find('.tree_render_lazy').length){
+      jctrl.$find('.tree_item').removeClass('expanded');
+      jctrl.$find('.children').removeClass('expanded');
+      jctrl.$find('.glyph').html('&#x25B7;');
+    }
+    else{
+      var expanded = jctrl.$find('.tree_item').hasClass('expanded');
+      var i = 0;
+      while(expanded.length){
+        i++;
+        if(i>1000)break;
+        expanded.each(function(){ XExt.TreeCollapseNode(jctrl, this.getAttribute('data-id')); });
+        expanded = jctrl.$find('.tree_item').hasClass('expanded');
+      }
+    }
+  };
 
   /*********************
    * GENERAL FUNCTIONS *
