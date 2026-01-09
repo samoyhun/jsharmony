@@ -26,6 +26,7 @@ exports = module.exports = function(jsh){
   var XExt = function(){ };
 
   XExt.XModel = require('./XExt.XModel.js')(jsh);
+  XExt.XDom = require('./XExt.XDom.js')(jsh);
   XExt.COOKIE_MAX_EXPIRATION = 2147483647;
   XExt.DOUBLECLICK_TIMEOUT = 500; //ms
   XExt.ejsDelimiter = { open: '<%', close: '%>' };
