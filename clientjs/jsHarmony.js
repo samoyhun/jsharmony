@@ -33,6 +33,7 @@ var async = require('async');
 var moment = require('moment');
 var XGrid = require('./XGrid.js');
 var XForm = require('./XForm.js');
+var XDom = require('./XDom.js');
 var XExt = require('./XExt.js');
 var XAPI = require('./XAPI.js');
 var XFormat = require('./XFormat.js');
@@ -623,5 +624,6 @@ if(global.jsHarmony) instances = global.jsHarmony.Instances;
 if(window.jsHarmony) instances = window.jsHarmony.Instances;
 jsHarmony.Instances = instances;
 jsHarmony.jQuery = $;
+jsHarmony.XDom = XDom;
 
 global.jsHarmony = jsHarmony;
