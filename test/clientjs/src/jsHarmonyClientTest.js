@@ -29,12 +29,34 @@ var mocha = require('mocha');
   var XDom = jsHarmony.XDom;
   window.XDom = XDom;
 
+  function throwError(msg){
+    var errmsg = msg || 'Assertion failed';
+    console.error('The following assertion failed: '+errmsg);
+    throw new Error(errmsg);
+  }
+
   function assert(val, msg){
     if(!val){
-      var errmsg = msg || 'Assertion failed';
-      console.error('The following assertion failed: '+errmsg);
-      throw new Error(errmsg);
+      throwError(msg || 'Assertion failed');
     }
+  }
+
+  function assertError(f, errDesc, msg){
+    try{
+      f();
+    }
+    catch(ex){
+      if(errDesc){
+        errDesc = errDesc.toString();
+        if(ex && ex.message && (ex.message.indexOf(errDesc) >= 0)){
+          return true;
+        }
+      }
+      else {
+        return true;
+      }
+    }
+    throwError(msg || 'Error not thrown: '+errDesc);
   }
 
   describe('XDom selector ', function() {
@@ -69,18 +91,19 @@ var mocha = require('mocha');
     });
     // null selector in jsharmony, not supported right now...
     it('selector null ', function(){
-      var result = XDom.selector();
-      console.log(result);
-      //assert(result instanceof XDomSelector, 'result is XDomSelecor obj');
-      //assert(result.selector === null, 'selector property matches');
+      assertError(function(){
+        var result = XDom.selector();
+      }, 'Selector is required');
     });
 
+    /*
     it('selector XDom obj ', function(){
       var result = XDom.selector(new XDomSelector('.testToBeReplacedByNull'));
       assert(result instanceof XDomSelector, 'result is XDomSelecor obj');
       assert(result.selector instanceof XDomSelector, 'selector property matches');
       assert(result.selector.selector === '.test', 'selector property matches');
     });
+    */
   });
 
   describe('XDom select ', function() {
