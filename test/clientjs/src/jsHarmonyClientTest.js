@@ -22,7 +22,7 @@ var mocha = require('mocha');
 (function(){
   mocha.setup('bdd');
   setTimeout(function(){
-    //mocha.run();
+    mocha.run();
   }, 1);
   window.mocha = mocha;
 
@@ -37,7 +37,53 @@ var mocha = require('mocha');
     }
   }
 
-  describe('XDom selector', function() {
+  describe('XDom selector ', function() {
+    it('selector css class ', function(){
+      var result = XDom.selector('.sharedClass1');
+      assert(result instanceof XDomSelector, 'result is XDomSelecor obj');
+      assert(result.selector == '.sharedClass1', 'selector property matches');
+    });
+    
+    it('selector css id ', function(){
+      var result = XDom.selector('#item1')
+      assert(result instanceof XDomSelector, 'result is XDomSelecor obj');
+      assert(result.selector === '#item1', 'selector property matches');
+    });
+
+    it('selector html string ', function(){
+      var result = XDom.selector('<div>Test div</div>');
+      assert(result instanceof XDomSelector, 'result is XDomSelecor obj');
+      assert(result.selector === '<div>Test div</div>', 'selector property matches');
+    });
+
+    it('selector document ', function(){
+      var result = XDom.selector(document);
+      assert(result instanceof XDomSelector, 'result is XDomSelecor obj');
+      assert(result.selector === document, 'selector property matches');
+    });
+
+    it('selector window ', function(){
+      var result = XDom.selector(window);
+      assert(result instanceof XDomSelector, 'result is XDomSelecor obj');
+      assert(result.selector === window, 'selector property matches');
+    });
+    // null selector in jsharmony, not supported right now...
+    it('selector null ', function(){
+      var result = XDom.selector();
+      console.log(result);
+      //assert(result instanceof XDomSelector, 'result is XDomSelecor obj');
+      //assert(result.selector === null, 'selector property matches');
+    });
+
+    it('selector XDom obj ', function(){
+      var result = XDom.selector(new XDomSelector('.testToBeReplacedByNull'));
+      assert(result instanceof XDomSelector, 'result is XDomSelecor obj');
+      assert(result.selector instanceof XDomSelector, 'selector property matches');
+      assert(result.selector.selector === '.test', 'selector property matches');
+    });
+  });
+
+  describe('XDom select ', function() {
     //set up
     before(function(){
       document.querySelector('#workspace').innerHTML = [
@@ -45,32 +91,74 @@ var mocha = require('mocha');
         '<div id="item2" class="sharedClass1 sharedClass2 sharedClass3"></div>',
         '<div id="item3" class="sharedClass2 sharedClass3"></div>',
         '<div id="item4" class="singleClass"></div>',
+        '<footer></footer>',
+        '<footer></footer>',
       ].join('');
     });
 
-    it('select class', function(){
-      console.log('1');
+    it('select css class ', function(){
       assert(XDom.select('.sharedClass1').length == 2, 'sharedClass1 elements found');
       assert(XDom.select('.sharedClass2').length == 2, 'sharedClass2 elements found');
       assert(XDom.select('.sharedClass3').length == 3, 'sharedClass3 elements found');
       assert(XDom.select('.singleClass').length == 1, 'singleClass elements found');
     });
-
-    it('select id', function(){
-      console.log('2');
+    
+    it('select css id ', function(){
       assert(XDom.select('#item1').length == 1, 'item1 found');
-      assert(XDom.select('#item2 #item3').length == 2, 'item2, item3 found');
+      assert(XDom.select('#item2, #item3').length == 2, 'item2, item3 found');
       assert(XDom.select('#item5_notfound').length == 0, 'invalid item not found');
+    });
+
+    it('select element ', function(){
+      assert(XDom.select('footer').length == 2, 'all footer elements found');
+      assert(XDom.select('nav').length == 0, 'invaid element not found');
     });
 
     //clear workspace
     after(function(){
-      console.log('3');
       document.querySelector('#workspace').innerHTML = '';
     });
   });
 
-  describe('XDom class', function() {
+  describe('XDom selectOne ', function() {
+    //set up
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1" class="sharedClass1 sharedClass3"></div>',
+        '<div id="item2" class="sharedClass1 sharedClass2 sharedClass3"></div>',
+        '<div id="item3" class="sharedClass2 sharedClass3"></div>',
+        '<div id="item4" class="singleClass"></div>',
+        '<footer></footer>',
+      ].join('');
+    });
+
+    it('selectOne css class ', function(){
+      assert(XDom.selectOne('.sharedClass1').id === 'item1', 'one sharedClass1 element found');
+      assert(XDom.selectOne('.sharedClass2').id === 'item2', 'one sharedClass2 element found');
+      assert(XDom.selectOne('.sharedClass3').id === 'item1', 'one sharedClass3 element found');
+      assert(XDom.selectOne('.noSuchClass') === null, 'invalid class not found');
+    });
+
+    it('selectOne css id ', function(){
+      assert(XDom.selectOne('#item1').id === 'item1', 'item1 found');
+      assert(XDom.selectOne('#item2').id === 'item2', 'item2 found');
+      assert(XDom.selectOne('#item5_notfound') === null, 'invalid item not found');
+    });
+
+    it('selectOne element ', function(){
+      result1 = XDom.selectOne('footer');
+      result2 = XDom.selectOne('nav');
+      assert(result1 instanceof Element , 'element found');
+      assert(result2 === null, 'invalid element not found');
+    });
+
+    //clear workspace
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom addClass ', function() {
     //set up
     before(function(){
       document.querySelector('#workspace').innerHTML = [
@@ -81,8 +169,7 @@ var mocha = require('mocha');
       ].join('');
     });
 
-    it('add class', function(){
-      console.log('a1');
+    it('addClass css class', function(){
       XDom.addClass('#item1','addedClass');
       assert(XDom.containsClass('#item1','addedClass'), 'Class added');
       XDom.removeClass('#item1','addedClass');
@@ -91,7 +178,6 @@ var mocha = require('mocha');
 
     //clear workspace
     after(function(){
-      console.log('3');
       document.querySelector('#workspace').innerHTML = '';
     });
   });

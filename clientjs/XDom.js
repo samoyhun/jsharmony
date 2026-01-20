@@ -23,7 +23,7 @@ var XDom = function(){ };
 exports = module.exports = XDom;
 
 XDomSelector = function(selector){
-  if(!selector) throw new Error('Selector is required');
+  //if(!selector) throw new Error('Selector is required');
   this.selector = selector;
 };
 XDom.XDomSelector = XDomSelector;
