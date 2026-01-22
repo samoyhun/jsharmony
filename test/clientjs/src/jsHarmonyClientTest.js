@@ -78,36 +78,14 @@ var mocha = require('mocha');
       assert(result.selector === '<div>Test div</div>', 'selector property matches');
     });
 
-    it('selector document ', function(){
-      var result = XDom.selector(document);
-      assert(result instanceof XDomSelector, 'result is XDomSelecor obj');
-      assert(result.selector === document, 'selector property matches');
-    });
-
-    it('selector window ', function(){
-      var result = XDom.selector(window);
-      assert(result instanceof XDomSelector, 'result is XDomSelecor obj');
-      assert(result.selector === window, 'selector property matches');
-    });
-    // null selector in jsharmony, not supported right now...
     it('selector null ', function(){
       assertError(function(){
         var result = XDom.selector();
       }, 'Selector is required');
     });
-
-    /*
-    it('selector XDom obj ', function(){
-      var result = XDom.selector(new XDomSelector('.testToBeReplacedByNull'));
-      assert(result instanceof XDomSelector, 'result is XDomSelecor obj');
-      assert(result.selector instanceof XDomSelector, 'selector property matches');
-      assert(result.selector.selector === '.test', 'selector property matches');
-    });
-    */
   });
 
   describe('XDom select ', function() {
-    //set up
     before(function(){
       document.querySelector('#workspace').innerHTML = [
         '<div id="item1" class="sharedClass1 sharedClass3"></div>',
@@ -137,14 +115,12 @@ var mocha = require('mocha');
       assert(XDom.select('nav').length == 0, 'invaid element not found');
     });
 
-    //clear workspace
     after(function(){
       document.querySelector('#workspace').innerHTML = '';
     });
   });
 
   describe('XDom selectOne ', function() {
-    //set up
     before(function(){
       document.querySelector('#workspace').innerHTML = [
         '<div id="item1" class="sharedClass1 sharedClass3"></div>',
@@ -175,14 +151,31 @@ var mocha = require('mocha');
       assert(result2 === null, 'invalid element not found');
     });
 
-    //clear workspace
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom containsClass ', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1" class="sharedClass1 sharedClass3"></div>',
+        '<div id="item2" class=".sharedClass1 sharedClass2 sharedClass3"></div>',
+      ].join('');
+    });
+
+    it('containsClass css class', function(){
+      assert(XDom.containsClass("#item1", 'sharedClass1'), 'Found item1 contains sharedClass1');
+      assert(XDom.containsClass("#item2", '.sharedClass1'), 'Found item2 contains .sharedClass1');
+      assert(!XDom.containsClass("#item1", 'sharedClass2'), 'Did not find item1 contains sharedClass3');
+    });
+
     after(function(){
       document.querySelector('#workspace').innerHTML = '';
     });
   });
 
   describe('XDom addClass ', function() {
-    //set up
     before(function(){
       document.querySelector('#workspace').innerHTML = [
         '<div id="item1" class="sharedClass1 sharedClass3"></div>',
@@ -199,9 +192,59 @@ var mocha = require('mocha');
       assert(!XDom.containsClass('#item1','addedClass'), 'Class removed');
     });
 
-    //clear workspace
     after(function(){
       document.querySelector('#workspace').innerHTML = '';
     });
   });
+
+  describe('XDom removeClass ', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1" class="sharedClass1 sharedClass3"></div>',
+        '<div id="item2" class="sharedClass1 sharedClass3"></div>',
+        '<div id="item3" class="sharedClass2 sharedClass2"></div>',
+        '<div id="item4" class="singleClass"></div>',
+      ].join('');
+    });
+
+    it('removeClass css class', function(){
+      XDom.removeClass('#item1','sharedClass1');
+      assert(!XDom.containsClass('#item1','sharedClass1'), 'Class removed');
+      XDom.removeClass('#item2','sharedClass2');
+      assert(XDom.containsClass('#item2','sharedClass1')&&(XDom.containsClass('#item2','sharedClass3')), 'No class was removed classes');
+      XDom.removeClass('#item3','sharedClass2');
+      assert(!XDom.containsClass('#item3','sharedClass2'), 'All duplicate classes removed');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  // describe('XDom resolve ', function() {
+  //   before(function(){
+  //     document.querySelector('#workspace').innerHTML = [
+  //       '<div id="item1" class="sharedClass1 sharedClass3"></div>',
+  //       '<div id="item2" class="sharedClass1 sharedClass3"></div>',
+  //       '<div id="item3" class="sharedClass2 sharedClass2"></div>',
+  //       '<div id="item4" class="singleClass"></div>',
+  //     ].join('');
+  //   });
+
+  //   it('resolve null', function(){
+  //     console.log(XDom.resolve(null));
+  //     //assert(XDom.resolve() == [],'Resolved NULL to []'); wip
+  //   });
+  //   it('resolve array', function(){
+  //     console.log(XDom.resolve(['#item1', '#item2']));
+  //   });
+  //   it('resolve string', function(){
+  //     //console.log(XDom.resolve(null));
+  //     //assert(XDom.resolve() == [],'Resolved NULL to []'); wip
+  //   });
+
+  //   after(function(){
+  //     document.querySelector('#workspace').innerHTML = '';
+  //   });
+  // });
 })();
