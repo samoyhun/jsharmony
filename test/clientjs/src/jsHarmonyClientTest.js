@@ -59,7 +59,7 @@ var mocha = require('mocha');
     throwError(msg || 'Error not thrown: '+errDesc);
   }
 
-  describe('XDom selector ', function() {
+  describe('XDom selector', function() {
     it('selector css class ', function(){
       var result = XDom.selector('.sharedClass1');
       assert(result instanceof XDomSelector, 'result is XDomSelecor obj');
@@ -85,7 +85,7 @@ var mocha = require('mocha');
     });
   });
 
-  describe('XDom select ', function() {
+  describe('XDom select', function() {
     before(function(){
       document.querySelector('#workspace').innerHTML = [
         '<div id="item1" class="sharedClass1 sharedClass3"></div>',
@@ -120,7 +120,7 @@ var mocha = require('mocha');
     });
   });
 
-  describe('XDom selectOne ', function() {
+  describe('XDom selectOne', function() {
     before(function(){
       document.querySelector('#workspace').innerHTML = [
         '<div id="item1" class="sharedClass1 sharedClass3"></div>',
@@ -156,7 +156,7 @@ var mocha = require('mocha');
     });
   });
 
-  describe('XDom containsClass ', function() {
+  describe('XDom containsClass', function() {
     before(function(){
       document.querySelector('#workspace').innerHTML = [
         '<div id="item1" class="sharedClass1 sharedClass3"></div>',
@@ -164,7 +164,7 @@ var mocha = require('mocha');
       ].join('');
     });
 
-    it('containsClass css class', function(){
+    it('containsClass css class ', function(){
       assert(XDom.containsClass("#item1", 'sharedClass1'), 'Found item1 contains sharedClass1');
       assert(XDom.containsClass("#item2", '.sharedClass1'), 'Found item2 contains .sharedClass1');
       assert(!XDom.containsClass("#item1", 'sharedClass2'), 'Did not find item1 contains sharedClass3');
@@ -175,7 +175,7 @@ var mocha = require('mocha');
     });
   });
 
-  describe('XDom addClass ', function() {
+  describe('XDom addClass', function() {
     before(function(){
       document.querySelector('#workspace').innerHTML = [
         '<div id="item1" class="sharedClass1 sharedClass3"></div>',
@@ -185,7 +185,7 @@ var mocha = require('mocha');
       ].join('');
     });
 
-    it('addClass css class', function(){
+    it('addClass css class ', function(){
       XDom.addClass('#item1','addedClass');
       assert(XDom.containsClass('#item1','addedClass'), 'Class added');
       XDom.removeClass('#item1','addedClass');
@@ -197,7 +197,7 @@ var mocha = require('mocha');
     });
   });
 
-  describe('XDom removeClass ', function() {
+  describe('XDom removeClass', function() {
     before(function(){
       document.querySelector('#workspace').innerHTML = [
         '<div id="item1" class="sharedClass1 sharedClass3"></div>',
@@ -207,7 +207,7 @@ var mocha = require('mocha');
       ].join('');
     });
 
-    it('removeClass css class', function(){
+    it('removeClass css class ', function(){
       XDom.removeClass('#item1','sharedClass1');
       assert(!XDom.containsClass('#item1','sharedClass1'), 'Class removed');
       XDom.removeClass('#item2','sharedClass2');
@@ -221,30 +221,67 @@ var mocha = require('mocha');
     });
   });
 
-  // describe('XDom resolve ', function() {
-  //   before(function(){
-  //     document.querySelector('#workspace').innerHTML = [
-  //       '<div id="item1" class="sharedClass1 sharedClass3"></div>',
-  //       '<div id="item2" class="sharedClass1 sharedClass3"></div>',
-  //       '<div id="item3" class="sharedClass2 sharedClass2"></div>',
-  //       '<div id="item4" class="singleClass"></div>',
-  //     ].join('');
-  //   });
+  describe('XDom setStyle', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1"></div>',
+        '<div id="item2" class="sharedClass1"></div>',
+        '<div id="item3" class="sharedClass1"></div>',
+      ].join('');
+    });
 
-  //   it('resolve null', function(){
-  //     console.log(XDom.resolve(null));
-  //     //assert(XDom.resolve() == [],'Resolved NULL to []'); wip
-  //   });
-  //   it('resolve array', function(){
-  //     console.log(XDom.resolve(['#item1', '#item2']));
-  //   });
-  //   it('resolve string', function(){
-  //     //console.log(XDom.resolve(null));
-  //     //assert(XDom.resolve() == [],'Resolved NULL to []'); wip
-  //   });
+    it('setStyle color ', function() {
+      XDom.setStyle('#item1', 'color', 'red');
+      assert(XDom.selectOne('#item1').style.color === 'red', 'color set');
 
-  //   after(function(){
-  //     document.querySelector('#workspace').innerHTML = '';
-  //   });
-  // });
+      XDom.setStyle('.sharedClass1', 'color', 'red');
+      assert(XDom.select('.sharedClass1')[0].style.color === 'red', 'first shared class color set');
+      assert(XDom.select('.sharedClass1')[1].style.color === 'red', 'second shared class color set');
+    });
+
+    after(function(){
+       document.querySelector('#workspace').innerHTML = '';
+     });
+  });
+
+  describe('XDom resolve', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1" class="sharedClass1 sharedClass3"></div>',
+        '<div id="item2" class="sharedClass1 sharedClass3"></div>',
+        '<div id="item3" class="sharedClass2 sharedClass2"></div>',
+        '<div id="item4" class="singleClass"></div>',
+        '<footer></footer>'
+      ].join('');
+    });
+
+    it('resolve null ', function(){
+      assert(XDom.resolve().length == 0,'Null has resolved length 0');
+    });
+
+    it('resolve array', function(){
+      assert(XDom.resolve(['#item1', '#item2']).length == 2,'Array has resolved length 2');
+    });
+
+    // it('resolve html string ', function(){ - Is this going to be supported??
+    //   assert(XDom.resolve('<div id="item4" class="singleClass"></div>').length == 1, 'Resolved html string');
+    // });
+
+    it('resolve css string ', function(){
+      assert(XDom.resolve('.sharedClass1').length == 2,'Css string has resolved length 2');
+    });
+
+    it('resolve selector ', function() {
+      assert(XDom.resolve({selector: '.sharedClass1'}).length == 2, 'Resolved selector');
+      assert(XDom.resolve(XDom.selector('.sharedClass1')).length == 2, 'Resolved selector');
+    });
+
+    it('resolve DOM elem ', function() {
+      assert(XDom.resolve('footer').length == 1, 'Resolved DOM elem');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
 })();
