@@ -21,7 +21,10 @@ var $ = require('./jquery-1.11.2');
 $.fn.$find = function(){ return $.fn.find.apply(this, arguments); };
 var _ = require('lodash');
 
+
 exports = module.exports = function(jsh){
+  var XDom = jsh.XDom;
+
   var XDebugConsole = function(){
     this.isInitialized = false;
     this.SettingsCookieID = 'debugconsole';
@@ -250,6 +253,7 @@ exports = module.exports = function(jsh){
           '<input type="checkbox" class="xdebugconsole_source" id="' + obj_id + '" value="' + source_id + '"> ' + _this.all_sources[source_id] +
         '</label>';
     }
+    /*var DebugDialog = jsh.root.select() */
     this.DebugDialog = jsh.$root('.xdebugconsole');
     this.DebugPanel  =  this.DebugDialog.$find('.debug-panel');
     this.DebugPanel.$find('.debug-settings').append($(settingsHtml));
