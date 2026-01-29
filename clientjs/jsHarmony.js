@@ -97,6 +97,7 @@ var jsHarmony = function(options){
   this.XGrid = XGrid(this);
   this.XForm = XForm(this);
   this.XExt = XExt(this);
+  this.XDom = XDom;
   this.XAPI = XAPI(this);
   this.XFormat = XFormat();
   this.XValidate = XValidate;
@@ -166,6 +167,7 @@ var jsHarmony = function(options){
 
   this._instanceClass = this.XExt.escapeCSSClass(this._instance);
   this.root = $(document);
+  this.dom = new XDom.Selector(document);
   this.dialogBlock = null;
   this.globalsMonitorCache = {};
   this.globalsMonitorTimer = null;
