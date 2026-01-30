@@ -19,7 +19,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
 var _ = require('lodash');
 
-var XDom = function(){ };
+var XDom = function(target, options){ return new Selector(target, options); };
 exports = module.exports = XDom;
 
 function selectWithin(selector, within){
@@ -68,22 +68,22 @@ var Selector = function(target, options){
     }).join(','), { base: _this.base });
   };
 
-  _this.addClass = XDom.addClass.bind(XDom, this);
-  _this.removeClass = XDom.removeClass.bind(XDom, this);
-  _this.containsClass = XDom.containsClass.bind(XDom, this);
-  _this.setStyle = XDom.setStyle.bind(XDom, this);
-  _this.appendHtml = XDom.appendHtml.bind(XDom, this);
-  _this.prependHtml = XDom.prependHtml.bind(XDom, this);
-  _this.setHtml = XDom.setHtml.bind(XDom, this);
-  _this.clear = XDom.clear.bind(XDom, this);
-  _this.setAttribute = XDom.setAttribute.bind(XDom, this);
-  _this.getAttribute = XDom.getAttribute.bind(XDom, this);
+  _this.addClass = XDom.addClass.bind(XDom, this);  //class.add
+  _this.removeClass = XDom.removeClass.bind(XDom, this); //class.remove
+  _this.containsClass = XDom.containsClass.bind(XDom, this); //class.contains
+  _this.setStyle = XDom.setStyle.bind(XDom, this); //style[prop] = val
+  _this.appendHtml = XDom.appendHtml.bind(XDom, this); //content.append
+  _this.prependHtml = XDom.prependHtml.bind(XDom, this); //content.prepend
+  _this.setHtml = XDom.setHtml.bind(XDom, this); //content.replace
+  _this.clear = XDom.clear.bind(XDom, this); //content.clear
+  _this.setAttribute = XDom.setAttribute.bind(XDom, this); //attr[prop] = val;
+  _this.getAttribute = XDom.getAttribute.bind(XDom, this); //attr[prop]
   _this.on = XDom.on.bind(XDom, this);
   _this.off = XDom.off.bind(XDom, this);
-  _this.setValue = XDom.setValue.bind(XDom, this);
-  _this.getValue = XDom.getValue.bind(XDom, this);
-  _this.getData = XDom.getData.bind(XDom, this);
-  _this.setData = XDom.setData.bind(XDom, this);
+  _this.setValue = XDom.setValue.bind(XDom, this);  //value = val
+  _this.getValue = XDom.getValue.bind(XDom, this);  //value
+  _this.getData = XDom.getData.bind(XDom, this); //data[prop] = val
+  _this.setData = XDom.setData.bind(XDom, this); //data
   _this.style = {
     display: XDom.style.display.bind(XDom, this),
     width: XDom.style.width.bind(XDom, this),
