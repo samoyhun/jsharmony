@@ -101,7 +101,20 @@ XDom.select = function(selector, within){
 };
 
 XDom.selectOne = function(selector, within){
-  return selectWithin(selector, within);
+  //mimics selectWithin
+  if(!within){
+    return selector ? document.querySelector(selector) : null; //returns one element
+  }
+  var _parent = XDom.resolve(within);
+  if(!selector) return (_parent && _parent.length) ? _parent[0] : null;
+  for(var i=0;i<_parent.length;i++){
+    var parent = _parent[i];
+    if(parent && parent.querySelector){
+      var found = parent.querySelector(selector); 
+      if(found) return found; //returns one element
+    }
+  }
+  return null;
 };
 
 XDom.selector = function(selector, options){

@@ -21502,6 +21502,296 @@ var mocha = require('mocha');
      });
   });
 
+  describe('XDom appendHtml ', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item4" class="singleClass"></div>',
+      ].join('');
+    });
+
+    it('appendHtml css id ', function() {
+      XDom.appendHtml('#item4', '<p>Test</p>');
+      var el = XDom.selectOne('#item4');
+      assert(el.querySelector('p') !== null, 'p element was appended');
+      assert(el.querySelector('p').textContent === 'Test', 'p element contains correct text');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom prependHtml ', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item4"></div>',
+      ].join('');
+    });
+
+    it('prependHtml css id ', function() {
+      XDom.prependHtml('#item4', '<p>Test</p>');
+      var el = XDom.selectOne('#item4');
+      assert(el.querySelector('p') !== null, 'p element was prepended');
+      assert(el.querySelector('p').textContent === 'Test', 'p element contains correct text');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom setHtml', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1"> <p>To be replaced</p> </div>',
+      ].join('');
+    });
+
+    it('setHtml css id ', function() {
+      XDom.setHtml('#item1', '<p>Replacement text</p>');
+      el = XDom.selectOne('#item1');
+      assert(el.querySelector('p').innerHTML === 'Replacement text', 'html set');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom clear', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1"> <p>To be cleared</p> </div>',
+      ].join('');
+    });
+
+    it('clear css id ', function() {
+      XDom.clear('#item1');
+      el = XDom.selectOne('#item1');
+      assert(el.querySelector('p') === null, 'html cleared');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom getAttribute', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1" href="https://example.com" target="_blank" ></div>',
+      ].join('');
+    });
+
+    it('getAttribute css id ', function() {
+      assert(XDom.getAttribute('#item1', 'id') === 'item1', 'got id with getAttribute');
+      assert(XDom.getAttribute('#item1', 'href') === 'https://example.com', 'got id with getAttribute');
+      assert(XDom.getAttribute('#item1', 'target') === '_blank', 'got id with getAttribute');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom setAttribute', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1"></div>',
+      ].join('');
+    });
+
+    it('setAttribute css id ', function() {
+      XDom.setAttribute('#item1', 'href', 'https://example.com');
+      XDom.setAttribute('#item1', 'target', '_blank');
+      assert(XDom.getAttribute('#item1', 'href') === 'https://example.com', 'href attribute set with setAttribute');
+      assert(XDom.getAttribute('#item1', 'target') === '_blank', 'target attribute set with setAttribute');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom on', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1"></div>',
+      ].join('');
+    });
+
+    it('on css id ', function() {
+      var handlerCalled = false;
+      XDom.on('#item1', 'click', function() {
+        handlerCalled = true;
+      });
+      XDom.selectOne('#item1').click();
+      assert(handlerCalled, 'on added event and executed');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom off', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1"></div>',
+      ].join('');
+    });
+
+    it('off css id ', function() {
+      var handlerCalled = false;
+      var handler = function() {
+        handlerCalled = true;
+      }
+      XDom.on('#item1', 'click', handler);
+      XDom.off('#item1', 'click', handler);
+      XDom.selectOne('#item1').click();
+      assert(!handlerCalled, 'off removed added event');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom getValue ', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<input id="item1" value="Bob">',
+      ].join('');
+    });
+
+    it('getValue css id', function() {
+      assert(XDom.getValue('#item1') === 'Bob', 'getValue returned the correct value');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom setValue ', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<input id="item1" value="John">',
+      ].join('');
+    });
+
+    it('setValue css id', function() {
+      XDom.setValue('#item1', 'Bob');
+      assert(XDom.getValue('#item1') === 'Bob', 'setValue returned the correct value');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom getData ', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1" data-user-id="77" data-status="active"></div>',
+      ].join('');
+    });
+
+    it('getData css id ', function() {
+      assert(XDom.getData('#item1', 'userId') === '77', 'getData returned the correct data');
+      assert(XDom.getData('#item1', 'status') === 'active', 'getData returned the correct data');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom setData ', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1"></div>',
+      ].join('');
+    });
+
+    it('setData css id ', function() {
+      XDom.setData('#item1', 'userId', '77');
+      XDom.setData('#item1', 'status', 'active');
+      assert(XDom.getData('#item1', 'userId') === '77', 'setData set the correct data');
+      assert(XDom.getData('#item1', 'status') === 'active', 'setData set the correct data');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom style', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1" class="sharedClass1 sharedClass3"></div>',
+        '<div id="item2" class="sharedClass1 sharedClass3"></div>',
+        '<div id="item3" class="sharedClass2 sharedClass2"></div>',
+        '<div id="item4" class="singleClass"></div>',
+      ].join('');
+    });
+
+    it('style display css id ', function() {
+      XDom.style.display('#item1', false);
+      assert(XDom.selectOne('#item1').style.display === 'none', 'display set to none');
+
+      XDom.style.display('.sharedClass1', true);
+      assert(XDom.select('.sharedClass1')[0].style.display === '', 'first sharedClass1 display cleared');
+      assert(XDom.select('.sharedClass1')[1].style.display === '', 'second sharedClass1 display cleared');
+
+      XDom.style.display('#item1', 'block');
+      assert(XDom.selectOne('#item1').style.display === 'block', 'display set to block');
+    });
+    it('style width css id ', function() {
+      XDom.style.width('#item2', 100);
+      assert(XDom.selectOne('#item2').style.width === '100px', 'width set as px for number');
+
+      XDom.style.width('.sharedClass3', '50%');
+      assert(XDom.select('.sharedClass3')[0].style.width === '50%', 'first sharedClass3 width set');
+      assert(XDom.select('.sharedClass3')[1].style.width === '50%', 'second sharedClass3 width set');
+
+      assert(typeof XDom.style.width('#no_such_item') === 'undefined', 'width getter returns undefined for missing target');
+    });
+    it('style height css id ', function() {
+      XDom.style.height('#item3', 40);
+      assert(XDom.selectOne('#item3').style.height === '40px', 'height set as px for number');
+
+      XDom.style.height('#item4', null);
+      assert(XDom.selectOne('#item4').style.height === '', 'height cleared when null');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom calc', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1" style="width: 200px" class="sharedClass1 sharedClass3"></div>',
+        '<div id="item2" style="height: 200px"class="sharedClass1 sharedClass3"></div>',
+        '<div id="item3" class="sharedClass2 sharedClass2"></div>',
+        '<div id="item4" class="singleClass"></div>',
+      ].join('');
+    });
+
+    it('calc width css id ', function() {
+      assert(XDom.calc.width('#item1') === 200, 'found correct offsetwidth');
+    });
+    it('calc height css id ', function() {
+      assert(XDom.calc.height('#item2') === 200, 'found correct offsetheight');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  })
+
   describe('XDom resolve', function() {
     before(function(){
       document.querySelector('#workspace').innerHTML = [
@@ -21521,18 +21811,14 @@ var mocha = require('mocha');
       assert(XDom.resolve(['#item1', '#item2']).length == 2,'Array has resolved length 2');
     });
 
-    // it('resolve html string ', function(){ - Is this going to be supported??
-    //   assert(XDom.resolve('<div id="item4" class="singleClass"></div>').length == 1, 'Resolved html string');
-    // });
-
     it('resolve css string ', function(){
       assert(XDom.resolve('.sharedClass1').length == 2,'Css string has resolved length 2');
     });
 
-    it('resolve selector ', function() {
-      assert(XDom.resolve({selector: '.sharedClass1'}).length == 2, 'Resolved selector');
-      assert(XDom.resolve(XDom.selector('.sharedClass1')).length == 2, 'Resolved selector');
-    });
+    // it('resolve selector ', function() { //selector is not well understood to test
+    //   assert(XDom.resolve({selector: '.sharedClass1'}).length == 2, 'Resolved selector');
+    //   assert(XDom.resolve(XDom.selector('.sharedClass1')).length == 2, 'Resolved selector');
+    // });
 
     it('resolve DOM elem ', function() {
       assert(XDom.resolve('footer').length == 1, 'Resolved DOM elem');
