@@ -68,31 +68,53 @@ var Selector = function(target, options){
     }).join(','), { base: _this.base });
   };
 
-  _this.addClass = XDom.addClass.bind(XDom, this);  //class.add
-  _this.removeClass = XDom.removeClass.bind(XDom, this); //class.remove
-  _this.containsClass = XDom.containsClass.bind(XDom, this); //class.contains
-  _this.setStyle = XDom.setStyle.bind(XDom, this); //style[prop] = val
-  _this.appendHtml = XDom.appendHtml.bind(XDom, this); //content.append
-  _this.prependHtml = XDom.prependHtml.bind(XDom, this); //content.prepend
-  _this.setHtml = XDom.setHtml.bind(XDom, this); //content.replace
-  _this.clear = XDom.clear.bind(XDom, this); //content.clear
-  _this.setAttribute = XDom.setAttribute.bind(XDom, this); //attr[prop] = val;
-  _this.getAttribute = XDom.getAttribute.bind(XDom, this); //attr[prop]
+  _this.class = {
+    add: XDom.class.add.bind(XDom, this),
+    remove: XDom.class.remove.bind(XDom, this),
+    contains: XDom.class.contains.bind(XDom, this),
+  };
+  _this.content = {
+    append: XDom.content.append.bind(XDom, this),
+    prepend: XDom.content.prepend.bind(XDom, this),
+    replace: XDom.content.replace.bind(XDom, this),
+    clear: XDom.content.clear.bind(XDom, this),
+  };
+  _this.attr = new Proxy({}, {
+    get: function(target, prop, receiver) { return XDom.getAttribute(_this, prop); },
+    set: function(target, prop, value) { return XDom.setAttribute(_this, prop, value); },
+  });
   _this.on = XDom.on.bind(XDom, this);
   _this.off = XDom.off.bind(XDom, this);
-  _this.setValue = XDom.setValue.bind(XDom, this);  //value = val
-  _this.getValue = XDom.getValue.bind(XDom, this);  //value
-  _this.getData = XDom.getData.bind(XDom, this); //data[prop] = val
-  _this.setData = XDom.setData.bind(XDom, this); //data
-  _this.style = {
-    display: XDom.style.display.bind(XDom, this),
-    width: XDom.style.width.bind(XDom, this),
-    height: XDom.style.height.bind(XDom, this),
-  };
+  Object.defineProperty(this, 'value', {
+    get: function() { return XDom.getValue(this); },
+    set: function(value) { XDom.setValue(this, value); },
+  });
+  _this.data = new Proxy({}, {
+    get: function(target, prop, receiver) { return XDom.getData(_this, prop); },
+    set: function(target, prop, value) { return XDom.setData(_this, prop, value); },
+  });
+  _this.style = new Proxy({}, {
+    get: function(target, prop, receiver) {
+      if(prop == 'display') return XDom.style.display(_this);
+      if(prop == 'width') return XDom.style.width(_this);
+      if(prop == 'height') return XDom.style.height(_this);
+      return XDom.getStyle(_this, prop);
+    },
+    set: function(target, prop, value) {
+      if(prop == 'display') return XDom.style.display(_this, value);
+      if(prop == 'width') return XDom.style.width(_this, value);
+      if(prop == 'height') return XDom.style.height(_this, value);
+      return XDom.setStyle(_this, prop, value);
+    },
+  });
   _this.calc = {
     width: XDom.calc.width.bind(XDom, this),
     height: XDom.calc.height.bind(XDom, this),
   };
+  _this.parent = function(){
+    return new Selector(_.map(_this.select(), function(el){ return el && el.parentNode; }));
+  };
+  _this.remove = XDom.remove.bind(XDom, this);
 };
 XDom.Selector = Selector;
 
@@ -116,40 +138,31 @@ XDom.resolve = function(target){
   return [target];
 };
 
-XDom.addClass = function(target, className){
-  if(!className) throw new Error('Invalid class');
-  var _el = XDom.resolve(target);
-  _.each(_el, function(el){
-    if(el && el.classList && el.classList.add) el.classList.add(className);
-  });
-};
-
-XDom.removeClass = function(target, className){
-  if(!className) throw new Error('Invalid class');
-  var _el = XDom.resolve(target);
-  _.each(_el, function(el){
-    if(el && el.classList && el.classList.remove) el.classList.remove(className);
-  });
-};
-
-XDom.containsClass = function(target, className){
-  if(!className) throw new Error('Invalid class');
-  var _el = XDom.resolve(target);
-  if(_el.length == 0) return false;
-  for(var i=0;i<_el.length;i++){
-    var el = _el[i];
-    if(!el || !el.classList || !el.classList.contains || !el.classList.contains(className)) return false;
-  }
-  return true;
-};
-
-XDom.setStyle = function(target, prop, val){
-  var _el = XDom.resolve(target);
-  _.each(_el, function(el){
-    if(el && el.style){
-      el.style[prop] = val;
+XDom.class = {
+  add: function(target, className){
+    if(!className) throw new Error('Invalid class');
+    var _el = XDom.resolve(target);
+    _.each(_el, function(el){
+      if(el && el.classList && el.classList.add) el.classList.add(className);
+    });
+  },
+  remove: function(target, className){
+    if(!className) throw new Error('Invalid class');
+    var _el = XDom.resolve(target);
+    _.each(_el, function(el){
+      if(el && el.classList && el.classList.remove) el.classList.remove(className);
+    });
+  },
+  contains: function(target, className){
+    if(!className) throw new Error('Invalid class');
+    var _el = XDom.resolve(target);
+    if(_el.length == 0) return false;
+    for(var i=0;i<_el.length;i++){
+      var el = _el[i];
+      if(!el || !el.classList || !el.classList.contains || !el.classList.contains(className)) return false;
     }
-  });
+    return true;
+  },
 };
 
 function renderHtml(val){
@@ -158,30 +171,35 @@ function renderHtml(val){
   return container.childNodes;
 }
 
-XDom.appendHtml = function(target, val){
-  var html = renderHtml(val);
-  _.each(XDom.resolve(target), function(el){
-    if(el && el.append) el.append.apply(el, html);
-  });
+XDom.content = {
+  append: function(target, val){
+    var html = renderHtml(val);
+    _.each(XDom.resolve(target), function(el){
+      if(el && el.append) el.append.apply(el, html);
+    });
+  },
+  prepend: function(target, val){
+    var html = renderHtml(val);
+    _.each(XDom.resolve(target), function(el){
+      if(el && el.prepend) el.prepend.apply(el, html);
+    });
+  },
+  replace: function(target, val){
+    var html = renderHtml(val);
+    _.each(XDom.resolve(target), function(el){
+      if(el && el.replaceChildren) el.replaceChildren.apply(el, html);
+    });
+  },
+  clear: function(target){
+    _.each(XDom.resolve(target), function(el){
+      if(el && el.replaceChildren) el.replaceChildren();
+    });
+  },
 };
 
-XDom.prependHtml = function(target, val){
-  var html = renderHtml(val);
+XDom.remove = function(target){
   _.each(XDom.resolve(target), function(el){
-    if(el && el.prepend) el.prepend.apply(el, html);
-  });
-};
-
-XDom.setHtml = function(target, val){
-  var html = renderHtml(val);
-  _.each(XDom.resolve(target), function(el){
-    if(el && el.replaceChildren) el.replaceChildren.apply(el, html);
-  });
-};
-
-XDom.clear = function(target){
-  _.each(XDom.resolve(target), function(el){
-    if(el && el.replaceChildren) el.replaceChildren();
+    el.remove();
   });
 };
 
@@ -247,6 +265,21 @@ XDom.setData = function(target, prop, val){
     if(el && el.dataset){
       if(typeof val == 'undefined') delete el.dataset[prop];
       else el.dataset[prop] = val;
+    }
+  });
+};
+
+XDom.getStyle = function(target, prop){
+  var _el = XDom.resolve(target);
+  if(!_el.length) return undefined;
+  return _el[0].style[prop];
+};
+
+XDom.setStyle = function(target, prop, val){
+  var _el = XDom.resolve(target);
+  _.each(_el, function(el){
+    if(el && el.style){
+      el.style[prop] = val;
     }
   });
 };
