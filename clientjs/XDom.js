@@ -302,16 +302,28 @@ function styleFunc(prop, valTransform){
     var _el = XDom.resolve(target);
     if(!_el.length) return undefined;
     if(typeof val == 'undefined') return _el[0].style[prop];
-    if(valTransform) val = valTransform(val);
-    if(val===null) val = '';
-    _.each(_el, function(el){ if(el && el.style) el.style[prop] = val; });
+    _.each(_el, function(el){
+      if(el && el.style){
+        var elVal = val;
+        if(valTransform) elVal = valTransform(elVal, el);
+        if(elVal===null) elVal = '';
+        el.style[prop] = elVal;
+      }
+    });
   };
 }
 
 XDom.style = {
-  display: styleFunc('display', function(val){
+  display: styleFunc('display', function(val, el){
     if(val === false) return 'none';
-    if(val === true) return '';
+    if(val === true){
+      if(el.style.display){
+        return '';
+      }
+      var elStyles = window.getComputedStyle && window.getComputedStyle(el);
+      if(elStyles && elStyles.display == 'none') return 'unset';
+      return '';
+    }
     return val;
   }),
   width: styleFunc('width', function(val){
