@@ -1,0 +1,8 @@
+{
+    "files.exclude": {
+        "**/public/js/ckeditor": true,
+        "**/public/js/jsHarmony.dev.js": true,
+        "**/public/js/jsHarmony.js": true,
+        "**/public/js/jsHarmonyCMS.js": true
+    }
+}
