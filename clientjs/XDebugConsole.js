@@ -258,11 +258,11 @@ exports = module.exports = function(jsh){
     var checkboxes = this.DebugPanel.selector('.xdebugconsole_source');
     for (var i=0; i<checkboxes.length; i++){
       if (this.settings.sources[checkboxes[i].value]){
-        checkboxes[i].click();
+        checkboxes[i].click();// on click what?
       }
     }
     this.DebugDialog.style.display = false;
-    this.DebugDialog.class.remove('visible');
+    this.DebugDialog.class.remove('visible'); // visable was never added to be removed?
     this.updatePanelLayout();
     jsh.XExt.makeResizableDiv('.debug-panel',[
       {selector:'.xdebuginfo-body',
@@ -280,11 +280,10 @@ exports = module.exports = function(jsh){
       _this.saveSettings();
       _this.updateWebSocketSources();
     });
-    var controlIcons = this.DebugDialog.selector('.controls i');
-    controlIcons.on('click', function(){
-          var action = this.data.get('action');
-          if(action && _this[action]) _this[action]();
-        });
+    this.DebugDialog.selector('.controls i').on('click', function(){
+      var action = this.data.get('action');
+      if(action && _this[action]) _this[action]();
+    });
   };
 
   XDebugConsole.prototype.getWindowSize = function(){
@@ -328,7 +327,6 @@ exports = module.exports = function(jsh){
 
   XDebugConsole.prototype.renderSettings = function(){
     var settingsEl = this.DebugPanel.selector('.debug-settings');
-    console.log(!!this.settings.settings_visible);
     settingsEl.style.display = !!this.settings.settings_visible;
   };
 
