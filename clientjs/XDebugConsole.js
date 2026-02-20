@@ -281,7 +281,7 @@ exports = module.exports = function(jsh){
       _this.updateWebSocketSources();
     });
     this.DebugDialog.selector('.controls i').on('click', function(){
-      var action = this.data.get('action');
+      var action = XDom(this).data.action;
       if(action && _this[action]) _this[action]();
     });
   };

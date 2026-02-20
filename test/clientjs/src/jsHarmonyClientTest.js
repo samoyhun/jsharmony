@@ -432,6 +432,7 @@ var mocha = require('mocha');
     it('getData css id ', function() {
       assert(XDom.getData('#item1', 'userId') === '77', 'getData returned the correct data');
       assert(XDom.getData('#item1', 'status') === 'active', 'getData returned the correct data');
+      assert(XDom.selector('#item1').data.userId == '77', 'Secondary method works...');
     });
 
     after(function(){
