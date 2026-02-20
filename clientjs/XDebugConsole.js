@@ -88,7 +88,7 @@ exports = module.exports = function(jsh){
   XDebugConsole.prototype.saveSettings = function(options){
     options = _.extend({ debounce: false }, options);
     var _this = this;
-    if(options.debouce){
+    if(options.debounce){
       if(this.saveSettingsTimer) return;
       this.saveSettingsTimer = window.setTimeout(function(){ _this.saveSettings(_.extend(options,{ debounce: false })); });
       return;
