@@ -275,7 +275,7 @@ exports = module.exports = function(jsh){
       _this.saveSettings();
     } });
     //Source Checkboxes
-    XDom(checkboxes).on('click', function(){ 
+    XDom(checkboxes).on('click', function(){
       _this.settings.sources[this.value] = !!this.checked;
       _this.saveSettings();
       _this.updateWebSocketSources();
@@ -288,7 +288,7 @@ exports = module.exports = function(jsh){
 
   XDebugConsole.prototype.getWindowSize = function(){
     var debugPanel = XDom('.debug-panel');
-    var width = debugPanel ? debugPanel.offsetWidth : 0; 
+    var width = debugPanel ? debugPanel.offsetWidth : 0;
     var height = debugPanel ? debugPanel.offsetHeight : 0;
     if(this.settings.dock == 'bottom') return { height: height };
     return { width: width, height: height };

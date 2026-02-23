@@ -132,7 +132,7 @@ XDom.selectOne = function(selector, within){
   for(var i=0;i<_parent.length;i++){
     var parent = _parent[i];
     if(parent && parent.querySelector){
-      var found = parent.querySelector(selector); 
+      var found = parent.querySelector(selector);
       if(found) return found; //returns one element
     }
   }
@@ -319,9 +319,11 @@ XDom.style = {
     if(val === true){
       if(el.style.display){
         if(el.style.display=='none'){
-          return '';
+          el.style.display = '';
         }
-        return el.style.display;
+        else {
+          return el.style.display;
+        }
       }
       var elStyles = window.getComputedStyle && window.getComputedStyle(el);
       if(elStyles && elStyles.display == 'none') return 'unset';
