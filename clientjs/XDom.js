@@ -318,7 +318,10 @@ XDom.style = {
     if(val === false) return 'none';
     if(val === true){
       if(el.style.display){
-        return '';
+        if(el.style.display=='none'){
+          return '';
+        }
+        return el.style.display;
       }
       var elStyles = window.getComputedStyle && window.getComputedStyle(el);
       if(elStyles && elStyles.display == 'none') return 'unset';
