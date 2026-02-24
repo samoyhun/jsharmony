@@ -166,7 +166,7 @@ var jsHarmony = function(options){
   this.cancelExit = false;
 
   this._instanceClass = this.XExt.escapeCSSClass(this._instance);
-  this.root = $(document);
+  this.root = XDom(document);
   this.dom = new XDom.Selector(document);
   this.dialogBlock = null;
   this.globalsMonitorCache = {};
@@ -222,8 +222,8 @@ var jsHarmony = function(options){
   }
 };
 
-jsHarmony.prototype.$root = function(sel){ return this.root.$find(sel); };
-jsHarmony.prototype.$dialogBlock = function(sel){ if(!this.dialogBlock) return $(); return this.dialogBlock.$find(sel); };
+jsHarmony.prototype.$root = function(sel){ return this.root.select(sel); };
+jsHarmony.prototype.$dialogBlock = function(sel){ if(!this.dialogBlock) return XDom(); return this.dialogBlock.selector(sel); };
 
 jsHarmony.prototype.getInstance = function(){
   if(!this._instance) throw new Error('jsHarmony._instance is required');
@@ -479,8 +479,8 @@ jsHarmony.prototype.XWindowResize = function (source) {
 };
 jsHarmony.prototype.XDialogResize = function (source, params) {
   if(this.dialogBlock){
-    this.dialogBlock.css('width', params.pw + 'px');
-    this.dialogBlock.css('height', params.ph + 'px');
+    this.dialogBlock.style.width = params.pw + 'px';
+    this.dialogBlock.style.height = params.pw + 'px';
   }
 
   var jdebugInfo = this.$root('.xdebuginfo.jsHarmonyElement_'+this._instanceClass);
@@ -488,7 +488,7 @@ jsHarmony.prototype.XDialogResize = function (source, params) {
   jdebugInfo.css('left', params.sleft + 'px');
   jdebugInfo.css('width', params.ww + 'px');
 
-  this.$dialogBlock('.xdialogbox').each(function () {
+  this.$dialogBlock('.xdialogbox').each(function () { //need and .each() and .is()
     var jobj = $(this);
     if (!jobj.is(':visible')) return;
     if (document.activeElement && $(document.activeElement).is('input,select,textarea') && $(document.activeElement).parents(jobj).length) {
