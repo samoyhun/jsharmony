@@ -115,6 +115,34 @@ var Selector = function(target, options){
     return new Selector(_.map(_this.select(), function(el){ return el && el.parentNode; }));
   };
   _this.remove = XDom.remove.bind(XDom, this);
+  //_this.focus = XDom.focus.bind(XDom, this);
+  //_this.blur = XDom.blur.bind(XDom, this);
+  //_this.children = .children
+  //width = width({ to: 'content' })
+  //innerWidth = width({ to: 'padding' })
+  //outerWidth = width()  or width({ to: 'border' })
+  //outerWidth(true) = width({ to: 'margin' })
+  //height = height({ to: 'content' })
+  //innerHeight = height({ to: 'padding' })
+  //outerHeight = height()  or height({ to: 'border' })
+  //outerHeight(true) = height({ to: 'margin' })
+  //each => .select().forEach(...)
+  //trigger = emit()
+  //before => insertBefore
+  //closest => parent(...select)
+  //insertBefore => insertBefore
+  //next => nextSibling
+  //prev => previousSibling
+  //offsetParent => 
+  //offset => offset()
+  //wrap => create element, insertBefore, and then put contents inside
+  //not => css :not
+  //first => .select[0]
+  //filter => .select.filter
+  //slideUp => .animate({ height: '0px' })
+  //slideDown => .animate({ height: 'auto' })
+  //fadeTo => .animate({ opacity: 0 })
+  //.is(:visible) => .selectVisible
 };
 XDom.Selector = Selector;
 

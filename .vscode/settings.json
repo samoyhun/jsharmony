@@ -3,6 +3,13 @@
         "**/public/js/ckeditor": true,
         "**/public/js/jsHarmony.dev.js": true,
         "**/public/js/jsHarmony.js": true,
-        "**/public/js/jsHarmonyCMS.js": true
+        "**/clientjs/jquery-1.11.2.js": true,
+        "**/.git": true,
+        "node_modules": true,
+        "data": true,
+        "**/public/js/tinymce": true,
+        "**/public/js/colorbox": true,
+        "**/public/jquery-ui": true,
+        "**/public/js/jquery.colorbox-min.js": true,
     }
 }
