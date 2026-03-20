@@ -166,9 +166,11 @@ var jsHarmony = function(options){
   this.cancelExit = false;
 
   this._instanceClass = this.XExt.escapeCSSClass(this._instance);
-  this.root = XDom(document);
+  this.root = $(document);
+  this.XDroot = XDom(document);
   this.dom = new XDom.Selector(document);
   this.dialogBlock = null;
+  this.XDdialogBlock = null;
   this.globalsMonitorCache = {};
   this.globalsMonitorTimer = null;
   this.jslocals = '';
@@ -222,8 +224,17 @@ var jsHarmony = function(options){
   }
 };
 
-jsHarmony.prototype.$root = function(sel){ return this.root.select(sel); };
-jsHarmony.prototype.$dialogBlock = function(sel){ if(!this.dialogBlock) return XDom(); return this.dialogBlock.selector(sel); };
+jsHarmony.prototype.$root = function(sel){ return this.root.$find(sel); };
+jsHarmony.prototype.$dialogBlock = function(sel){ if(!this.dialogBlock) return $(); return this.dialogBlock.$find(sel); };
+
+// NOTE: $ used to avoid naming conflicts with this.XDialogBlock
+jsHarmony.prototype.$XDdialogBlock = function(sel){ 
+  if(!this.XDdialogBlock) return XDom(); 
+  return this.XDdialogBlock.selector(sel); 
+};
+// NOTE: $ used to avoid naming conflicts with this.XDroot
+jsHarmony.prototype.$XDroot = function(sel){ return this.XDroot.selector(sel); };
+
 
 jsHarmony.prototype.getInstance = function(){
   if(!this._instance) throw new Error('jsHarmony._instance is required');
@@ -448,6 +459,7 @@ jsHarmony.prototype.InitDialogs = function () {
   var _this = this;
   this.root.append($(ejs.render(XViews['jsh_system'],{ jsh: _this })));
   this.dialogBlock = this.$root('.xdialogblock.jsHarmonyElement_'+this._instanceClass);
+  this.XDdialogBlock = this.XDroot.selector('.xdialogblock.jsHarmonyElement_'+this._instanceClass);
 };
 jsHarmony.prototype.InitControls = function() {
   var _this = this;
@@ -479,8 +491,8 @@ jsHarmony.prototype.XWindowResize = function (source) {
 };
 jsHarmony.prototype.XDialogResize = function (source, params) {
   if(this.dialogBlock){
-    this.dialogBlock.style.width = params.pw + 'px';
-    this.dialogBlock.style.height = params.pw + 'px';
+    this.dialogBlock.css('width', params.pw + 'px');
+    this.dialogBlock.css('height', params.ph + 'px');
   }
 
   var jdebugInfo = this.$root('.xdebuginfo.jsHarmonyElement_'+this._instanceClass);

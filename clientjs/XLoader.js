@@ -34,19 +34,19 @@ exports = module.exports = function(jsh){
     this.containerClass = _containerClass || '.xloadingblock.jsHarmonyElement_'+jsh._instanceClass;
 
     //Check if required elements have been rendered to the page
-    if(!jsh.$root(_this.containerClass).length){
+    if(!jsh.$XDroot(_this.containerClass).length){
       console.error(_this.containerClass+' not found on page during XLoader initialization'); // eslint-disable-line no-console
     }
 
     //Keep counter to match mousedown / mouseup events, to detect squashed clicks (clicks blocked by the transparent loading background)
-    jsh.$root(_this.containerClass).on('mousedown', function(e){
+    jsh.$XDroot(_this.containerClass).on('mousedown', function(e){
       _this.MouseStack++;
       jsh.XExt.trigger(_this.onMouseDown, e);
     });
-    jsh.$root(_this.containerClass).on('mouseup', function(e){
+    jsh.$XDroot(_this.containerClass).on('mouseup', function(e){
       jsh.XExt.trigger(_this.onMouseUp, e);
     });
-    jsh.$root(_this.containerClass).on('click mouseup', function(e){
+    jsh.$XDroot(_this.containerClass).on('click mouseup', function(e){
       if(_this.MouseStack<=0){ jsh.XExt.trigger(_this.onSquashedClick, e); }
       _this.MouseStack--;
     });
@@ -56,14 +56,14 @@ exports = module.exports = function(jsh){
     var _this = this;
     if(!_.includes(this.LoadQueue,obj)) this.LoadQueue.push(obj);
     if(this.IsLoading) return;
-    jsh.root.css('cursor','wait');
+    jsh.XDroot.style.cursor = 'wait';
     this.IsLoading = true;
     this.MouseStack = 0;
-    if(jsh.xDialog.length) jsh.$root('input,select,textarea').not(':button').blur();
-    else jsh.$root('input,select,textarea').blur();
-    jsh.$root(_this.containerClass+' .xloadingbox').stop().fadeTo(0,0);
-    jsh.$root(_this.containerClass).show();
-    jsh.$root(_this.containerClass+' .xloadingbox').fadeTo(2000,1);
+    if(jsh.xDialog.length) jsh.$XDroot('input:not([type=button]),select,textarea').select()[0].blur();
+    else jsh.$XDroot('input,select,textarea').select()[0].blur();
+    jsh.$XDroot(_this.containerClass+' .xloadingbox').animate({opacity: 0}, 0);
+    jsh.$XDroot(_this.containerClass).style.display = true;
+    jsh.$XDroot(_this.containerClass+' .xloadingbox').animate({opacity: 1}, 2000);
   };
 
   XLoader.prototype.StopLoading = function (obj){
@@ -80,17 +80,17 @@ exports = module.exports = function(jsh){
   XLoader.prototype.StopLoadingBase = function () {
     var _this = this;
     this.IsLoading = false;
-    jsh.$root(_this.containerClass+' .xloadingbox').stop();
-    var curfade = GetOpacity(jsh.$root(_this.containerClass+' .xloadingbox')[0]);
-    jsh.$root(_this.containerClass+' .xloadingbox').fadeTo(500 * curfade, 0, function () { if (!this.IsLoading) { jsh.$root(_this.containerClass).hide(); } });
-    jsh.root.css('cursor', '');
+    jsh.$XDroot(_this.containerClass+' .xloadingbox').stop();
+    var curfade = GetOpacity(jsh.$XDroot(_this.containerClass+' .xloadingbox').select()[0]);
+    jsh.$XDroot(_this.containerClass+' .xloadingbox').animate({opacity:500 * curfade}, 0, function () { if (!this.IsLoading) { jsh.$XDroot(_this.containerClass).style.disply = false; } });
+    jsh.XDroot.style.cursor = '';;
   };
 
   function GetOpacity(elem) {
-    var ori = $(elem).css('opacity');
-    var ori2 = $(elem).css('filter');
+    var ori = jsh.XDom(elem).style.opacity;
+    var ori2 = jsh.XDom(elem).style.filter;
     if (ori2) {
-      ori2 = parseInt( ori2.replace(')','').replace('alpha(opacity=','') ) / 100;
+      ori2 = parseInt( ori2.content.replace(')','').replace('alpha(opacity=','') ) / 100;
       if (!isNaN(ori2) && ori2 != '') {
         ori = ori2;
       }
