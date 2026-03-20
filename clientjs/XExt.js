@@ -1828,7 +1828,7 @@ exports = module.exports = function(jsh){
     jsh.$XDdialogBlock('.xalertbox.base').style.zIndex = jsh.xDialog.length;
     
     var oldactive = document.activeElement;
-    if (oldactive) jsh.XDom(oldactive).select()[0].blur(); // Not Seeing Change on blur...
+    if (oldactive) jsh.XDom(oldactive).select()[0].blur();
     jsh.$XDdialogBlock('.xalertmessage').content.replace(msg);
     jsh.$XDdialogBlock('.xalertbox input').off('click');
     jsh.$XDdialogBlock('.xalertbox input').off('keydown');
@@ -1853,7 +1853,7 @@ exports = module.exports = function(jsh){
     jsh.XDdialogBlock.style.display = true;
     jsh.XWindowResize();
     if (!XExt.isIOS()) {
-      jsh.$XDdialogBlock('.xalertbox.base input').select()[0].focus(); // Not Seeing Change on focus...
+      jsh.$XDdialogBlock('.xalertbox.base input').select()[0].focus();
     }
     if(options.autohide) setTimeout(function(){ if(!isClosing) acceptfunc(); }, options.autohide);
   };
@@ -1883,7 +1883,7 @@ exports = module.exports = function(jsh){
     jsh.$XDdialogBlock('.xconfirmbox.base').style.zIndex = jsh.xDialog.length;
     
     var oldactive = document.activeElement;
-    if (oldactive) jsh.XDom(oldactive).select().blur(); // Not Seeing Change on blur...
+    if (oldactive) jsh.XDom(oldactive).select().blur();
     jsh.$XDdialogBlock('.xconfirmmessage').content.replace(msg);
     jsh.$XDdialogBlock('.xconfirmbox input').off('click');
     jsh.$XDdialogBlock('.xconfirmbox input').off('keydown');
@@ -1972,7 +1972,7 @@ exports = module.exports = function(jsh){
     jsh.$XDdialogBlock('.xpromptbox.base').style.display = true;
     jsh.XDdialogBlock.style.display = true;
     jsh.XWindowResize();
-    jsh.$XDdialogBlock('.xpromptfield').select()[0].focus(); // Not Seeing Change on focus...
+    jsh.$XDdialogBlock('.xpromptfield').select()[0].focus();
   };
 
   //html - HTML or jQuery object
@@ -2057,7 +2057,7 @@ exports = module.exports = function(jsh){
         });
         if(options.backgroundClose){
           jsh.dialogBlock.on('mousedown.close' + sel, function(e){
-            if(!XDom(e.target).is('.xdialogoverlay,.xdialogblock')) return; // need .is FIX
+            if(!XDom(e.target).is('.xdialogoverlay,.xdialogblock')) return;
             var mouseDownTime = new Date().getTime();
             jsh.dialogBlock.one('mouseup.close', function(e){
               var mouseUpTime = new Date().getTime();
@@ -2073,8 +2073,8 @@ exports = module.exports = function(jsh){
         jsh.XWindowResize();
         setTimeout(function(){
           jsh.XWindowResize();
-          if(jsh.$XDdialogBlock(sel + ' .default_focus').length) jsh.$XDdialogBlock(sel + ' .default_focus').select()[0].focus(); // Not Seeing Change on focus...
-          else jsh.$XDdialogBlock(sel).selector('input:visible,textarea:visible,select:visible').select()[0].focus(); // Not Seeing Change on focus...
+          if(jsh.$XDdialogBlock(sel + ' .default_focus').length) jsh.$XDdialogBlock(sel + ' .default_focus').select()[0].focus(); 
+          else jsh.$XDdialogBlock(sel).selector('input:visible,textarea:visible,select:visible').select()[0].focus(); 
         }, 1);
       }
     );
