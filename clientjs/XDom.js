@@ -384,52 +384,60 @@ XDom.calc = {
   },
 };
 
-function Parse(value){
+function parseStyleUnit(value){
   if(value == null) return null;
   var regexp = /(^-?\d+(?:\.\d+)?)([a-zA-Z%]+)?$/;
   var match = String(value).match(regexp);
   if(!match) return {};
   //TODO if Number(match[1]) is NaN, then...
-  return {val: Number(match[1]), tag: match[2] || ''};
+  return {val: Number(match[1]), unit: match[2] || ''};
 }
 
 XDom.animate = function(target, props, duration, callback){
+  if(!props) props = {};
+  if(!duration) duration = 0;
   var _el = XDom.resolve(target);
-  aniobj = {};
-  var startTime;
-  for(var [key, endRaw] of Object.entries(props)){
+  var aniobj = {};
+  for(var key in props){
+    var endStr = props[key];
+    if((endStr === null) || (typeof endStr == 'undefined') || (endStr === '')) continue;
+    endStr = endStr.toString();
     aniobj[key] = [];
     for(var el of _el){
         var startRaw = window.getComputedStyle(el)[key];
-        var start = Parse(startRaw);
-        var end = Parse(endRaw);
-        aniobj[key].push({from: start.val, to: end.val, tag: end.tag});
+        var start = parseStyleUnit(startRaw);
+        var end = parseStyleUnit(endRaw);
+        // TODO: Consider unit mismatch between start and end - error out
+        //    console.warning(...)
+        //    Push null onto array, and set to end size at end
+        // TODO: Add support for "start" and "end"
+        //    animate(tgt, { width: '200px' });
+        //    animate(tgt, { width: 200 }); => animate(tgt, { width: '200' });
+        //    animate(tgt, { width: { from: '100px', to: '200px' } });
+        aniobj[key].push({from: start.val, to: end.val, unit: end.unit});
     }
   }
   requestAnimationFrame(step);
 
-  function step(timestamp){
-    if(startTime === undefined){
-      startTime = timestamp;
-    }
-    var elapsed = timestamp - startTime;
-    if(duration > 0){
-      var progress = elapsed / duration;
-    } else {
-      var progress = 1;
-    }
-    if(progress > 1){
-      progress = 1;
-    }
+  // update animationIndex
+
+  var startTime = document.timeline.currentTime;
+  var endTime = startTime + duration;
+  function step(curTime){
+    var inProgress = (curTime < endTime);
     for (var i = 0; i < _el.length; i++){
       var el = _el[i];
       for(var key in aniobj){
-        var { from, to, tag } = aniobj[key][i];
-        var current = from + (to - from) * progress;
-        el.style[key] = current + tag;
+        var { from, to, unit } = aniobj[key][i];
+        if(inProgress){
+          el.style[key] = (from + (((to - from) * (curTime - startTime)) / duration)).toString() + unit;
+        }
+        else {
+          el.style[key] = to.toString() + unit;
+        }
       }
     }
-    if(progress < 1){
+    if(inProgress){
       requestAnimationFrame(step);
     } else {
       if(typeof callback === 'function') {
@@ -440,6 +448,8 @@ XDom.animate = function(target, props, duration, callback){
 };
 
 XDom.stop = function(){
+  // update animationStopIndex
+
   //TODO: create a function to stop animation
   /*
   * IDEAS:
