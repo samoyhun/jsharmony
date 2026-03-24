@@ -85,6 +85,8 @@ var Selector = function(target, options){
   });
   _this.on = XDom.on.bind(XDom, this);
   _this.off = XDom.off.bind(XDom, this);
+  _this.animate = function(props, duration, callback){ return XDom.animate(this, props, duration, callback); };
+  _this.stop = function(){ return XDom.stop(this); };
   Object.defineProperty(this, 'value', {
     get: function() { return XDom.getValue(this); },
     set: function(value) { XDom.setValue(this, value); },
@@ -354,7 +356,7 @@ XDom.style = {
         }
       }
       var elStyles = window.getComputedStyle && window.getComputedStyle(el);
-      if(elStyles && elStyles.display == 'none') return 'unset';
+      if(elStyles && elStyles.display == 'none') return 'revert';
       return '';
     }
     return val;
@@ -380,4 +382,68 @@ XDom.calc = {
     if(!_el.length) return undefined;
     return _el[0].offsetHeight;
   },
+};
+
+function Parse(value){
+  if(value == null) return null;
+  var regexp = /(^-?\d+(?:\.\d+)?)([a-zA-Z%]+)?$/;
+  var match = String(value).match(regexp);
+  if(!match) return {};
+  //TODO if Number(match[1]) is NaN, then...
+  return {val: Number(match[1]), tag: match[2] || ''};
+}
+
+XDom.animate = function(target, props, duration, callback){
+  var _el = XDom.resolve(target);
+  aniobj = {};
+  var startTime;
+  for(var [key, endRaw] of Object.entries(props)){
+    aniobj[key] = [];
+    for(var el of _el){
+        var startRaw = window.getComputedStyle(el)[key];
+        var start = Parse(startRaw);
+        var end = Parse(endRaw);
+        aniobj[key].push({from: start.val, to: end.val, tag: end.tag});
+    }
+  }
+  requestAnimationFrame(step);
+
+  function step(timestamp){
+    if(startTime === undefined){
+      startTime = timestamp;
+    }
+    var elapsed = timestamp - startTime;
+    if(duration > 0){
+      var progress = elapsed / duration;
+    } else {
+      var progress = 1;
+    }
+    if(progress > 1){
+      progress = 1;
+    }
+    for (var i = 0; i < _el.length; i++){
+      var el = _el[i];
+      for(var key in aniobj){
+        var { from, to, tag } = aniobj[key][i];
+        var current = from + (to - from) * progress;
+        el.style[key] = current + tag;
+      }
+    }
+    if(progress < 1){
+      requestAnimationFrame(step);
+    } else {
+      if(typeof callback === 'function') {
+        callback();
+      }
+    }
+  }
+};
+
+XDom.stop = function(){
+  //TODO: create a function to stop animation
+  /*
+  * IDEAS:
+  * stop all ID < current
+  * set attri to "stop"
+  */
 };

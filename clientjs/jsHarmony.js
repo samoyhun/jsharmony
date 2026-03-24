@@ -167,8 +167,10 @@ var jsHarmony = function(options){
 
   this._instanceClass = this.XExt.escapeCSSClass(this._instance);
   this.root = $(document);
+  this.XDroot = XDom(document);
   this.dom = new XDom.Selector(document);
   this.dialogBlock = null;
+  this.XDdialogBlock = null;
   this.globalsMonitorCache = {};
   this.globalsMonitorTimer = null;
   this.jslocals = '';
@@ -224,6 +226,15 @@ var jsHarmony = function(options){
 
 jsHarmony.prototype.$root = function(sel){ return this.root.$find(sel); };
 jsHarmony.prototype.$dialogBlock = function(sel){ if(!this.dialogBlock) return $(); return this.dialogBlock.$find(sel); };
+
+// NOTE: $ used to avoid naming conflicts with this.XDialogBlock
+jsHarmony.prototype.$XDdialogBlock = function(sel){ 
+  if(!this.XDdialogBlock) return XDom(); 
+  return this.XDdialogBlock.selector(sel); 
+};
+// NOTE: $ used to avoid naming conflicts with this.XDroot
+jsHarmony.prototype.$XDroot = function(sel){ return this.XDroot.selector(sel); };
+
 
 jsHarmony.prototype.getInstance = function(){
   if(!this._instance) throw new Error('jsHarmony._instance is required');
@@ -448,6 +459,7 @@ jsHarmony.prototype.InitDialogs = function () {
   var _this = this;
   this.root.append($(ejs.render(XViews['jsh_system'],{ jsh: _this })));
   this.dialogBlock = this.$root('.xdialogblock.jsHarmonyElement_'+this._instanceClass);
+  this.XDdialogBlock = this.XDroot.selector('.xdialogblock.jsHarmonyElement_'+this._instanceClass);
 };
 jsHarmony.prototype.InitControls = function() {
   var _this = this;
@@ -488,7 +500,7 @@ jsHarmony.prototype.XDialogResize = function (source, params) {
   jdebugInfo.css('left', params.sleft + 'px');
   jdebugInfo.css('width', params.ww + 'px');
 
-  this.$dialogBlock('.xdialogbox').each(function () {
+  this.$dialogBlock('.xdialogbox').each(function () { //need and .each() and .is()
     var jobj = $(this);
     if (!jobj.is(':visible')) return;
     if (document.activeElement && $(document.activeElement).is('input,select,textarea') && $(document.activeElement).parents(jobj).length) {
