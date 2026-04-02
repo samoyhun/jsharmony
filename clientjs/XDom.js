@@ -393,33 +393,48 @@ function parseStyleUnit(value){
   return {val: Number(match[1]), unit: match[2] || ''};
 }
 
+var animationMap = new Map();
+var animationID = 0; //there has to be a better way??
+var animationStopIndex;
+
 XDom.animate = function(target, props, duration, callback){
   if(!props) props = {};
   if(!duration) duration = 0;
   var _el = XDom.resolve(target);
   var aniobj = {};
+  var myAnimationID = animationID++;
   for(var key in props){
     var endStr = props[key];
     if((endStr === null) || (typeof endStr == 'undefined') || (endStr === '')) continue;
     endStr = endStr.toString();
     aniobj[key] = [];
     for(var el of _el){
-        var startRaw = window.getComputedStyle(el)[key];
-        var start = parseStyleUnit(startRaw);
-        var end = parseStyleUnit(endRaw);
-        // TODO: Consider unit mismatch between start and end - error out
-        //    console.warning(...)
-        //    Push null onto array, and set to end size at end
-        // TODO: Add support for "start" and "end"
-        //    animate(tgt, { width: '200px' });
-        //    animate(tgt, { width: 200 }); => animate(tgt, { width: '200' });
-        //    animate(tgt, { width: { from: '100px', to: '200px' } });
+      var startRaw = window.getComputedStyle(el)[key];
+      var start = parseStyleUnit(startRaw);
+      var end = parseStyleUnit(endStr);
+      // TODO: Consider unit mismatch between start and end - error out
+      //    console.warning(...)
+      //    Push null onto array, and set to end size at end
+      animationMap.set(el, myAnimationID);
+      if(start.unit != end.unit){
+        console.warning("Unit mismatch between start and end for animate.");
+        aniobj[key].push({from: null, to:end.val, unit: end.unit});
+      } else {
+      // TODO: Add support for "start" and "end"
+      //    animate(tgt, { width: '200px' });
+      //    animate(tgt, { width: 200 }); => animate(tgt, { width: '200' });
+      //    animate(tgt, { width: { from: '100px', to: '200px' } });
         aniobj[key].push({from: start.val, to: end.val, unit: end.unit});
+      }
     }
   }
   requestAnimationFrame(step);
 
-  // update animationIndex
+  // update animationIndex 
+  // TODO: remove elements from animationIndex as the animation is complete
+  for(var el of _el){
+    animationMap.delete(el);
+  }
 
   var startTime = document.timeline.currentTime;
   var endTime = startTime + duration;
@@ -427,13 +442,18 @@ XDom.animate = function(target, props, duration, callback){
     var inProgress = (curTime < endTime);
     for (var i = 0; i < _el.length; i++){
       var el = _el[i];
-      for(var key in aniobj){
-        var { from, to, unit } = aniobj[key][i];
-        if(inProgress){
-          el.style[key] = (from + (((to - from) * (curTime - startTime)) / duration)).toString() + unit;
-        }
-        else {
-          el.style[key] = to.toString() + unit;
+      var id = animationMap.get(el);
+      if(id === undefined || id < animationStopIndex){ // skip elements with invalid ID
+        continue;
+      } else {
+        for(var key in aniobj){
+          var { from, to, unit } = aniobj[key][i];
+          if(inProgress && (from != null)){
+            el.style[key] = (from + (((to - from) * (curTime - startTime)) / duration)).toString() + unit;
+          }
+          else {
+            el.style[key] = to.toString() + unit;
+          }
         }
       }
     }
@@ -449,11 +469,12 @@ XDom.animate = function(target, props, duration, callback){
 
 XDom.stop = function(){
   // update animationStopIndex
-
+  animationStopIndex = animationID;
   //TODO: create a function to stop animation
   /*
   * IDEAS:
   * stop all ID < current
   * set attri to "stop"
   */
+  //this stops all animations, no matter where it is called?
 };
