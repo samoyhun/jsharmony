@@ -122,6 +122,24 @@ var Selector = function(target, options){
   Object.defineProperty(this, 'children', {
     get: function() { return XDom.getChildren(this); },
   });
+  //core functions
+  //  parent(selector)
+  //  nextSibling
+  //  previousSibling
+  //  first
+  //  last
+  //  filter
+  //  -- 0.5
+  //  emit
+  //  -- 0.5
+  //  insertBefore
+  //  -- 0.5
+  //  offset
+  //  -- 0.5
+  //  selectVisible
+  //  -- 0.5
+  //  animate
+  //  -- 1
   //each => .select().forEach(...)
   //trigger = emit()
   //before => insertBefore
