@@ -117,17 +117,11 @@ var Selector = function(target, options){
     return new Selector(_.map(_this.select(), function(el){ return el && el.parentNode; }));
   };
   _this.remove = XDom.remove.bind(XDom, this);
-  //_this.focus = XDom.focus.bind(XDom, this);
-  //_this.blur = XDom.blur.bind(XDom, this);
-  //_this.children = .children
-  //width = width({ to: 'content' })
-  //innerWidth = width({ to: 'padding' })
-  //outerWidth = width()  or width({ to: 'border' })
-  //outerWidth(true) = width({ to: 'margin' })
-  //height = height({ to: 'content' })
-  //innerHeight = height({ to: 'padding' })
-  //outerHeight = height()  or height({ to: 'border' })
-  //outerHeight(true) = height({ to: 'margin' })
+  _this.focus = XDom.focus.bind(XDom, this);
+  _this.blur = XDom.blur.bind(XDom, this);
+  Object.defineProperty(this, 'children', {
+    get: function() { return XDom.getChildren(this); },
+  });
   //each => .select().forEach(...)
   //trigger = emit()
   //before => insertBefore
@@ -312,6 +306,42 @@ XDom.setData = function(target, prop, val){
   });
 };
 
+XDom.focus = function(target){
+  var _el = XDom.resolve(target);
+  for(var i=0;i<_el.length;i++){
+    var el = _el[i];
+    if(el && el.focus) el.focus();
+  }
+}
+
+XDom.blur = function(target){
+  var _el = XDom.resolve(target);
+  for(var i=0;i<_el.length;i++){
+    var el = _el[i];
+    if(el && el.blur) el.blur();
+  }
+}
+
+XDom.getChildren = function(target){
+  var _el = XDom.resolve(target);
+  var rslt = [];
+  for(var i=0;i<_el.length;i++){
+    var el = _el[i];
+    var startIdx = rslt.length;
+    if(el && el.children && el.children.length){
+      for(var j=0;j< el.children.length;j++){
+        var child = el.children[j];
+        var duplicate = false;
+        for(var k=0;k<startIdx;k++){
+          if(child === rslt[k]){ duplicate = true; break; }
+        }
+        if(!duplicate) rslt.push(el.children[j]);
+      }
+    }
+  }
+  return rslt;
+};
+
 XDom.getStyle = function(target, prop){
   var _el = XDom.resolve(target);
   if(!_el.length) return undefined;
@@ -372,15 +402,35 @@ XDom.style = {
 };
 
 XDom.calc = {
-  width: function(target){
+  width: function(target, params /* { to: 'content' | 'padding' | 'border' | 'margin' } */){
+    var calcTo = (params && params.to) || 'content';
     var _el = XDom.resolve(target);
     if(!_el.length) return undefined;
-    return _el[0].offsetWidth;
+    if(calcTo == 'padding') return _el[0].clientWidth;
+    else if(calcTo == 'border') return _el[0].offsetWidth;
+    else if(calcTo == 'margin'){
+      var elStyles = window.getComputedStyle && window.getComputedStyle(_el[0]);
+      return _el[0].offsetWidth + (parseFloat(elStyles.marginLeft)||0) + (parseFloat(elStyles.marginRight)||0);
+    }
+    else{
+      var elStyles = window.getComputedStyle && window.getComputedStyle(_el[0]);
+      return _el[0].clientWidth - (parseFloat(elStyles.paddingLeft)||0) - (parseFloat(elStyles.paddingRight)||0);
+    }
   },
-  height: function(target){
+  height: function(target, params /* { to: 'content' | 'padding' | 'border' | 'margin' } */){
+    var calcTo = (params && params.to) || 'content';
     var _el = XDom.resolve(target);
     if(!_el.length) return undefined;
-    return _el[0].offsetHeight;
+    if(calcTo == 'padding') return _el[0].clientHeight;
+    else if(calcTo == 'border') return _el[0].offsetHeight;
+    else if(calcTo == 'margin'){
+      var elStyles = window.getComputedStyle && window.getComputedStyle(_el[0]);
+      return _el[0].offsetHeight + (parseFloat(elStyles.marginTop)||0) + (parseFloat(elStyles.marginBottom)||0);
+    }
+    else{
+      var elStyles = window.getComputedStyle && window.getComputedStyle(_el[0]);
+      return _el[0].clientHeight - (parseFloat(elStyles.paddingTop)||0) - (parseFloat(elStyles.paddingBottom)||0);
+    }
   },
 };
 

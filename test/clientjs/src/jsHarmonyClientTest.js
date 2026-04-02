@@ -561,4 +561,57 @@ var mocha = require('mocha');
       document.querySelector('#workspace').innerHTML = '';
     });
   });
+
+  describe('XDom width / height', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div class="outerbox" style="border:3px solid black;">',
+        '    <div class="innerbox" style="border:3px solid orange; margin:20px; padding:40px; display:inline-block;">',
+        '      <div class="contentbox" style="border:1px solid black; width:20px; height: 20px; display:inline-block;"></div>',
+        '    </div>',
+        '</div>',
+      ].join('');
+    });
+
+    it('width / height', function(){
+      var contentBox = XDom('.contentbox');
+      var innerBox = XDom('.innerbox');
+      var outerBox = XDom('.outerbox');
+
+      assert(contentBox.calc.width({ to:'margin' }) == 22, 'contentbox width to margin');
+      assert(contentBox.calc.width({ to:'border' }) == 22, 'contentbox width to border');
+      assert(contentBox.calc.width({ to:'padding' }) == 20, 'contentbox width to padding');
+      assert(contentBox.calc.width({ to:'content' }) == 20, 'contentbox width to content');
+
+      assert(contentBox.calc.height({ to:'margin' }) == 22, 'contentbox height to margin');
+      assert(contentBox.calc.height({ to:'border' }) == 22, 'contentbox height to border');
+      assert(contentBox.calc.height({ to:'padding' }) == 20, 'contentbox height to padding');
+      assert(contentBox.calc.height({ to:'content' }) == 20, 'contentbox height to content');
+
+      assert(innerBox.calc.width({ to:'margin' }) == 148, 'innerBox width to margin');
+      assert(innerBox.calc.width({ to:'border' }) == 108, 'innerBox width to border');
+      assert(innerBox.calc.width({ to:'padding' }) == 102, 'innerBox width to padding');
+      assert(innerBox.calc.width({ to:'content' }) == 22, 'innerBox width to content');
+
+      assert(innerBox.calc.height({ to:'margin' }) == 148, 'innerBox height to margin');
+      assert(innerBox.calc.height({ to:'border' }) == 108, 'innerBox height to border');
+      assert(innerBox.calc.height({ to:'padding' }) == 102, 'innerBox height to padding');
+      assert(innerBox.calc.height({ to:'content' }) == 22, 'innerBox height to content');
+
+      var workspace = document.getElementById('workspace');
+      assert(outerBox.calc.width({ to:'margin' }) == workspace.clientWidth, 'outerBox width to margin');
+      assert(outerBox.calc.width({ to:'border' }) == workspace.clientWidth, 'outerBox width to border');
+      assert(outerBox.calc.width({ to:'padding' }) == workspace.clientWidth - 6, 'outerBox width to padding');
+      assert(outerBox.calc.width({ to:'content' }) == workspace.clientWidth - 6, 'outerBox width to content');
+
+      assert(outerBox.calc.height({ to:'margin' }) == 154, 'outerBox height to margin');
+      assert(outerBox.calc.height({ to:'border' }) == 154, 'outerBox height to border');
+      assert(outerBox.calc.height({ to:'padding' }) == 148, 'outerBox height to padding');
+      assert(outerBox.calc.height({ to:'content' }) == 148, 'outerBox height to content');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
 })();
