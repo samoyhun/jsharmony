@@ -123,23 +123,18 @@ var Selector = function(target, options){
     get: function() { return XDom.getChildren(this); },
   });
   //core functions
-  //  parent(selector)
+  //  parent(selector) parent('div')
   //  nextSibling
   //  previousSibling
   //  first
   //  last
-  //  filter
-  //  -- 0.5
+  //  filter (selector) (function)
+  //  omit (selector) (function)
   //  emit
-  //  -- 0.5
   //  insertBefore
-  //  -- 0.5
-  //  offset
-  //  -- 0.5
-  //  selectVisible
-  //  -- 0.5
-  //  animate
-  //  -- 1
+  //  calc.top, calc.left // calc.top({ from: 'document' })  calc.top({ from: 'parent' })  calc.top({ from: 'offsetparent' })  calc.top({ from: [object] })
+  //  isVisible, .filter(XDom.isVisible), .omit(XDom.isVisible)
+  //  animate 
   //each => .select().forEach(...)
   //trigger = emit()
   //before => insertBefore
@@ -150,7 +145,7 @@ var Selector = function(target, options){
   //offsetParent => 
   //offset => offset()
   //wrap => create element, insertBefore, and then put contents inside
-  //not => css :not
+  //not => .omit
   //first => .select[0]
   //filter => .select.filter
   //slideUp => .animate({ height: '0px' })
