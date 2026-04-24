@@ -157,6 +157,7 @@ AppSrv.prototype = _.extend(AppSrv.prototype, require('./AppSrv.File.js'));
 AppSrv.prototype = _.extend(AppSrv.prototype, require('./AppSrv.Queue.js'));
 AppSrv.prototype = _.extend(AppSrv.prototype, require('./AppSrv.DB.js'));
 AppSrv.prototype = _.extend(AppSrv.prototype, require('./AppSrv.Helper.js'));
+AppSrv.prototype = _.extend(AppSrv.prototype, require('./AppSrv.Image.js'));
 AppSrv.prototype.getSQL = function (model, sqlid, jsh) {
   if(!jsh) jsh = this.jsh;
 

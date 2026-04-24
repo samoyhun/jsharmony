@@ -833,7 +833,69 @@ exports = module.exports = function(jsh){
       if(prev_init_instance_callback) prev_init_instance_callback(instance);
       if(cb) cb();
     };
-    config = _.extend({ height: orig_height }, config);
+    config.setup = function(editor) {
+      // xxxx hs Save file file names? in-memory to not re-insert the same image more than once
+      // var images = {};
+      editor.on('paste', (e) => {
+        const items = (e.clipboardData || e.originalEvent.clipboardData)?.items;
+        if (!items) return;
+      
+        const files = [];
+      
+        for (let item of items) {
+          if (item.type.includes('image')) {
+            e.preventDefault();
+            files.push(item.getAsFile());
+          }
+        }
+      
+        if (!files.length) return;
+      
+        jsh.async.map(
+          files,
+          function (file, callback) {
+            const reader = new FileReader();
+      
+            reader.onload = function (evt) {
+              callback(null, evt.target.result);
+            };
+      
+            reader.onerror = function (err) {
+              callback(err);
+            };
+      
+            reader.readAsDataURL(file);
+          },
+          function (err, base64Images) {
+            if (err) {
+              console.error('Error processing images:', err);
+              return;
+            }
+      
+            console.log('All images ready:', base64Images);
+      
+            jsh.XForm.Put(
+              "/_image/"+config.upload_bindings.upload_model,
+              {},
+              {
+                upload_model: config.upload_bindings.upload_model,
+                upload_model_key: config.upload_bindings.upload_model_key,
+                upload_model_bindings: JSON.stringify(config.upload_bindings.upload_model_bindings),
+                images: JSON.stringify(base64Images),
+              },
+              function (rslt) {
+                if (rslt && rslt.image_paths) {
+                  rslt.image_paths.forEach((url) => {
+                    editor.insertContent('<img src="' + url + '" />');
+                  });
+                }
+              }
+            );
+          }
+        );
+      });
+    }
+    config = _.extend({ height: orig_height, paste_data_images: true, plugins: 'image paste' }, config);
     window.tinymce.init(config);
   };
 

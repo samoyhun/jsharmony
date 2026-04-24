@@ -381,6 +381,13 @@ var jsHarmonyRouter = function (jsh, siteid) {
       jsh.AppSrv.modelsrv.GetModel(req, res, fullmodelid);
     });
   });
+  // /_image/:modelid
+  router.put(/^\/_image\/(.*)/, function (req, res, next) {
+    var fullmodelid = req.params[0];
+    fullmodelid = Helper.trimRight(fullmodelid,'/');
+    if (!jsh.hasModel(req, fullmodelid)) return next();
+    jsh.AppSrv.SaveImage(req, res, fullmodelid);
+  });
   router.get('/_restart', function (req, res, next) {
     if(!('SYSADMIN' in req._roles) && !('DEV' in req._roles)) return next();
     res.end('<html><body>Service will restart in 1 sec...<script type="text/javascript">window.setTimeout(function(){document.write(\'Restart initiated...\');},1000); window.setTimeout(function(){window.location.href="/";},5000);</script></body></html>');
