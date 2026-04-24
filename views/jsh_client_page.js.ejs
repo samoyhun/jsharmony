@@ -576,7 +576,11 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
           //Initialize htmlareas, if applicable
           XPage.traverseModelsAsync(jsh.XModels_root, function (xmodel, done) {
             async.eachSeries(xmodel.fields, function(field, field_cb){
-              if(field.control=='htmlarea') return XExt.CKEditor(xmodel.class+'_'+field.name, (field.controlparams?field.controlparams.htmlarea_config:undefined), field_cb);
+              if(field.control=='htmlarea') {
+                var htmlarea_config = field.controlparams?field.controlparams.htmlarea_config:undefined;
+                if(htmlarea_config && htmlarea_config.type && (htmlarea_config.type == 'tinymce')) return XExt.TinyMCE(xmodel.class+'_'+field.name, htmlarea_config, field_cb);
+                return XExt.CKEditor(xmodel.class+'_'+field.name, htmlarea_config, field_cb);
+              }
               else return field_cb();
             }, done);
           }, function(){

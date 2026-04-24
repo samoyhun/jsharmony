@@ -19,6 +19,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
 var $ = require('./jquery-1.11.2');
 $.fn.$find = function(){ return $.fn.find.apply(this, arguments); };
+var async = require('async');
 var _ = require('lodash');
 
 exports = module.exports = function(jsh){
@@ -786,7 +787,76 @@ exports = module.exports = function(jsh){
     }
   };
 
+  function uploadFile(file, upload_bindings, cb){
+    var fd = new FormData();
+    fd.append('file', file, file.name);
+
+    jsh.xLoader.StartLoading();
+    $.ajax({
+      url: jsh._BASEURL + '_ul/json',
+      data: fd,
+      processData: false,
+      contentType: false,
+      type: 'POST',
+      dataType: 'json',
+      xhrFields: {
+        withCredentials: true
+      },
+      success: function(jdata){
+        jsh.xLoader.StopLoading();
+        if ((jdata instanceof Object) && ('_error' in jdata)) {
+          if (jsh.DefaultErrorHandler(jdata._error.Number, jdata._error.Message)) { /* Do nothing */ }
+          else if ((jdata._error.Number == -9) || (jdata._error.Number == -5)) { jsh.XExt.Alert(jdata._error.Message); }
+          else { jsh.XExt.Alert('Error #' + jdata._error.Number + ': ' + jdata._error.Message); }
+          return;
+        }
+        else if ((jdata instanceof Object) && ('_success' in jdata)) {
+          var ftoken = '_temp/' + jdata.file_token;
+          var post = _.extend({}, upload_bindings.upload_model_bindings);
+          post[upload_bindings.upload_model_file_field] = ftoken;
+          var uploadData = {
+            method: 'put',
+            model: upload_bindings.upload_model,
+            onComplete: null,
+            post: post,
+            query: {}
+          };
+          var rootxmodel = jsh.XModels[jsh.XModels_root];
+          rootxmodel.controller.form.ExecuteTrans([uploadData], function(rslt) {
+            var keys = Object.keys(rslt);
+            var model_rslt = keys.length ? rslt[keys[0]] : null;
+            if (model_rslt && model_rslt[upload_bindings.upload_model_key_field]) {
+              var id = model_rslt[upload_bindings.upload_model_key_field];
+              var src = '/_dl/' + upload_bindings.upload_model + '/' +id +'/' +upload_bindings.upload_model_file_field;
+              if (cb) cb(null, src);
+              return;
+            } else {
+              XExt.Alert('Failed to upload image');
+            }
+          }, function(err) {
+            XExt.Alert(err);
+          });
+        }
+        else {
+          jsh.XExt.Alert('Error Uploading File: "' + file.name + '" data: '+ JSON.stringify(jdata ? jdata : ''));
+        }
+      },
+      error: function (err) {
+        jsh.xLoader.StopLoading();
+        if(err && err.responseJSON){
+          var _error = err.responseJSON._error;
+          if(_error){
+            jsh.XExt.Alert('Error #' + (_error.Number||'') + ': ' + (_error.Message||''));
+            return;
+          }
+        }
+        XExt.Alert('Error uploading file:  "' + file.name + '" data: '+XExt.stringify(err));
+      }
+    });
+  }
+
   XExt.CKEditor = function (id, config, cb) {
+    if (!config) config = {};
     if (!window.CKEDITOR){
       //Dynamically load CKEditor script, and rerun function when finished
       window.CKEDITOR_BASEPATH = jsh._PUBLICURL+'js/ckeditor/';
@@ -804,7 +874,150 @@ exports = module.exports = function(jsh){
     if(!elem.parent().hasClass(id + '_container')){
       elem.wrap('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
     }
-    window.CKEDITOR.replace(id, _.extend({ height: orig_height },config));
+    var editor = window.CKEDITOR.replace(id, _.extend({ height: orig_height }, config));
+    var upload_bindings = config.upload_bindings;
+    var file_browser_config = config.file_browser_config;
+
+    // File / Image Browser
+    if (
+      upload_bindings &&
+      upload_bindings.upload_model &&
+      upload_bindings.upload_model_file_field
+    ) {
+      var upload_model = upload_bindings.upload_model;
+      var upload_model_file_field = upload_bindings.upload_model_file_field;
+
+      // Drag and Drop
+      editor.on('contentDom', function () {
+        var editable = editor.editable();
+        var doc = editable.$.ownerDocument;
+      
+        doc.addEventListener('dragenter', function (e) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          editable.addClass('drag-active');
+        });
+      
+        doc.addEventListener('dragover', function (e) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          editable.addClass('drag-active');
+        });
+      
+        doc.addEventListener('dragleave', function (e) {
+          editable.removeClass('drag-active');
+        });
+      
+        doc.addEventListener('drop', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+      
+          editable.removeClass('drag-active');
+
+          var dt = e.dataTransfer;
+          if (!dt) return;
+
+          var url = dt.getData('text/uri-list') || dt.getData('text/plain');
+          if (url && (url.indexOf('http') === 0)) {
+            editor.focus();
+            editor.insertHtml('<img src="' + url + '" />');
+            return;
+          }
+
+          if (dt.files && dt.files.length) {
+            // Handle files (drag from desktop)
+            async.eachSeries(dt.files, function (file, next) {
+              if (!file.type || !(file.type.indexOf('image/') === 0)) {
+                return next();
+              }
+            
+              uploadFile(file, upload_bindings, function(err, src) {
+                if(src) {
+                  editor.insertHtml('<img src="' + src + '" />');
+                }
+                return next(err);
+              });
+            
+            }, function (err) {
+              if (jsh.xLoader.IsLoading) jsh.xLoader.StopLoading();
+              if (err) {
+                console.error('Upload sequence failed:', err);
+              }
+            });
+            return;
+          }
+        });
+      });
+
+      if (
+        file_browser_config &&
+        file_browser_config.image_popup_field &&
+        file_browser_config.image_popup_target &&
+        file_browser_config.file_popup_field &&
+        file_browser_config.file_popup_target
+      ) {
+        var image_popup_field = file_browser_config.image_popup_field;
+        var file_popup_field = file_browser_config.file_popup_field;
+        var image_popup_target = file_browser_config.image_popup_target;
+        var file_popup_target = file_browser_config.file_popup_target;
+
+        // optional
+        var browse_btn_label = file_browser_config.browse_btn_label;
+
+        if (!window._ck_dialog_override_applied) {
+          window._ck_dialog_override_applied = true;
+
+          window.CKEDITOR.on('dialogDefinition', function (ev) {
+            var dialogName = ev.data.name;
+            var dialogDefinition = ev.data.definition;
+            var popupTarget = null;
+            var popupField = null;
+            if (dialogName == 'image') {
+              popupTarget = image_popup_target;
+              popupField = image_popup_field;
+            } else if (dialogName == 'link') {
+              popupTarget = file_popup_target;
+              popupField = file_popup_field;
+            }
+
+            var infoTab = dialogDefinition.getContents('info');
+            if (infoTab) {
+              var browseBtn = infoTab.get('browse');
+              if (browseBtn) {
+                browseBtn.hidden = false;
+                browseBtn.label = browse_btn_label || 'Browse';
+                browseBtn.onClick = function () {
+                  $('.cke_dialog').hide();
+                  $('.cke_dialog_background_cover').hide();
+                  jsh.XExt.popupShow(popupTarget, popupField, '', undefined, undefined, {
+                    OnPopupClosed: function(rslt) {
+                      $('.cke_dialog').show();
+                      $('.cke_dialog_background_cover').show();
+                      var doc_id = rslt && rslt.resultrow && rslt.resultrow.doc_id;
+                      if (!doc_id) return;
+                      var url = '/_dl/' + upload_model + '/' + doc_id + '/' + upload_model_file_field;
+                      var dialog = window.CKEDITOR.dialog.getCurrent();
+                      dialog.selectPage('info');
+                      var field = null;
+
+                      if (dialogName === 'image') {
+                        field = dialog.getContentElement('info', 'txtUrl');
+                        if (field) field.setValue(url);
+                    
+                      } else if (dialogName === 'link') {
+                        field = dialog.getContentElement('info', 'url', 'url');
+                        if (field) field.setValue(url);
+                      }
+                    },
+                  });
+                };
+              }
+            }
+          });
+        }
+      }
+    }
+
     if(cb) cb();
     return;
   };
@@ -833,7 +1046,41 @@ exports = module.exports = function(jsh){
       if(prev_init_instance_callback) prev_init_instance_callback(instance);
       if(cb) cb();
     };
-    config = _.extend({ height: orig_height }, config);
+    config.setup = function (editor) {
+
+      editor.on('dragover', function (e) {
+        e.preventDefault();
+      });
+    
+      editor.on('drop', function (e) {
+        e.preventDefault();
+    
+        var dt = e.dataTransfer;
+        if (!dt || !dt.files || !dt.files.length) return;
+    
+        async.eachSeries(dt.files, function (file, next) {
+          if (!file.type || !(file.type.indexOf('image/') === 0)) {
+            return next();
+          }
+        
+          uploadFile(file, config.upload_bindings, function(err, src) {
+            if(src) {
+              editor.insertContent('<img src="' + src + '" />');
+            }
+            return next(err);
+          });
+        
+        }, function (err) {
+          if (jsh.xLoader.IsLoading) jsh.xLoader.StopLoading();
+          if (err) {
+            console.error('Upload sequence failed:', err);
+          }
+        });
+        return;
+      });
+    
+    };
+    config = _.extend({ height: orig_height, paste_data_images: true, plugins: 'image paste' }, config);
     window.tinymce.init(config);
   };
 
