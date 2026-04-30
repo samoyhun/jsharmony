@@ -29,32 +29,27 @@ exports.SaveImage = function (req, res, fullmodelid) {
   
   var appsrv = this;
   var jsh = appsrv.jsh;
-  var dbtypes = appsrv.DB.types;
   var XValidate = jsh.XValidate;
   
   // xxxx hs Validate model access
   if (!jsh.hasModel(req, fullmodelid)) throw new Error('Error: Model ' + fullmodelid + ' not found in collection.');
   
   var model = this.jsh.getModel(req, fullmodelid);
-  console.log('model: ', model);
 
   var Q = req.query || {};
   var P = req.body || {};
 
-  
-  console.log('Q: ', Q);
-  console.log('P: ', P);
-
   //Validate parameters
   if (!appsrv.ParamCheck('Q', Q, [])) { Helper.GenError(req, res, -4, 'Invalid Parameters'); return; }
-  if (!appsrv.ParamCheck('P', P, ['&upload_model','&upload_model_key','&upload_model_bindings','&images'])) { Helper.GenError(req, res, -4, 'Invalid Parameters'); return; }
+  if (!appsrv.ParamCheck('P', P, ['&upload_model','&upload_model_key_field','&upload_model_file_field','&upload_model_bindings','&images'])) { Helper.GenError(req, res, -4, 'Invalid Parameters'); return; }
 
   //XValidate
   var validate = new XValidate();
-  verrors = {};
+  var verrors = {};
   
-  validate.AddValidator('_obj.upload_model', 'Upload Model', 'B', [XValidate._v_Required()]);
-  validate.AddValidator('_obj.upload_model_key', 'Upload Model Key', 'B', [XValidate._v_Required()]);
+  validate.AddValidator('_obj.upload_model', 'Upload Model', 'B', [XValidate._v_Required(), XValidate._v_Required(256)]);
+  validate.AddValidator('_obj.upload_model_key_field', 'Upload Model Key', 'B', [XValidate._v_Required(), XValidate._v_Required(256)]);
+  validate.AddValidator('_obj.upload_model_file_field', 'Upload Model File Field', 'B', [XValidate._v_Required(), XValidate._v_Required(256)]);
   validate.AddValidator('_obj.upload_model_bindings', 'Upload Model Bindings', 'B', [XValidate._v_Required()]);
   validate.AddValidator('_obj.images', 'Images', 'B', [XValidate._v_Required()]);
 
@@ -62,13 +57,25 @@ exports.SaveImage = function (req, res, fullmodelid) {
   if (!_.isEmpty(verrors)) { Helper.GenError(req, res, -2, verrors[''].join('\n')); return; }
   
   var upload_model = P.upload_model;
-  var upload_model_key = P.upload_model_key;
+  var upload_model_key_field = P.upload_model_key_field;
+  var upload_model_file_field = P.upload_model_file_field;
   var upload_model_bindings = null;
   var images = null;
   var db = jsh.getModelDB(req, upload_model);
 
+  var data_folder = null;
+  if (!model.fields.length) {
+    return Helper.GenError(req, res, -9, 'Error: Model ' + fullmodelid + ' does not contain any fields.');
+  }
+  var file_field = _.find(model.fields, function(field) { return field.name == upload_model_file_field; });
+  if (!file_field || !(file_field.type == 'file') || (!file_field.controlparams) || (!file_field.controlparams.data_folder)) {
+    return Helper.GenError(req, res, -9, 'Error: Model ' + fullmodelid + ' does not contain the target file field.');
+  }
+  data_folder = file_field.controlparams.data_folder;
+
   try{
     images = JSON.parse(P.images);
+    upload_model_bindings = JSON.parse(P.upload_model_bindings);
   }
   catch(ex){
     Helper.GenError(req, res, -4, 'Invalid Parameters');
@@ -76,19 +83,13 @@ exports.SaveImage = function (req, res, fullmodelid) {
   }
   if (!images.length) Helper.GenError(req, res, -4, 'Invalid Parameters');
 
-  try{
-    upload_model_bindings = JSON.parse(P.upload_model_bindings);
-  }
-  catch(ex){
-    Helper.GenError(req, res, -4, 'Invalid Parameters');
-    return;
-  }
-
-  console.log('upload_model_bindings: ', upload_model_bindings);
-
   var image_paths = [];
 
-  function buildSql(upload_model_table, upload_model_key, upload_model_bindings) {
+  // xxxx hs How to validate values before building sql
+  // 1) Check if model exists
+  // 2) Check if key and file field are in the fields list
+  // 3) DB Escape each param
+  function buildSql(upload_model_table, upload_model_key_field, upload_model_bindings) {
     var field_names = [];
     var field_values = [];
     for(let name in upload_model_bindings) {
@@ -101,9 +102,13 @@ exports.SaveImage = function (req, res, fullmodelid) {
       field_values.push(value);
     }
 
+    var escaped_table = db.dbconfig._driver.escape(upload_model_table);
+
+    // xxxx hs how to do audit fields like upload timestamp
+    // xxxx hs how to do ext value since it is dynamic
     return [
-      '$getInsertKey('+upload_model_table+', '+upload_model_key+',',
-      '  insert into '+upload_model_table+'('+field_names.map(function(name) { return db.dbconfig._driver.escape(name); }).join(',')+')',
+      '$getInsertKey('+escaped_table+', '+db.dbconfig._driver.escape(upload_model_key_field)+',',
+      '  insert into '+escaped_table+'('+field_names.map(function(name) { return db.dbconfig._driver.escape(name); }).join(',')+')',
       '  values('+field_values.map(function(name) { return "'"+db.dbconfig._driver.escape(name)+"'"; }).join(',')+'))',
     ].join('');
   }
@@ -111,39 +116,26 @@ exports.SaveImage = function (req, res, fullmodelid) {
   async.eachOfSeries(images, function(image, index, image_cb) {
     var image_data = exports.parsePasteImages(image);
     var media_data = Buffer.from(image_data.data||'', 'base64');
-    var id = null;
     
-    async.waterfall([
-      function(db_cb) {
-        // xxxx hs insert new rows for pasted content
-        var sql = buildSql(model.table, upload_model_key, upload_model_bindings);
-        jsh.AppSrv.ExecScalar(req._DBContext, sql, [], {}, function (err, rslt, stats) {
-          if (err != null) { err.sql = sql; appsrv.AppDBError(req, res, err, stats); return; }
-          if(!rslt || !rslt[0]){ return Helper.GenError(req, res, -99999, 'Error saving image'); }
-          id = rslt[0];
-          return db_cb();
-        }, undefined, db);
-      },
+    // xxxx hs ensure error called correctly
+    var sql = buildSql(model.table, upload_model_key_field, upload_model_bindings);
+    jsh.AppSrv.ExecScalar(req._DBContext, sql, [], {}, function (err, rslt, stats) {
+      if (err != null) { err.sql = sql; appsrv.AppDBError(req, res, err, stats); return; }
+      if(!rslt || !rslt[0]){ return Helper.GenError(req, res, -99999, 'Error saving image'); }
+      var id = rslt[0];
 
-      function(fs_cb) {
-        // xxxx hs Write file to disk
-        var temp_folder = path.join(jsh.Config.datadir, 'temp');
-        var tmp_file_path = path.join(temp_folder, id+'.'+image_data.ext);
-        fs.writeFile(tmp_file_path, media_data, function() {
-          console.log('file writted to: ', tmp_file_path);
-          image_paths.push(tmp_file_path);
-          return fs_cb();
-        });
-      },
-    ], function(err) {
-      if (err) return image_cb(err);
-      return image_cb();
-    });
+      var fpath = path.join(jsh.Config.datadir, data_folder, upload_model_file_field+'_'+id+'.'+image_data.ext);
+      var url = '/_dl/'+model.id+'/'+id+'/'+upload_model_file_field;
+      fs.writeFile(fpath, media_data, function(err) {
+        if(err){ return Helper.GenError(req, res, -99999, 'Error saving image'); }
+        image_paths.push(url);
+        return image_cb();
+      });
+    }, undefined, db);
 
   }, function(err){
     if (err) return Helper.GenError(req, res, -99999, 'An unexpected error has occurred');
     res.type('json');
-    // Sample image path: /_dl/<model_path>/<key_value>/<image_field_name>?view=1&_=1776980867633&thumb=x100
     res.end(JSON.stringify({ '_success': 1, '_stats': {}, 'image_paths': image_paths }));
   });
 
@@ -166,7 +158,6 @@ exports.parsePasteImages = function (content){
   var base64data = content.substr(base64idx+8);
   var imageTypeIdx = imageType.indexOf('image/');
   var ext = null;
-  console.log('imageTypeIdx: ', imageTypeIdx);
   if (imageTypeIdx !== undefined) ext = imageType.substr(imageTypeIdx + 6);
   return {
     url: origUrl,

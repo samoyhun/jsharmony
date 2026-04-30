@@ -804,6 +804,72 @@ exports = module.exports = function(jsh){
     if(!elem.parent().hasClass(id + '_container')){
       elem.wrap('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
     }
+
+    // Override image / file browsers if file browser config provided
+    if (
+        config &&
+        config.upload_bindings &&
+        config.upload_bindings.upload_model &&
+        config.upload_bindings.upload_model_file_field &&
+        config.file_browser_config &&
+        config.file_browser_config.image_popup_field &&
+        config.file_browser_config.image_popup_target &&
+        config.file_browser_config.file_popup_field &&
+        config.file_browser_config.file_popup_target
+      ) {
+      var upload_model = config.upload_bindings.upload_model;
+      var upload_model_file_field = config.upload_bindings.upload_model_file_field;
+      var image_popup_field = config.file_browser_config.image_popup_field;
+      var file_popup_field = config.file_browser_config.file_popup_field;
+      var image_popup_target = config.file_browser_config.image_popup_target;
+      var file_popup_target = config.file_browser_config.file_popup_target;
+
+      // optional
+      var browse_btn_label = config.file_browser_config.browse_btn_label;
+
+      window.CKEDITOR.on('dialogDefinition', function (ev) {
+        var dialogName = ev.data.name;
+        var dialogDefinition = ev.data.definition;
+        
+        var inputId = null;
+        var popupTarget = null;
+        var popupField = null;
+        if (dialogName == 'link') {
+          inputId = 'url';
+          popupTarget = file_popup_target;
+          popupField = file_popup_field;
+        } else if (dialogName == 'image') {
+          inputId = 'txtUrl';
+          popupTarget = image_popup_target;
+          popupField = image_popup_field;
+        }
+
+        var infoTab = dialogDefinition.getContents('info');
+        if (infoTab) {
+          var browseBtn = infoTab.get('browse');
+          if (browseBtn) {
+            browseBtn.hidden = false;
+            browseBtn.label = browse_btn_label || 'Browse';
+            browseBtn.onClick = function () {
+              $('.cke_dialog').hide();
+              $('.cke_dialog_background_cover').hide();
+              jsh.XExt.popupShow(popupTarget, popupField, '', undefined, undefined, {
+                OnPopupClosed: function(rslt) {
+                  $('.cke_dialog').show();
+                  $('.cke_dialog_background_cover').show();
+                  var doc_id = rslt && rslt.resultrow && rslt.resultrow.doc_id;
+                  if (doc_id) {
+                    var dialog = CKEDITOR.dialog.getCurrent();
+                    dialog.setValueOf('info', inputId, '/_dl/'+upload_model+'/'+doc_id+'/'+upload_model_file_field);
+                  }
+                },
+              });
+            };
+          }
+        }
+      });
+    }
+
     window.CKEDITOR.replace(id, _.extend({ height: orig_height },config));
     if(cb) cb();
     return;
