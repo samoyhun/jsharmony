@@ -413,7 +413,10 @@ exports = module.exports = function(jsh){
   };
 
   XExt.endsWith = function (str, suffix) {
-    return (str||'').toString().match(suffix + '$') == suffix;
+    str = (str || '').toString();
+    suffix = (suffix || '').toString();
+    var idx = str.lastIndexOf(suffix);
+    return (idx >= 0) && (idx == (str.length - suffix.length));
   };
   XExt.beginsWith = function (str, prefix) {
     return (str||'').toString().indexOf(prefix) === 0;
