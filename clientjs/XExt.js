@@ -787,6 +787,7 @@ exports = module.exports = function(jsh){
   };
 
   XExt.CKEditor = function (id, config, cb) {
+    if (!config) config = {};
     if (!window.CKEDITOR){
       //Dynamically load CKEditor script, and rerun function when finished
       window.CKEDITOR_BASEPATH = jsh._PUBLICURL+'js/ckeditor/';
@@ -805,72 +806,161 @@ exports = module.exports = function(jsh){
       elem.wrap('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
     }
 
-    // Override image / file browsers if file browser config provided
+    var upload_bindings = config.upload_bindings;
+    var file_browser_config = config.file_browser_config;
+
+    // File / Image Browser
     if (
-        config &&
-        config.upload_bindings &&
-        config.upload_bindings.upload_model &&
-        config.upload_bindings.upload_model_file_field &&
-        config.file_browser_config &&
-        config.file_browser_config.image_popup_field &&
-        config.file_browser_config.image_popup_target &&
-        config.file_browser_config.file_popup_field &&
-        config.file_browser_config.file_popup_target
+        upload_bindings &&
+        upload_bindings.upload_model &&
+        upload_bindings.upload_model_file_field &&
+        file_browser_config &&
+        file_browser_config.image_popup_field &&
+        file_browser_config.image_popup_target &&
+        file_browser_config.file_popup_field &&
+        file_browser_config.file_popup_target
       ) {
-      var upload_model = config.upload_bindings.upload_model;
-      var upload_model_file_field = config.upload_bindings.upload_model_file_field;
-      var image_popup_field = config.file_browser_config.image_popup_field;
-      var file_popup_field = config.file_browser_config.file_popup_field;
-      var image_popup_target = config.file_browser_config.image_popup_target;
-      var file_popup_target = config.file_browser_config.file_popup_target;
+      var upload_model = upload_bindings.upload_model;
+      var upload_model_file_field = upload_bindings.upload_model_file_field;
+      var image_popup_field = file_browser_config.image_popup_field;
+      var file_popup_field = file_browser_config.file_popup_field;
+      var image_popup_target = file_browser_config.image_popup_target;
+      var file_popup_target = file_browser_config.file_popup_target;
 
       // optional
-      var browse_btn_label = config.file_browser_config.browse_btn_label;
+      var browse_btn_label = file_browser_config.browse_btn_label;
 
-      window.CKEDITOR.on('dialogDefinition', function (ev) {
-        var dialogName = ev.data.name;
-        var dialogDefinition = ev.data.definition;
-        
-        var inputId = null;
-        var popupTarget = null;
-        var popupField = null;
-        if (dialogName == 'link') {
-          inputId = 'url';
-          popupTarget = file_popup_target;
-          popupField = file_popup_field;
-        } else if (dialogName == 'image') {
-          inputId = 'txtUrl';
-          popupTarget = image_popup_target;
-          popupField = image_popup_field;
-        }
+      if (!window._ck_dialog_override_applied) {
+        window._ck_dialog_override_applied = true;
 
-        var infoTab = dialogDefinition.getContents('info');
-        if (infoTab) {
-          var browseBtn = infoTab.get('browse');
-          if (browseBtn) {
-            browseBtn.hidden = false;
-            browseBtn.label = browse_btn_label || 'Browse';
-            browseBtn.onClick = function () {
-              $('.cke_dialog').hide();
-              $('.cke_dialog_background_cover').hide();
-              jsh.XExt.popupShow(popupTarget, popupField, '', undefined, undefined, {
-                OnPopupClosed: function(rslt) {
-                  $('.cke_dialog').show();
-                  $('.cke_dialog_background_cover').show();
-                  var doc_id = rslt && rslt.resultrow && rslt.resultrow.doc_id;
-                  if (doc_id) {
-                    var dialog = CKEDITOR.dialog.getCurrent();
-                    dialog.setValueOf('info', inputId, '/_dl/'+upload_model+'/'+doc_id+'/'+upload_model_file_field);
-                  }
-                },
-              });
-            };
+        window.CKEDITOR.on('dialogDefinition', function (ev) {
+          var dialogName = ev.data.name;
+          var dialogDefinition = ev.data.definition;
+          var inputId = null;
+          var popupTarget = null;
+          var popupField = null;
+          if (dialogName == 'link') {
+            inputId = 'url';
+            popupTarget = file_popup_target;
+            popupField = file_popup_field;
+          } else if (dialogName == 'image') {
+            inputId = 'txtUrl';
+            popupTarget = image_popup_target;
+            popupField = image_popup_field;
           }
-        }
+
+          var infoTab = dialogDefinition.getContents('info');
+          if (infoTab) {
+            var browseBtn = infoTab.get('browse');
+            if (browseBtn) {
+              browseBtn.hidden = false;
+              browseBtn.label = browse_btn_label || 'Browse';
+              browseBtn.onClick = function () {
+                $('.cke_dialog').hide();
+                $('.cke_dialog_background_cover').hide();
+                jsh.XExt.popupShow(popupTarget, popupField, '', undefined, undefined, {
+                  OnPopupClosed: function(rslt) {
+                    $('.cke_dialog').show();
+                    $('.cke_dialog_background_cover').show();
+                    var doc_id = rslt && rslt.resultrow && rslt.resultrow.doc_id;
+                    if (!doc_id) return;
+                    var url = '/_dl/' + upload_model + '/' + doc_id + '/' + upload_model_file_field;
+                    var dialog = window.CKEDITOR.dialog.getCurrent();
+                    dialog.selectPage('info');
+
+                    if (dialogName === 'image') {
+                      var field = dialog.getContentElement('info', 'txtUrl');
+                      if (field) field.setValue(url);
+                  
+                    } else if (dialogName === 'link') {
+                      var field = dialog.getContentElement('info', 'url', 'url');
+                      if (field) field.setValue(url);
+                    }
+                  },
+                });
+              };
+            }
+          }
+        });
+      }
+    }
+
+    var editor = window.CKEDITOR.replace(id, _.extend({ height: orig_height }, config));
+
+    // Drag and Drop
+    if (
+      upload_bindings &&
+      upload_bindings.upload_model_key_field &&
+      upload_bindings.upload_model_file_field &&
+      upload_bindings.upload_model
+    ) {
+      editor.on('contentDom', function () {
+        var editable = editor.editable();
+
+        editable.on('dragenter', function (evt) {
+          evt.data.$.preventDefault();
+          editable.addClass('drag-active');
+        });
+
+        editable.on('dragover', function (evt) {
+          evt.data.$.preventDefault();
+          editable.addClass('drag-active');
+        });
+        
+        editable.on('dragleave', function () {
+          editable.removeClass('drag-active');
+        });
+    
+        editable.on('drop', function (evt) {
+          evt.cancel();
+          editor.container.removeClass('drag-active');
+        
+          var domEvent = evt.data.$;
+          if (domEvent) {
+            domEvent.preventDefault();
+            domEvent.stopPropagation();
+          }
+
+          var dt = domEvent.dataTransfer;
+          if (!dt) return;
+          
+          // Handle dragged image URLs (from browser)
+          var url = dt.getData('text/uri-list') || dt.getData('text/plain');
+          if (url && url.startsWith('http')) {
+            evt.cancel();
+            editor.insertHtml('<img src="' + url + '" />');
+          } else if (dt.files && dt.files.length) {
+            // Handle files (drag from desktop)
+            evt.cancel();
+
+            Array.from(dt.files).forEach(function (file) {
+              if (!file.type || !file.type.startsWith('image/')) return;
+
+              var jsproxyid = 'htmlareaupload';
+              
+              // Proxy oncomplete hook
+              jsh.jsproxy_hooks[jsproxyid] = function(obj, data) {
+                if (data.file_token) {
+                  var src = '/_dl/_temp/'+data.file_token;
+                  editor.insertHtml('<img src="' + src + '" />');
+                }
+              }
+
+              // Initiate file proxy upload
+              var dt2 = new DataTransfer();
+              dt2.items.add(file);
+              var form = jsh.$root('.xfileuploader_form')[0];
+              var input = jsh.$root('.xfileuploader_file')[0];
+              form.action = '/_ul/?jsproxyid='+jsproxyid;
+              input.files = dt2.files;
+              jsh.$root('.xfileuploader_form').submit();
+            });
+            return;
+          }
+        });
       });
     }
 
-    window.CKEDITOR.replace(id, _.extend({ height: orig_height },config));
     if(cb) cb();
     return;
   };
