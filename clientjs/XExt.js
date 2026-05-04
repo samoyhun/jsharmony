@@ -19,6 +19,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
 var $ = require('./jquery-1.11.2');
 $.fn.$find = function(){ return $.fn.find.apply(this, arguments); };
+var async = require('async');
 var _ = require('lodash');
 
 exports = module.exports = function(jsh){
@@ -808,156 +809,195 @@ exports = module.exports = function(jsh){
 
     var upload_bindings = config.upload_bindings;
     var file_browser_config = config.file_browser_config;
+    var editor = null;
 
     // File / Image Browser
     if (
-        upload_bindings &&
-        upload_bindings.upload_model &&
-        upload_bindings.upload_model_file_field &&
+      upload_bindings &&
+      upload_bindings.upload_model &&
+      upload_bindings.upload_model_file_field
+    ) {
+      var upload_model = upload_bindings.upload_model;
+      var upload_model_file_field = upload_bindings.upload_model_file_field;
+
+      editor = window.CKEDITOR.replace(id, _.extend({ height: orig_height }, config));
+
+      // Drag and Drop
+      editor.on('contentDom', function () {
+        var editable = editor.editable();
+        var doc = editable.$.ownerDocument;
+      
+        doc.addEventListener('dragenter', function (e) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          editable.addClass('drag-active');
+        });
+      
+        doc.addEventListener('dragover', function (e) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          editable.addClass('drag-active');
+        });
+      
+        doc.addEventListener('dragleave', function (e) {
+          editable.removeClass('drag-active');
+        });
+      
+        doc.addEventListener('drop', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+      
+          editable.removeClass('drag-active');
+
+          var dt = e.dataTransfer;
+          if (!dt) return;
+
+          var url = dt.getData('text/uri-list') || dt.getData('text/plain');
+          if (url && (url.indexOf('http') === 0)) {
+            editor.focus();
+            editor.insertHtml('<img src="' + url + '" />');
+            return;
+          }
+
+          if (dt.files && dt.files.length) {
+            // Handle files (drag from desktop)
+            async.eachSeries(dt.files, function (file, next) {
+              if (!file.type || !(file.type.indexOf('image/') === 0)) {
+                return next();
+              }
+            
+              uploadFile(file, function(err, ftoken) {
+                if(ftoken) {
+                  var src = '/_dl/'+ftoken;
+                  editor.insertHtml('<img src="' + src + '" />');
+                }
+                return next(err);
+              });
+            
+            }, function (err) {
+              if (jsh.xLoader.IsLoading) jsh.xLoader.StopLoading();
+              if (err) {
+                console.error('Upload sequence failed:', err);
+              }
+            });
+            return;
+          }
+        });
+      });
+
+      if (
         file_browser_config &&
         file_browser_config.image_popup_field &&
         file_browser_config.image_popup_target &&
         file_browser_config.file_popup_field &&
         file_browser_config.file_popup_target
       ) {
-      var upload_model = upload_bindings.upload_model;
-      var upload_model_file_field = upload_bindings.upload_model_file_field;
-      var image_popup_field = file_browser_config.image_popup_field;
-      var file_popup_field = file_browser_config.file_popup_field;
-      var image_popup_target = file_browser_config.image_popup_target;
-      var file_popup_target = file_browser_config.file_popup_target;
+        var image_popup_field = file_browser_config.image_popup_field;
+        var file_popup_field = file_browser_config.file_popup_field;
+        var image_popup_target = file_browser_config.image_popup_target;
+        var file_popup_target = file_browser_config.file_popup_target;
 
-      // optional
-      var browse_btn_label = file_browser_config.browse_btn_label;
+        // optional
+        var browse_btn_label = file_browser_config.browse_btn_label;
 
-      if (!window._ck_dialog_override_applied) {
-        window._ck_dialog_override_applied = true;
+        if (!window._ck_dialog_override_applied) {
+          window._ck_dialog_override_applied = true;
 
-        window.CKEDITOR.on('dialogDefinition', function (ev) {
-          var dialogName = ev.data.name;
-          var dialogDefinition = ev.data.definition;
-          var inputId = null;
-          var popupTarget = null;
-          var popupField = null;
-          if (dialogName == 'link') {
-            inputId = 'url';
-            popupTarget = file_popup_target;
-            popupField = file_popup_field;
-          } else if (dialogName == 'image') {
-            inputId = 'txtUrl';
-            popupTarget = image_popup_target;
-            popupField = image_popup_field;
-          }
-
-          var infoTab = dialogDefinition.getContents('info');
-          if (infoTab) {
-            var browseBtn = infoTab.get('browse');
-            if (browseBtn) {
-              browseBtn.hidden = false;
-              browseBtn.label = browse_btn_label || 'Browse';
-              browseBtn.onClick = function () {
-                $('.cke_dialog').hide();
-                $('.cke_dialog_background_cover').hide();
-                jsh.XExt.popupShow(popupTarget, popupField, '', undefined, undefined, {
-                  OnPopupClosed: function(rslt) {
-                    $('.cke_dialog').show();
-                    $('.cke_dialog_background_cover').show();
-                    var doc_id = rslt && rslt.resultrow && rslt.resultrow.doc_id;
-                    if (!doc_id) return;
-                    var url = '/_dl/' + upload_model + '/' + doc_id + '/' + upload_model_file_field;
-                    var dialog = window.CKEDITOR.dialog.getCurrent();
-                    dialog.selectPage('info');
-
-                    if (dialogName === 'image') {
-                      var field = dialog.getContentElement('info', 'txtUrl');
-                      if (field) field.setValue(url);
-                  
-                    } else if (dialogName === 'link') {
-                      var field = dialog.getContentElement('info', 'url', 'url');
-                      if (field) field.setValue(url);
-                    }
-                  },
-                });
-              };
+          window.CKEDITOR.on('dialogDefinition', function (ev) {
+            var dialogName = ev.data.name;
+            var dialogDefinition = ev.data.definition;
+            var popupTarget = null;
+            var popupField = null;
+            if (dialogName == 'image') {
+              popupTarget = image_popup_target;
+              popupField = image_popup_field;
+            } else if (dialogName == 'link') {
+              popupTarget = file_popup_target;
+              popupField = file_popup_field;
             }
-          }
-        });
+
+            var infoTab = dialogDefinition.getContents('info');
+            if (infoTab) {
+              var browseBtn = infoTab.get('browse');
+              if (browseBtn) {
+                browseBtn.hidden = false;
+                browseBtn.label = browse_btn_label || 'Browse';
+                browseBtn.onClick = function () {
+                  $('.cke_dialog').hide();
+                  $('.cke_dialog_background_cover').hide();
+                  jsh.XExt.popupShow(popupTarget, popupField, '', undefined, undefined, {
+                    OnPopupClosed: function(rslt) {
+                      $('.cke_dialog').show();
+                      $('.cke_dialog_background_cover').show();
+                      var doc_id = rslt && rslt.resultrow && rslt.resultrow.doc_id;
+                      if (!doc_id) return;
+                      var url = '/_dl/' + upload_model + '/' + doc_id + '/' + upload_model_file_field;
+                      var dialog = window.CKEDITOR.dialog.getCurrent();
+                      dialog.selectPage('info');
+                      var field = null;
+
+                      if (dialogName === 'image') {
+                        field = dialog.getContentElement('info', 'txtUrl');
+                        if (field) field.setValue(url);
+                    
+                      } else if (dialogName === 'link') {
+                        field = dialog.getContentElement('info', 'url', 'url');
+                        if (field) field.setValue(url);
+                      }
+                    },
+                  });
+                };
+              }
+            }
+          });
+        }
       }
     }
 
-    var editor = window.CKEDITOR.replace(id, _.extend({ height: orig_height }, config));
+    if (!editor) window.CKEDITOR.replace(id, _.extend({ height: orig_height }, config));
 
-    // Drag and Drop
-    if (
-      upload_bindings &&
-      upload_bindings.upload_model_key_field &&
-      upload_bindings.upload_model_file_field &&
-      upload_bindings.upload_model
-    ) {
-      editor.on('contentDom', function () {
-        var editable = editor.editable();
-
-        editable.on('dragenter', function (evt) {
-          evt.data.$.preventDefault();
-          editable.addClass('drag-active');
-        });
-
-        editable.on('dragover', function (evt) {
-          evt.data.$.preventDefault();
-          editable.addClass('drag-active');
-        });
-        
-        editable.on('dragleave', function () {
-          editable.removeClass('drag-active');
-        });
-    
-        editable.on('drop', function (evt) {
-          evt.cancel();
-          editor.container.removeClass('drag-active');
-        
-          var domEvent = evt.data.$;
-          if (domEvent) {
-            domEvent.preventDefault();
-            domEvent.stopPropagation();
-          }
-
-          var dt = domEvent.dataTransfer;
-          if (!dt) return;
-          
-          // Handle dragged image URLs (from browser)
-          var url = dt.getData('text/uri-list') || dt.getData('text/plain');
-          if (url && url.startsWith('http')) {
-            evt.cancel();
-            editor.insertHtml('<img src="' + url + '" />');
-          } else if (dt.files && dt.files.length) {
-            // Handle files (drag from desktop)
-            evt.cancel();
-
-            Array.from(dt.files).forEach(function (file) {
-              if (!file.type || !file.type.startsWith('image/')) return;
-
-              var jsproxyid = 'htmlareaupload';
-              
-              // Proxy oncomplete hook
-              jsh.jsproxy_hooks[jsproxyid] = function(obj, data) {
-                if (data.file_token) {
-                  var src = '/_dl/_temp/'+data.file_token;
-                  editor.insertHtml('<img src="' + src + '" />');
-                }
-              }
-
-              // Initiate file proxy upload
-              var dt2 = new DataTransfer();
-              dt2.items.add(file);
-              var form = jsh.$root('.xfileuploader_form')[0];
-              var input = jsh.$root('.xfileuploader_file')[0];
-              form.action = '/_ul/?jsproxyid='+jsproxyid;
-              input.files = dt2.files;
-              jsh.$root('.xfileuploader_form').submit();
-            });
+    function uploadFile(file, cb){
+      var fd = new FormData();
+      fd.append('file', file, file.name);
+  
+      jsh.xLoader.StartLoading();
+      $.ajax({
+        url: jsh._BASEURL + '_ul/json',
+        data: fd,
+        processData: false,
+        contentType: false,
+        type: 'POST',
+        dataType: 'json',
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function(jdata){
+          jsh.xLoader.StopLoading();
+          if ((jdata instanceof Object) && ('_error' in jdata)) {
+            if (jsh.DefaultErrorHandler(jdata._error.Number, jdata._error.Message)) { /* Do nothing */ }
+            else if ((jdata._error.Number == -9) || (jdata._error.Number == -5)) { jsh.XExt.Alert(jdata._error.Message); }
+            else { jsh.XExt.Alert('Error #' + jdata._error.Number + ': ' + jdata._error.Message); }
             return;
           }
-        });
+          else if ((jdata instanceof Object) && ('_success' in jdata)) {
+            var ftoken = '_temp/' + jdata.file_token;
+            if (cb) cb(null, ftoken);
+          }
+          else {
+            jsh.XExt.Alert('Error Uploading File: "' + file.name + '" data: '+ JSON.stringify(jdata ? jdata : ''));
+          }
+        },
+        error: function (err) {
+          jsh.xLoader.StopLoading();
+          if(err && err.responseJSON){
+            var _error = err.responseJSON._error;
+            if(_error){
+              jsh.XExt.Alert('Error #' + (_error.Number||'') + ': ' + (_error.Message||''));
+              return;
+            }
+          }
+          XExt.Alert('Error uploading file:  "' + file.name + '" data: '+XExt.stringify(err));
+        }
       });
     }
 
@@ -992,14 +1032,16 @@ exports = module.exports = function(jsh){
     config.setup = function(editor) {
       // xxxx hs Save file file names? in-memory to not re-insert the same image more than once
       // var images = {};
-      editor.on('paste', (e) => {
-        const items = (e.clipboardData || e.originalEvent.clipboardData)?.items;
+      editor.on('paste', function(e){
+        var clipData = (e.clipboardData || e.originalEvent.clipboardData);
+        var items = clipData.items;
         if (!items) return;
       
-        const files = [];
+        var files = [];
       
-        for (let item of items) {
-          if (item.type.includes('image')) {
+        for (var i = 0; i < items.length; i++) {
+          var item = items[i];
+          if (item && (item.type.indexOf('image') >= 0)) {
             e.preventDefault();
             files.push(item.getAsFile());
           }
@@ -1010,7 +1052,7 @@ exports = module.exports = function(jsh){
         jsh.async.map(
           files,
           function (file, callback) {
-            const reader = new FileReader();
+            var reader = new FileReader();
       
             reader.onload = function (evt) {
               callback(null, evt.target.result);
@@ -1031,7 +1073,7 @@ exports = module.exports = function(jsh){
             console.log('All images ready:', base64Images);
       
             jsh.XForm.Put(
-              "/_image/"+config.upload_bindings.upload_model,
+              '/_image/'+config.upload_bindings.upload_model,
               {},
               {
                 upload_model: config.upload_bindings.upload_model,
@@ -1041,7 +1083,7 @@ exports = module.exports = function(jsh){
               },
               function (rslt) {
                 if (rslt && rslt.image_paths) {
-                  rslt.image_paths.forEach((url) => {
+                  rslt.image_paths.forEach(function(url){
                     editor.insertContent('<img src="' + url + '" />');
                   });
                 }
@@ -1050,7 +1092,7 @@ exports = module.exports = function(jsh){
           }
         );
       });
-    }
+    };
     config = _.extend({ height: orig_height, paste_data_images: true, plugins: 'image paste' }, config);
     window.tinymce.init(config);
   };

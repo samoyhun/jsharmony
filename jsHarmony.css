@@ -252,9 +252,6 @@ BODY
 <%-rootcss%> .xform .htmlarea_container textarea {
   margin:0;
 }
-<%-rootcss%> .htmlarea_container .cke_editable.drag-active {
-  caret-color: transparent !important;
-}
 <%-rootcss%> .xform_ctrl::placeholder {
   color:#aaa;
 }

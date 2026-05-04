@@ -24,6 +24,10 @@ body
 	line-height: 1.6;
 }
 
+.cke_editable.drag-active {
+  caret-color: transparent !important;
+}
+
 blockquote
 {
 	font-style: italic;
