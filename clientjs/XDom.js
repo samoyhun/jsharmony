@@ -116,6 +116,7 @@ var Selector = function(target, options){
   _this.parent = function(){
     return new Selector(_.map(_this.select(), function(el){ return el && el.parentNode; }));
   };
+  
   _this.remove = XDom.remove.bind(XDom, this);
   _this.focus = XDom.focus.bind(XDom, this);
   _this.blur = XDom.blur.bind(XDom, this);
@@ -123,27 +124,29 @@ var Selector = function(target, options){
     get: function() { return XDom.getChildren(this); },
   });
   //core functions
-  //  parent(selector) parent('div')
-  //  nextSibling
-  //  previousSibling
-  //  first
-  //  last
-  //  filter (selector) (function)
-  //  omit (selector) (function)
-  //  emit
-  //  insertBefore
-  //  calc.top, calc.left // calc.top({ from: 'document' })  calc.top({ from: 'parent' })  calc.top({ from: 'offsetparent' })  calc.top({ from: [object] })
-  //  isVisible, .filter(XDom.isVisible), .omit(XDom.isVisible)
-  //  animate 
+  //  children -> selector                             XDom.children([a,b,c])
+  //  parent(selector) parent('div') -> selector       XDom.parent([a,b,c])
+  //  nextSibling() -> selector                        XDom.nextSibling([a,b,c])
+  //  previousSibling() -> selector                    XDom.previousSibling([a,b,c])
+  //  first() -> selector                              XDom.first([a,b,c])
+  //  last() -> selector                               XDom.last([a,b,c])
+  //  filter (selector) (function) -> selector         XDom.filter([a,b,c])
+  //  omit (selector) (function) -> selector           XDom.omit([a,b,c])
+  //  emit -> void                                     XDom.emit(...)
+  //  insertBefore -> void                             XDom.insertBefore(referenceNode)
+  //  calc.top, calc.left // calc.top({ from: 'document' })  calc.top({ from: 'parent' })  calc.top({ from: 'offsetparent' })  calc.top({ from: [object] }) -> Number
+  //  isVisible -> boolean, .filter(XDom.isVisible), .omit(XDom.isVisible)
+  //  animate -> void
+
   //each => .select().forEach(...)
   //trigger = emit()
   //before => insertBefore
-  //closest => parent(...select)
+  //closest => parent(...selector)
   //insertBefore => insertBefore
   //next => nextSibling
   //prev => previousSibling
-  //offsetParent => 
-  //offset => offset()
+  //offsetParent => .calc.top({ from: 'offsetparent' })
+  //offset => offset() .calc.top()
   //wrap => create element, insertBefore, and then put contents inside
   //not => .omit
   //first => .select[0]
@@ -151,7 +154,7 @@ var Selector = function(target, options){
   //slideUp => .animate({ height: '0px' })
   //slideDown => .animate({ height: 'auto' })
   //fadeTo => .animate({ opacity: 0 })
-  //.is(:visible) => .selectVisible
+  //.is(:visible) => .isVisible
 };
 XDom.Selector = Selector;
 
