@@ -503,6 +503,177 @@ var mocha = require('mocha');
     });
   });
 
+  describe('XDom parent', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="grandparent" class="target">',
+        '  <div id="parent">',
+        '    <div id="child" class="sibling"></div>',
+        '    <div class="sibling"></div>',
+        '  </div>',
+        '</div>',
+        '<div class="target"></div>',
+      ].join('');
+    });
+
+    it('no arguments', function(){
+      assert(XDom('#child').parent().attr.id === 'parent', 'found parent');
+    });
+
+    it('higher level parent', function(){
+      var parent = XDom('#child').parent('.target');
+      assert(parent.attr.id === 'grandparent', 'found grandparent');
+      assert(parent.select().length == 1, 'found only grandparent');
+    });
+
+    it('parent not found', function(){
+      assert(XDom('#child').parent('.not.found').select().length == 0, 'no parent found');
+    });
+
+    it('deduplication', function(){
+      assert(XDom('.sibling').parent().select().length == 1, 'siblings have one parent');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+  
+  describe('XDom siblings', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1"></div>',
+        '<div id="item2"></div>',
+      ].join('');
+    });
+
+    it('next', function(){
+      assert(XDom('#item1').nextSibling().attr.id === 'item2', 'found next');
+    });
+
+    it('next when last', function(){
+      assert(XDom('#item2').nextSibling().select().length == 0, 'nothing is next');
+    });
+
+    it('previous', function(){
+      assert(XDom('#item2').previousSibling().attr.id === 'item1', 'found previous');
+    });
+
+    it('previous when first', function(){
+      assert(XDom('#item1').previousSibling().select().length == 0, 'nothing is previous');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom first/last', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1" class="target"></div>',
+        '<div id="item2" class="target"></div>',
+        '<div id="item3" class="target"></div>',
+      ].join('');
+    });
+
+    it('first', function(){
+      assert(XDom('.target').first().attr.id === 'item1', 'found first');
+    });
+
+    it('first of of nothing', function(){
+      assert(XDom('.not.found').first().select().length == 0, 'nothing is first');
+    });
+
+    it('last', function(){
+      assert(XDom('.target').last().attr.id === 'item3', 'found last');
+    });
+
+    it('last of of nothing', function(){
+      assert(XDom('.not.found').last().select().length == 0, 'nothing is last');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom children', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="parent">',
+        '  <div class="kid">',
+        '    <div></div>',
+        '  </div>',
+        '  <div class="kid"></div>',
+        '</div>',
+        '<div id="empty" class="kid"></div>',
+      ].join('');
+    });
+
+    it('has children', function(){
+      assert(XDom('#parent').children.select().length === 2, 'parent has children');
+    });
+
+    it('no children', function(){
+      assert(XDom('#empty').children.select().length === 0, 'element should have no children');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom filter/omit', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1" class="target"></div>',
+        '<div class="target"></div>',
+        '<div class="target"></div>',
+      ].join('');
+    });
+
+    it('base case', function(){
+      assert(XDom('.target').select().length === 3, 'starting with correct number of elements');
+    });
+
+    it('filter true', function(){
+      assert(XDom('.target').filter(function(el){return true;}).select().length === 3, 'filtered all elements');
+    });
+
+    it('filter false', function(){
+      assert(XDom('.target').filter(function(el){return false;}).select().length === 0, 'filtered all elements');
+    });
+
+    it('filter selective', function(){
+      assert(XDom('.target').filter(function(el){return el.id == 'item1';}).select().length === 1, 'filtered one element');
+    });
+
+    it('filter empty set', function(){
+      assert(XDom('.not.found').filter(function(el){return true;}).select().length === 0, 'empty is empty');
+    });
+
+    it('omit true', function(){
+      assert(XDom('.target').omit(function(el){return true;}).select().length === 0, 'omited all elements');
+    });
+
+    it('omit false', function(){
+      assert(XDom('.target').omit(function(el){return false;}).select().length === 3, 'omited all elements');
+    });
+
+    it('omit selective', function(){
+      assert(XDom('.target').omit(function(el){return el.id == 'item1';}).select().length === 2, 'omited one element');
+    });
+
+    it('omit empty set', function(){
+      assert(XDom('.not.found').omit(function(el){return true;}).select().length === 0, 'empty is empty');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
   describe('XDom calc', function() {
     before(function(){
       document.querySelector('#workspace').innerHTML = [

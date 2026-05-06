@@ -113,15 +113,32 @@ var Selector = function(target, options){
     width: XDom.calc.width.bind(XDom, this),
     height: XDom.calc.height.bind(XDom, this),
   };
-  _this.parent = function(){
-    return new Selector(_.map(_this.select(), function(el){ return el && el.parentNode; }));
+  _this.parent = function(parentSelector){
+    return new Selector(XDom.parent(this, parentSelector));
   };
-  
+  _this.nextSibling = function(){
+    return new Selector(XDom.nextSibling(this));
+  };
+  _this.previousSibling = function(){
+    return new Selector(XDom.previousSibling(this));
+  };
+  _this.first = function(){
+    return new Selector(XDom.first(this) || []);
+  };
+  _this.last = function(){
+    return new Selector(XDom.last(this) || []);
+  };
+  _this.filter = function(f){
+    return new Selector(XDom.filter(this, f));
+  };
+  _this.omit = function(f){
+    return new Selector(XDom.omit(this, f));
+  };
   _this.remove = XDom.remove.bind(XDom, this);
   _this.focus = XDom.focus.bind(XDom, this);
   _this.blur = XDom.blur.bind(XDom, this);
   Object.defineProperty(this, 'children', {
-    get: function() { return XDom.getChildren(this); },
+    get: function() { return new Selector(XDom.getChildren(this)); },
   });
   //core functions
   //  children -> selector                             XDom.children([a,b,c])
@@ -338,6 +355,44 @@ XDom.blur = function(target){
   }
 }
 
+function nodeMap(target, f){
+  var _el = XDom.resolve(target);
+  return _.uniq(_.compact(_.flatMap(_el, f)));
+}
+
+function propertyMap(target, property){
+  return nodeMap(target, function(el) {return el && el[property]});
+}
+
+XDom.parent = function(target, parentSelector){
+  return nodeMap(target, parentSelector ?
+    function(el){ return el && el.closest(parentSelector); } : 
+    function(el){ return el && el.parentNode; }
+  );
+}
+
+XDom.nextSibling = function(target){
+  return propertyMap(target, 'nextSibling');
+}
+
+XDom.previousSibling = function(target){
+  return propertyMap(target, 'previousSibling');
+}
+
+XDom.first = function(target){
+  var _el = XDom.resolve(target);
+  if (_el.length) {
+    return _el[0];
+  }
+};  
+
+XDom.last = function(target){
+  var _el = XDom.resolve(target);
+  if (_el.length) {
+    return _el[_el.length-1];
+  }
+};  
+
 XDom.getChildren = function(target){
   var _el = XDom.resolve(target);
   var rslt = [];
@@ -356,6 +411,16 @@ XDom.getChildren = function(target){
     }
   }
   return rslt;
+};
+
+XDom.filter = function(target, f){
+  var _el = XDom.resolve(target);
+  return _.filter(_el, f);
+};
+
+XDom.omit = function(target, f){
+  var _el = XDom.resolve(target);
+  return _.reject(_el, f);
 };
 
 XDom.getStyle = function(target, prop){
