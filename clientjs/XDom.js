@@ -85,6 +85,7 @@ var Selector = function(target, options){
   });
   _this.on = XDom.on.bind(XDom, this);
   _this.off = XDom.off.bind(XDom, this);
+  _this.emit = XDom.emit.bind(XDom, this);
   _this.animate = function(props, duration, callback){ return XDom.animate(this, props, duration, callback); };
   _this.stop = function(){ return XDom.stop(this); };
   Object.defineProperty(this, 'value', {
@@ -303,6 +304,17 @@ XDom.off = function(target, eventType, handler, eventOptions){
   _.each(XDom.resolve(target), function(el){
     if(el && el.removeEventListener){
       el.removeEventListener(eventType, handler, eventOptions);
+    }
+  });
+};
+
+XDom.emit = function(target, event){
+  if (typeof(event) == 'string') {
+    event = new Event(event);
+  }
+  _.each(XDom.resolve(target), function(el){
+    if (el && el.dispatchEvent) {
+      el.dispatchEvent(event);
     }
   });
 };

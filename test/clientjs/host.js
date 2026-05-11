@@ -19468,6 +19468,60 @@ var mocha = require('mocha');
     });
   });
 
+  describe('XDom emit', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1"></div>',
+      ].join('');
+    });
+
+    it('standard event', function() {
+      var handler = function() {
+        handlerCalled = true;
+      }
+      XDom.on('#item1', 'click', handler);
+      XDom.emit('#item1', 'click');
+      assert(handlerCalled, 'emit triggered handler');
+      XDom.off('#item1', 'click', handler);
+    });
+
+    it('nonstandard event', function() {
+      var handler = function() {
+        handlerCalled = true;
+      }
+      XDom.on('#item1', 'foo', handler);
+      XDom.emit('#item1', 'foo');
+      assert(handlerCalled, 'emit triggered handler');
+      XDom.off('#item1', 'foo', handler);
+    });
+
+    it('custom event', function() {
+      var handler = function(e) {
+        if (e.detail == 'bar') {
+          handlerCalled = true;
+        }
+      }
+      XDom.on('#item1', 'custom', handler);
+      XDom.emit('#item1', new CustomEvent('custom', {detail: 'bar'}));
+      assert(handlerCalled, 'emit triggered handler');
+      XDom.off('#item1', 'custom', handler);
+    });
+
+    it('selector', function() {
+      var handler = function() {
+        handlerCalled = true;
+      }
+      XDom('#item1').on('click', handler);
+      XDom('#item1').emit('click');
+      assert(handlerCalled, 'emit triggered handler');
+      XDom('#item1').off('click', handler);
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
   describe('XDom getValue ', function() {
     before(function(){
       document.querySelector('#workspace').innerHTML = [
