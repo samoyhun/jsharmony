@@ -728,6 +728,66 @@ var mocha = require('mocha');
     });
   });
 
+  describe('XDom insertBefore', function() {
+    function setup(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="parent">',
+          '<div id="child1" class="child"></div>',
+          '<div id="child2" class="child"></div>',
+        '</div>',
+      ].join('');
+    }
+
+    it('insert into empty parent', function() {
+      setup();
+      var el = document.createElement('div');
+      XDom.selector('#child1').insertBefore(el, null);
+      assert(XDom.selector('#child1').children.select().length == 1, 'an empty target now has one child');
+    });
+
+    it('insert with no reference', function() {
+      setup();
+      var el = document.createElement('div');
+      XDom.selector('#parent').insertBefore(el, null);
+      assert(XDom.selector('#parent').children.select()[2] == el, 'inserted at end');
+    });
+
+    it('before first element', function() {
+      setup();
+      var el = document.createElement('div');
+      var ref = document.getElementById('child1');
+      XDom.selector('#parent').insertBefore(el, ref);
+      assert(XDom.selector('#parent').children.select()[0] == el, 'inserted at beginning');
+    });
+
+    it('in the middle', function() {
+      setup();
+      var el = document.createElement('div');
+      var ref = document.getElementById('child2');
+      XDom.selector('#parent').insertBefore(el, ref);
+      assert(XDom.selector('#parent').children.select()[1] == el, 'inserted at middle');
+    });
+
+    it('no target', function() {
+      setup();
+      var el = document.createElement('div');
+      XDom.selector('.not.found').insertBefore(el, null);
+      assert(el.parentNode == null, 'node was not inserted');
+    });
+
+    it('multiple targets', function() {
+      setup();
+      var el = document.createElement('div');
+      XDom.selector('.child').insertBefore(el, null);
+      assert(XDom.selector('#child1').children.select().length == 0, 'not in child1');
+      assert(XDom.selector('#child2').children.select().length == 1, 'in child2');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  })
+
   describe('XDom calc', function() {
     before(function(){
       document.querySelector('#workspace').innerHTML = [

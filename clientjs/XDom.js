@@ -135,6 +135,7 @@ var Selector = function(target, options){
   _this.omit = function(f){
     return new Selector(XDom.omit(this, f));
   };
+  _this.insertBefore = XDom.insertBefore.bind(XDom, this);
   _this.remove = XDom.remove.bind(XDom, this);
   _this.focus = XDom.focus.bind(XDom, this);
   _this.blur = XDom.blur.bind(XDom, this);
@@ -266,6 +267,13 @@ XDom.content = {
       if(el && el.replaceChildren) el.replaceChildren();
     });
   },
+};
+
+XDom.insertBefore = function(target, newNode, referenceNode){
+  var _el = XDom.resolve(target);
+  if(!_el.length) return;
+  // a node can only have one parent, so there is no point in inserting into any other targets that would just have it immediately removed.
+  _el[_el.length-1].insertBefore(newNode, referenceNode || null);
 };
 
 XDom.remove = function(target){
