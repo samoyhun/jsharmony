@@ -19138,6 +19138,12 @@ var mocha = require('mocha');
     throwError(msg || 'Error not thrown: '+errDesc);
   }
 
+  function assertEqual(a, b, msg){
+    if(a !== b){
+      throwError((msg || 'Assertion failed') + ": " + a.toString() + " !== " + b.toString());
+    }
+  }
+
   describe('XDom selector', function() {
     before(function(){
       document.querySelector('#workspace').innerHTML = [
@@ -19881,7 +19887,7 @@ var mocha = require('mocha');
       assert(XDom.selector('#item1').calc.width() === 200, 'found correct offsetwidth');
     });
     it('calc height css id ', function() {
-      assert(XDom.selector('#item2').calc.height('#item2') === 200, 'found correct offsetheight');
+      assert(XDom.selector('#item2').calc.height() === 200, 'found correct offsetheight');
     });
 
     after(function(){
@@ -19942,36 +19948,76 @@ var mocha = require('mocha');
       var innerBox = XDom('.innerbox');
       var outerBox = XDom('.outerbox');
 
-      assert(contentBox.calc.width({ to:'margin' }) == 22, 'contentbox width to margin');
-      assert(contentBox.calc.width({ to:'border' }) == 22, 'contentbox width to border');
-      assert(contentBox.calc.width({ to:'padding' }) == 20, 'contentbox width to padding');
-      assert(contentBox.calc.width({ to:'content' }) == 20, 'contentbox width to content');
+      assert(contentBox.calc.widthToMargin() == 22, 'contentbox width to margin');
+      assert(contentBox.calc.widthToBorder() == 22, 'contentbox width to border');
+      assert(contentBox.calc.widthToPadding() == 20, 'contentbox width to padding');
+      assert(contentBox.calc.widthToContent() == 20, 'contentbox width to content');
 
-      assert(contentBox.calc.height({ to:'margin' }) == 22, 'contentbox height to margin');
-      assert(contentBox.calc.height({ to:'border' }) == 22, 'contentbox height to border');
-      assert(contentBox.calc.height({ to:'padding' }) == 20, 'contentbox height to padding');
-      assert(contentBox.calc.height({ to:'content' }) == 20, 'contentbox height to content');
+      assert(contentBox.calc.heightToMargin() == 22, 'contentbox height to margin');
+      assert(contentBox.calc.heightToBorder() == 22, 'contentbox height to border');
+      assert(contentBox.calc.heightToPadding() == 20, 'contentbox height to padding');
+      assert(contentBox.calc.heightToContent() == 20, 'contentbox height to content');
 
-      assert(innerBox.calc.width({ to:'margin' }) == 148, 'innerBox width to margin');
-      assert(innerBox.calc.width({ to:'border' }) == 108, 'innerBox width to border');
-      assert(innerBox.calc.width({ to:'padding' }) == 102, 'innerBox width to padding');
-      assert(innerBox.calc.width({ to:'content' }) == 22, 'innerBox width to content');
+      assert(innerBox.calc.widthToMargin() == 148, 'innerBox width to margin');
+      assert(innerBox.calc.widthToBorder() == 108, 'innerBox width to border');
+      assert(innerBox.calc.widthToPadding() == 102, 'innerBox width to padding');
+      assert(innerBox.calc.widthToContent() == 22, 'innerBox width to content');
 
-      assert(innerBox.calc.height({ to:'margin' }) == 148, 'innerBox height to margin');
-      assert(innerBox.calc.height({ to:'border' }) == 108, 'innerBox height to border');
-      assert(innerBox.calc.height({ to:'padding' }) == 102, 'innerBox height to padding');
-      assert(innerBox.calc.height({ to:'content' }) == 22, 'innerBox height to content');
+      assert(innerBox.calc.heightToMargin() == 148, 'innerBox height to margin');
+      assert(innerBox.calc.heightToBorder() == 108, 'innerBox height to border');
+      assert(innerBox.calc.heightToPadding() == 102, 'innerBox height to padding');
+      assert(innerBox.calc.heightToContent() == 22, 'innerBox height to content');
 
       var workspace = document.getElementById('workspace');
-      assert(outerBox.calc.width({ to:'margin' }) == workspace.clientWidth, 'outerBox width to margin');
-      assert(outerBox.calc.width({ to:'border' }) == workspace.clientWidth, 'outerBox width to border');
-      assert(outerBox.calc.width({ to:'padding' }) == workspace.clientWidth - 6, 'outerBox width to padding');
-      assert(outerBox.calc.width({ to:'content' }) == workspace.clientWidth - 6, 'outerBox width to content');
+      assert(outerBox.calc.widthToMargin() == workspace.clientWidth, 'outerBox width to margin');
+      assert(outerBox.calc.widthToBorder() == workspace.clientWidth, 'outerBox width to border');
+      assert(outerBox.calc.widthToPadding() == workspace.clientWidth - 6, 'outerBox width to padding');
+      assert(outerBox.calc.widthToContent() == workspace.clientWidth - 6, 'outerBox width to content');
 
-      assert(outerBox.calc.height({ to:'margin' }) == 154, 'outerBox height to margin');
-      assert(outerBox.calc.height({ to:'border' }) == 154, 'outerBox height to border');
-      assert(outerBox.calc.height({ to:'padding' }) == 148, 'outerBox height to padding');
-      assert(outerBox.calc.height({ to:'content' }) == 148, 'outerBox height to content');
+      assert(outerBox.calc.heightToMargin() == 154, 'outerBox height to margin');
+      assert(outerBox.calc.heightToBorder() == 154, 'outerBox height to border');
+      assert(outerBox.calc.heightToPadding() == 148, 'outerBox height to padding');
+      assert(outerBox.calc.heightToContent() == 148, 'outerBox height to content');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom top / left', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div class="outerbox" style="border:3px solid black; position: relative;">',
+        '    <div class="innerbox" style="border:3px solid orange; margin:20px; padding:40px; display:inline-block;">',
+        '      <div class="contentbox" style="border:1px solid black; width:20px; height: 20px; display:inline-block;"></div>',
+        '    </div>',
+        '</div>',
+      ].join('');
+    });
+
+    it('top', function(){
+      var contentBox = XDom('.contentbox');
+      var innerBox = XDom('.innerbox');
+      var outerBox = XDom('.outerbox');
+
+      assertEqual(typeof(contentBox.calc.top()), 'number', 'contentBox top');
+      assertEqual(typeof(contentBox.calc.topFromDocument()), 'number', 'contentBox top from document');
+      assertEqual(contentBox.calc.topFromParent(), 43, 'contentBox top from parent');
+      assertEqual(contentBox.calc.topFromOffsetParent(), 66, 'contentBox top from offset parent');
+      assertEqual(contentBox.calc.topFrom(innerBox.select()[0]), 43, 'contentBox top from target');
+    });
+
+    it('left', function(){
+      var contentBox = XDom('.contentbox');
+      var innerBox = XDom('.innerbox');
+      var outerBox = XDom('.outerbox');
+
+      assertEqual(typeof(contentBox.calc.left()), 'number', 'contentBox left');
+      assertEqual(typeof(contentBox.calc.leftFromDocument()), 'number', 'contentBox left from document');
+      assertEqual(contentBox.calc.leftFromParent(), 43, 'contentBox left from parent');
+      assertEqual(contentBox.calc.leftFromOffsetParent(), 66, 'contentBox left from offset parent');
+      assertEqual(contentBox.calc.leftFrom(innerBox.select()[0]), 43, 'contentBox left from target');
     });
 
     after(function(){
