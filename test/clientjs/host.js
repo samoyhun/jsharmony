@@ -20024,6 +20024,27 @@ var mocha = require('mocha');
       document.querySelector('#workspace').innerHTML = '';
     });
   });
+
+  describe('XDom isVisible', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div class="visible"></div>',
+        '<div class="hidden" style="display: none"></div>',
+      ].join('');
+    });
+
+    it('is visible', function(){
+      assert(XDom.isVisible(XDom('.visible').select()[0]), 'normal element is visible');
+    });
+
+    it('is not visible', function(){
+      assert(!XDom.isVisible(XDom('.hidden').select()[0]), 'off element is not visible');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
 })();
 
 },{"mocha":37}]},{},[82]);

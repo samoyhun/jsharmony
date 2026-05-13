@@ -393,6 +393,10 @@ XDom.blur = function(target){
   }
 }
 
+XDom.isVisible = function(el){
+  return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+}
+
 function nodeMap(target, f){
   var _el = XDom.resolve(target);
   return _.uniq(_.compact(_.flatMap(_el, f)));
