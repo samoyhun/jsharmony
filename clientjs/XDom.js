@@ -85,6 +85,7 @@ var Selector = function(target, options){
   });
   _this.on = XDom.on.bind(XDom, this);
   _this.off = XDom.off.bind(XDom, this);
+  _this.emit = XDom.emit.bind(XDom, this);
   _this.animate = function(props, duration, callback){ return XDom.animate(this, props, duration, callback); };
   _this.stop = function(){ return XDom.stop(this); };
   Object.defineProperty(this, 'value', {
@@ -111,17 +112,53 @@ var Selector = function(target, options){
   });
   _this.calc = {
     width: XDom.calc.width.bind(XDom, this),
+    widthToPadding: XDom.calc.widthToPadding.bind(XDom, this),
+    widthToBorder: XDom.calc.widthToBorder.bind(XDom, this),
+    widthToMargin: XDom.calc.widthToMargin.bind(XDom, this),
+    widthToContent: XDom.calc.widthToContent.bind(XDom, this),
     height: XDom.calc.height.bind(XDom, this),
+    heightToPadding: XDom.calc.heightToPadding.bind(XDom, this),
+    heightToBorder: XDom.calc.heightToBorder.bind(XDom, this),
+    heightToMargin: XDom.calc.heightToMargin.bind(XDom, this),
+    heightToContent: XDom.calc.heightToContent.bind(XDom, this),
+    top: XDom.calc.top.bind(XDom, this),
+    topFromDocument: XDom.calc.topFromDocument.bind(XDom, this),
+    topFromParent: XDom.calc.topFromParent.bind(XDom, this),
+    topFromOffsetParent: XDom.calc.topFromOffsetParent.bind(XDom, this),
+    topFrom: XDom.calc.topFrom.bind(XDom, this),
+    left: XDom.calc.left.bind(XDom, this),
+    leftFromDocument: XDom.calc.leftFromDocument.bind(XDom, this),
+    leftFromParent: XDom.calc.leftFromParent.bind(XDom, this),
+    leftFromOffsetParent: XDom.calc.leftFromOffsetParent.bind(XDom, this),
+    leftFrom: XDom.calc.leftFrom.bind(XDom, this),
   };
-  _this.parent = function(){
-    return new Selector(_.map(_this.select(), function(el){ return el && el.parentNode; }));
+  _this.parent = function(parentSelector){
+    return new Selector(XDom.parent(this, parentSelector));
   };
-  
+  _this.nextSibling = function(){
+    return new Selector(XDom.nextSibling(this));
+  };
+  _this.previousSibling = function(){
+    return new Selector(XDom.previousSibling(this));
+  };
+  _this.first = function(){
+    return new Selector(XDom.first(this) || []);
+  };
+  _this.last = function(){
+    return new Selector(XDom.last(this) || []);
+  };
+  _this.filter = function(f){
+    return new Selector(XDom.filter(this, f));
+  };
+  _this.omit = function(f){
+    return new Selector(XDom.omit(this, f));
+  };
+  _this.insertBefore = XDom.insertBefore.bind(XDom, this);
   _this.remove = XDom.remove.bind(XDom, this);
   _this.focus = XDom.focus.bind(XDom, this);
   _this.blur = XDom.blur.bind(XDom, this);
   Object.defineProperty(this, 'children', {
-    get: function() { return XDom.getChildren(this); },
+    get: function() { return new Selector(XDom.getChildren(this)); },
   });
   //core functions
   //  children -> selector                             XDom.children([a,b,c])
@@ -250,6 +287,13 @@ XDom.content = {
   },
 };
 
+XDom.insertBefore = function(target, newNode, referenceNode){
+  var _el = XDom.resolve(target);
+  if(!_el.length) return;
+  // a node can only have one parent, so there is no point in inserting into any other targets that would just have it immediately removed.
+  _el[_el.length-1].insertBefore(newNode, referenceNode || null);
+};
+
 XDom.remove = function(target){
   _.each(XDom.resolve(target), function(el){
     el.remove();
@@ -286,6 +330,17 @@ XDom.off = function(target, eventType, handler, eventOptions){
   _.each(XDom.resolve(target), function(el){
     if(el && el.removeEventListener){
       el.removeEventListener(eventType, handler, eventOptions);
+    }
+  });
+};
+
+XDom.emit = function(target, event){
+  if (typeof(event) == 'string') {
+    event = new Event(event);
+  }
+  _.each(XDom.resolve(target), function(el){
+    if (el && el.dispatchEvent) {
+      el.dispatchEvent(event);
     }
   });
 };
@@ -338,6 +393,48 @@ XDom.blur = function(target){
   }
 }
 
+XDom.isVisible = function(el){
+  return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+}
+
+function nodeMap(target, f){
+  var _el = XDom.resolve(target);
+  return _.uniq(_.compact(_.flatMap(_el, f)));
+}
+
+function propertyMap(target, property){
+  return nodeMap(target, function(el) {return el && el[property]});
+}
+
+XDom.parent = function(target, parentSelector){
+  return nodeMap(target, parentSelector ?
+    function(el){ return el && el.closest(parentSelector); } : 
+    function(el){ return el && el.parentNode; }
+  );
+}
+
+XDom.nextSibling = function(target){
+  return propertyMap(target, 'nextSibling');
+}
+
+XDom.previousSibling = function(target){
+  return propertyMap(target, 'previousSibling');
+}
+
+XDom.first = function(target){
+  var _el = XDom.resolve(target);
+  if (_el.length) {
+    return _el[0];
+  }
+};  
+
+XDom.last = function(target){
+  var _el = XDom.resolve(target);
+  if (_el.length) {
+    return _el[_el.length-1];
+  }
+};  
+
 XDom.getChildren = function(target){
   var _el = XDom.resolve(target);
   var rslt = [];
@@ -356,6 +453,16 @@ XDom.getChildren = function(target){
     }
   }
   return rslt;
+};
+
+XDom.filter = function(target, f){
+  var _el = XDom.resolve(target);
+  return _.filter(_el, f);
+};
+
+XDom.omit = function(target, f){
+  var _el = XDom.resolve(target);
+  return _.reject(_el, f);
 };
 
 XDom.getStyle = function(target, prop){
@@ -417,38 +524,108 @@ XDom.style = {
   }),
 };
 
+function withFirstTarget(f){
+  return function(target, arg1) {
+    var _el = XDom.resolve(target);
+    if(_el.length) return f(_el[0], arg1);
+  }
+}
+
 XDom.calc = {
-  width: function(target, params /* { to: 'content' | 'padding' | 'border' | 'margin' } */){
-    var calcTo = (params && params.to) || 'content';
-    var _el = XDom.resolve(target);
-    if(!_el.length) return undefined;
-    if(calcTo == 'padding') return _el[0].clientWidth;
-    else if(calcTo == 'border') return _el[0].offsetWidth;
-    else if(calcTo == 'margin'){
-      var elStyles = window.getComputedStyle && window.getComputedStyle(_el[0]);
-      return _el[0].offsetWidth + (parseFloat(elStyles.marginLeft)||0) + (parseFloat(elStyles.marginRight)||0);
+  widthToPadding: withFirstTarget(function(el){
+    return el.clientWidth;
+  }),
+  widthToBorder: withFirstTarget(function(el){
+    return el.offsetWidth;
+  }),
+  widthToMargin: withFirstTarget(function(el){
+    var elStyles = window.getComputedStyle && window.getComputedStyle(el);
+    return el.offsetWidth + (parseFloat(elStyles.marginLeft)||0) + (parseFloat(elStyles.marginRight)||0);
+  }),
+  widthToContent: withFirstTarget(function(el){
+    var elStyles = window.getComputedStyle && window.getComputedStyle(el);
+    return el.clientWidth - (parseFloat(elStyles.paddingLeft)||0) - (parseFloat(elStyles.paddingRight)||0);
+  }),
+
+  heightToPadding: withFirstTarget(function(el){
+    return el.clientHeight;
+  }),
+  heightToBorder: withFirstTarget(function(el){
+    return el.offsetHeight;
+  }),
+  heightToMargin: withFirstTarget(function(el){
+    var elStyles = window.getComputedStyle && window.getComputedStyle(el);
+    return el.offsetHeight + (parseFloat(elStyles.marginTop)||0) + (parseFloat(elStyles.marginBottom)||0);
+  }),
+  heightToContent: withFirstTarget(function(el){
+    var elStyles = window.getComputedStyle && window.getComputedStyle(el);
+    return el.clientHeight - (parseFloat(elStyles.paddingTop)||0) - (parseFloat(elStyles.paddingBottom)||0);
+  }),
+
+  top: withFirstTarget(function(el){
+    return el.getBoundingClientRect().top;
+  }),
+  topFromDocument: withFirstTarget(function(el){
+    return el.getBoundingClientRect().top + window.scrollY;
+  }),
+  topFromParent: withFirstTarget(function(el){
+    var parent = el.parentNode;
+    if (parent) {
+      return el.getBoundingClientRect().top - parent.getBoundingClientRect().top;
+    } else {
+      return el.getBoundingClientRect().top + window.scrollY;
     }
-    else{
-      var elStyles = window.getComputedStyle && window.getComputedStyle(_el[0]);
-      return _el[0].clientWidth - (parseFloat(elStyles.paddingLeft)||0) - (parseFloat(elStyles.paddingRight)||0);
+  }),
+  topFromOffsetParent: withFirstTarget(function(el){
+    var parent = el.offsetParent;
+    if (parent) {
+      return el.getBoundingClientRect().top - parent.getBoundingClientRect().top;
+    } else {
+      return el.getBoundingClientRect().top + window.scrollY;
     }
-  },
-  height: function(target, params /* { to: 'content' | 'padding' | 'border' | 'margin' } */){
-    var calcTo = (params && params.to) || 'content';
-    var _el = XDom.resolve(target);
-    if(!_el.length) return undefined;
-    if(calcTo == 'padding') return _el[0].clientHeight;
-    else if(calcTo == 'border') return _el[0].offsetHeight;
-    else if(calcTo == 'margin'){
-      var elStyles = window.getComputedStyle && window.getComputedStyle(_el[0]);
-      return _el[0].offsetHeight + (parseFloat(elStyles.marginTop)||0) + (parseFloat(elStyles.marginBottom)||0);
+  }),
+  topFrom: withFirstTarget(function(el, otherEl){
+    if (otherEl && otherEl.getBoundingClientRect) {
+      return el.getBoundingClientRect().top - otherEl.getBoundingClientRect().top;
+    } else {
+      console.warn('invalid argument to XDom.calc.topFrom');
+      return 0;
     }
-    else{
-      var elStyles = window.getComputedStyle && window.getComputedStyle(_el[0]);
-      return _el[0].clientHeight - (parseFloat(elStyles.paddingTop)||0) - (parseFloat(elStyles.paddingBottom)||0);
+  }),
+
+  left: withFirstTarget(function(el){
+    return el.getBoundingClientRect().left;
+  }),
+  leftFromDocument: withFirstTarget(function(el){
+    return el.getBoundingClientRect().left + window.scrollY;
+  }),
+  leftFromParent: withFirstTarget(function(el){
+    var parent = el.parentNode;
+    if (parent) {
+      return el.getBoundingClientRect().left - parent.getBoundingClientRect().left;
+    } else {
+      return el.getBoundingClientRect().left + window.scrollX;
     }
-  },
+  }),
+  leftFromOffsetParent: withFirstTarget(function(el){
+    var parent = el.offsetParent;
+    if (parent) {
+      return el.getBoundingClientRect().left - parent.getBoundingClientRect().left;
+    } else {
+      return el.getBoundingClientRect().left + window.scrollX;
+    }
+  }),
+  leftFrom: withFirstTarget(function(el, otherEl){
+    if (otherEl && otherEl.getBoundingClientRect) {
+      return el.getBoundingClientRect().left - otherEl.getBoundingClientRect().left;
+    } else {
+      console.warn('invalid argument to XDom.calc.leftFrom');
+      return 0;
+    }
+  }),
 };
+XDom.calc.width = XDom.calc.widthToContent;
+XDom.calc.height = XDom.calc.heightToContent;
 
 function parseStyleUnit(value){
   if(value == null) return null;

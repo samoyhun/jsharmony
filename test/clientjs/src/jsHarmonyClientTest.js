@@ -59,6 +59,12 @@ var mocha = require('mocha');
     throwError(msg || 'Error not thrown: '+errDesc);
   }
 
+  function assertEqual(a, b, msg){
+    if(a !== b){
+      throwError((msg || 'Assertion failed') + ": " + a.toString() + " !== " + b.toString());
+    }
+  }
+
   describe('XDom selector', function() {
     before(function(){
       document.querySelector('#workspace').innerHTML = [
@@ -389,6 +395,60 @@ var mocha = require('mocha');
     });
   });
 
+  describe('XDom emit', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1"></div>',
+      ].join('');
+    });
+
+    it('standard event', function() {
+      var handler = function() {
+        handlerCalled = true;
+      }
+      XDom.on('#item1', 'click', handler);
+      XDom.emit('#item1', 'click');
+      assert(handlerCalled, 'emit triggered handler');
+      XDom.off('#item1', 'click', handler);
+    });
+
+    it('nonstandard event', function() {
+      var handler = function() {
+        handlerCalled = true;
+      }
+      XDom.on('#item1', 'foo', handler);
+      XDom.emit('#item1', 'foo');
+      assert(handlerCalled, 'emit triggered handler');
+      XDom.off('#item1', 'foo', handler);
+    });
+
+    it('custom event', function() {
+      var handler = function(e) {
+        if (e.detail == 'bar') {
+          handlerCalled = true;
+        }
+      }
+      XDom.on('#item1', 'custom', handler);
+      XDom.emit('#item1', new CustomEvent('custom', {detail: 'bar'}));
+      assert(handlerCalled, 'emit triggered handler');
+      XDom.off('#item1', 'custom', handler);
+    });
+
+    it('selector', function() {
+      var handler = function() {
+        handlerCalled = true;
+      }
+      XDom('#item1').on('click', handler);
+      XDom('#item1').emit('click');
+      assert(handlerCalled, 'emit triggered handler');
+      XDom('#item1').off('click', handler);
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
   describe('XDom getValue ', function() {
     before(function(){
       document.querySelector('#workspace').innerHTML = [
@@ -503,6 +563,237 @@ var mocha = require('mocha');
     });
   });
 
+  describe('XDom parent', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="grandparent" class="target">',
+        '  <div id="parent">',
+        '    <div id="child" class="sibling"></div>',
+        '    <div class="sibling"></div>',
+        '  </div>',
+        '</div>',
+        '<div class="target"></div>',
+      ].join('');
+    });
+
+    it('no arguments', function(){
+      assert(XDom('#child').parent().attr.id === 'parent', 'found parent');
+    });
+
+    it('higher level parent', function(){
+      var parent = XDom('#child').parent('.target');
+      assert(parent.attr.id === 'grandparent', 'found grandparent');
+      assert(parent.select().length == 1, 'found only grandparent');
+    });
+
+    it('parent not found', function(){
+      assert(XDom('#child').parent('.not.found').select().length == 0, 'no parent found');
+    });
+
+    it('deduplication', function(){
+      assert(XDom('.sibling').parent().select().length == 1, 'siblings have one parent');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+  
+  describe('XDom siblings', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1"></div>',
+        '<div id="item2"></div>',
+      ].join('');
+    });
+
+    it('next', function(){
+      assert(XDom('#item1').nextSibling().attr.id === 'item2', 'found next');
+    });
+
+    it('next when last', function(){
+      assert(XDom('#item2').nextSibling().select().length == 0, 'nothing is next');
+    });
+
+    it('previous', function(){
+      assert(XDom('#item2').previousSibling().attr.id === 'item1', 'found previous');
+    });
+
+    it('previous when first', function(){
+      assert(XDom('#item1').previousSibling().select().length == 0, 'nothing is previous');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom first/last', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1" class="target"></div>',
+        '<div id="item2" class="target"></div>',
+        '<div id="item3" class="target"></div>',
+      ].join('');
+    });
+
+    it('first', function(){
+      assert(XDom('.target').first().attr.id === 'item1', 'found first');
+    });
+
+    it('first of of nothing', function(){
+      assert(XDom('.not.found').first().select().length == 0, 'nothing is first');
+    });
+
+    it('last', function(){
+      assert(XDom('.target').last().attr.id === 'item3', 'found last');
+    });
+
+    it('last of of nothing', function(){
+      assert(XDom('.not.found').last().select().length == 0, 'nothing is last');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom children', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="parent">',
+        '  <div class="kid">',
+        '    <div></div>',
+        '  </div>',
+        '  <div class="kid"></div>',
+        '</div>',
+        '<div id="empty" class="kid"></div>',
+      ].join('');
+    });
+
+    it('has children', function(){
+      assert(XDom('#parent').children.select().length === 2, 'parent has children');
+    });
+
+    it('no children', function(){
+      assert(XDom('#empty').children.select().length === 0, 'element should have no children');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom filter/omit', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1" class="target"></div>',
+        '<div class="target"></div>',
+        '<div class="target"></div>',
+      ].join('');
+    });
+
+    it('base case', function(){
+      assert(XDom('.target').select().length === 3, 'starting with correct number of elements');
+    });
+
+    it('filter true', function(){
+      assert(XDom('.target').filter(function(el){return true;}).select().length === 3, 'filtered all elements');
+    });
+
+    it('filter false', function(){
+      assert(XDom('.target').filter(function(el){return false;}).select().length === 0, 'filtered all elements');
+    });
+
+    it('filter selective', function(){
+      assert(XDom('.target').filter(function(el){return el.id == 'item1';}).select().length === 1, 'filtered one element');
+    });
+
+    it('filter empty set', function(){
+      assert(XDom('.not.found').filter(function(el){return true;}).select().length === 0, 'empty is empty');
+    });
+
+    it('omit true', function(){
+      assert(XDom('.target').omit(function(el){return true;}).select().length === 0, 'omited all elements');
+    });
+
+    it('omit false', function(){
+      assert(XDom('.target').omit(function(el){return false;}).select().length === 3, 'omited all elements');
+    });
+
+    it('omit selective', function(){
+      assert(XDom('.target').omit(function(el){return el.id == 'item1';}).select().length === 2, 'omited one element');
+    });
+
+    it('omit empty set', function(){
+      assert(XDom('.not.found').omit(function(el){return true;}).select().length === 0, 'empty is empty');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom insertBefore', function() {
+    function setup(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="parent">',
+          '<div id="child1" class="child"></div>',
+          '<div id="child2" class="child"></div>',
+        '</div>',
+      ].join('');
+    }
+
+    it('insert into empty parent', function() {
+      setup();
+      var el = document.createElement('div');
+      XDom.selector('#child1').insertBefore(el, null);
+      assert(XDom.selector('#child1').children.select().length == 1, 'an empty target now has one child');
+    });
+
+    it('insert with no reference', function() {
+      setup();
+      var el = document.createElement('div');
+      XDom.selector('#parent').insertBefore(el, null);
+      assert(XDom.selector('#parent').children.select()[2] == el, 'inserted at end');
+    });
+
+    it('before first element', function() {
+      setup();
+      var el = document.createElement('div');
+      var ref = document.getElementById('child1');
+      XDom.selector('#parent').insertBefore(el, ref);
+      assert(XDom.selector('#parent').children.select()[0] == el, 'inserted at beginning');
+    });
+
+    it('in the middle', function() {
+      setup();
+      var el = document.createElement('div');
+      var ref = document.getElementById('child2');
+      XDom.selector('#parent').insertBefore(el, ref);
+      assert(XDom.selector('#parent').children.select()[1] == el, 'inserted at middle');
+    });
+
+    it('no target', function() {
+      setup();
+      var el = document.createElement('div');
+      XDom.selector('.not.found').insertBefore(el, null);
+      assert(el.parentNode == null, 'node was not inserted');
+    });
+
+    it('multiple targets', function() {
+      setup();
+      var el = document.createElement('div');
+      XDom.selector('.child').insertBefore(el, null);
+      assert(XDom.selector('#child1').children.select().length == 0, 'not in child1');
+      assert(XDom.selector('#child2').children.select().length == 1, 'in child2');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  })
+
   describe('XDom calc', function() {
     before(function(){
       document.querySelector('#workspace').innerHTML = [
@@ -517,7 +808,7 @@ var mocha = require('mocha');
       assert(XDom.selector('#item1').calc.width() === 200, 'found correct offsetwidth');
     });
     it('calc height css id ', function() {
-      assert(XDom.selector('#item2').calc.height('#item2') === 200, 'found correct offsetheight');
+      assert(XDom.selector('#item2').calc.height() === 200, 'found correct offsetheight');
     });
 
     after(function(){
@@ -578,36 +869,97 @@ var mocha = require('mocha');
       var innerBox = XDom('.innerbox');
       var outerBox = XDom('.outerbox');
 
-      assert(contentBox.calc.width({ to:'margin' }) == 22, 'contentbox width to margin');
-      assert(contentBox.calc.width({ to:'border' }) == 22, 'contentbox width to border');
-      assert(contentBox.calc.width({ to:'padding' }) == 20, 'contentbox width to padding');
-      assert(contentBox.calc.width({ to:'content' }) == 20, 'contentbox width to content');
+      assert(contentBox.calc.widthToMargin() == 22, 'contentbox width to margin');
+      assert(contentBox.calc.widthToBorder() == 22, 'contentbox width to border');
+      assert(contentBox.calc.widthToPadding() == 20, 'contentbox width to padding');
+      assert(contentBox.calc.widthToContent() == 20, 'contentbox width to content');
 
-      assert(contentBox.calc.height({ to:'margin' }) == 22, 'contentbox height to margin');
-      assert(contentBox.calc.height({ to:'border' }) == 22, 'contentbox height to border');
-      assert(contentBox.calc.height({ to:'padding' }) == 20, 'contentbox height to padding');
-      assert(contentBox.calc.height({ to:'content' }) == 20, 'contentbox height to content');
+      assert(contentBox.calc.heightToMargin() == 22, 'contentbox height to margin');
+      assert(contentBox.calc.heightToBorder() == 22, 'contentbox height to border');
+      assert(contentBox.calc.heightToPadding() == 20, 'contentbox height to padding');
+      assert(contentBox.calc.heightToContent() == 20, 'contentbox height to content');
 
-      assert(innerBox.calc.width({ to:'margin' }) == 148, 'innerBox width to margin');
-      assert(innerBox.calc.width({ to:'border' }) == 108, 'innerBox width to border');
-      assert(innerBox.calc.width({ to:'padding' }) == 102, 'innerBox width to padding');
-      assert(innerBox.calc.width({ to:'content' }) == 22, 'innerBox width to content');
+      assert(innerBox.calc.widthToMargin() == 148, 'innerBox width to margin');
+      assert(innerBox.calc.widthToBorder() == 108, 'innerBox width to border');
+      assert(innerBox.calc.widthToPadding() == 102, 'innerBox width to padding');
+      assert(innerBox.calc.widthToContent() == 22, 'innerBox width to content');
 
-      assert(innerBox.calc.height({ to:'margin' }) == 148, 'innerBox height to margin');
-      assert(innerBox.calc.height({ to:'border' }) == 108, 'innerBox height to border');
-      assert(innerBox.calc.height({ to:'padding' }) == 102, 'innerBox height to padding');
-      assert(innerBox.calc.height({ to:'content' }) == 22, 'innerBox height to content');
+      assert(innerBox.calc.heightToMargin() == 148, 'innerBox height to margin');
+      assert(innerBox.calc.heightToBorder() == 108, 'innerBox height to border');
+      assert(innerBox.calc.heightToPadding() == 102, 'innerBox height to padding');
+      assert(innerBox.calc.heightToContent() == 22, 'innerBox height to content');
 
       var workspace = document.getElementById('workspace');
-      assert(outerBox.calc.width({ to:'margin' }) == workspace.clientWidth, 'outerBox width to margin');
-      assert(outerBox.calc.width({ to:'border' }) == workspace.clientWidth, 'outerBox width to border');
-      assert(outerBox.calc.width({ to:'padding' }) == workspace.clientWidth - 6, 'outerBox width to padding');
-      assert(outerBox.calc.width({ to:'content' }) == workspace.clientWidth - 6, 'outerBox width to content');
+      assert(outerBox.calc.widthToMargin() == workspace.clientWidth, 'outerBox width to margin');
+      assert(outerBox.calc.widthToBorder() == workspace.clientWidth, 'outerBox width to border');
+      assert(outerBox.calc.widthToPadding() == workspace.clientWidth - 6, 'outerBox width to padding');
+      assert(outerBox.calc.widthToContent() == workspace.clientWidth - 6, 'outerBox width to content');
 
-      assert(outerBox.calc.height({ to:'margin' }) == 154, 'outerBox height to margin');
-      assert(outerBox.calc.height({ to:'border' }) == 154, 'outerBox height to border');
-      assert(outerBox.calc.height({ to:'padding' }) == 148, 'outerBox height to padding');
-      assert(outerBox.calc.height({ to:'content' }) == 148, 'outerBox height to content');
+      assert(outerBox.calc.heightToMargin() == 154, 'outerBox height to margin');
+      assert(outerBox.calc.heightToBorder() == 154, 'outerBox height to border');
+      assert(outerBox.calc.heightToPadding() == 148, 'outerBox height to padding');
+      assert(outerBox.calc.heightToContent() == 148, 'outerBox height to content');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom top / left', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div class="outerbox" style="border:3px solid black; position: relative;">',
+        '    <div class="innerbox" style="border:3px solid orange; margin:20px; padding:40px; display:inline-block;">',
+        '      <div class="contentbox" style="border:1px solid black; width:20px; height: 20px; display:inline-block;"></div>',
+        '    </div>',
+        '</div>',
+      ].join('');
+    });
+
+    it('top', function(){
+      var contentBox = XDom('.contentbox');
+      var innerBox = XDom('.innerbox');
+      var outerBox = XDom('.outerbox');
+
+      assertEqual(typeof(contentBox.calc.top()), 'number', 'contentBox top');
+      assertEqual(typeof(contentBox.calc.topFromDocument()), 'number', 'contentBox top from document');
+      assertEqual(contentBox.calc.topFromParent(), 43, 'contentBox top from parent');
+      assertEqual(contentBox.calc.topFromOffsetParent(), 66, 'contentBox top from offset parent');
+      assertEqual(contentBox.calc.topFrom(innerBox.select()[0]), 43, 'contentBox top from target');
+    });
+
+    it('left', function(){
+      var contentBox = XDom('.contentbox');
+      var innerBox = XDom('.innerbox');
+      var outerBox = XDom('.outerbox');
+
+      assertEqual(typeof(contentBox.calc.left()), 'number', 'contentBox left');
+      assertEqual(typeof(contentBox.calc.leftFromDocument()), 'number', 'contentBox left from document');
+      assertEqual(contentBox.calc.leftFromParent(), 43, 'contentBox left from parent');
+      assertEqual(contentBox.calc.leftFromOffsetParent(), 66, 'contentBox left from offset parent');
+      assertEqual(contentBox.calc.leftFrom(innerBox.select()[0]), 43, 'contentBox left from target');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
+  describe('XDom isVisible', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div class="visible"></div>',
+        '<div class="hidden" style="display: none"></div>',
+      ].join('');
+    });
+
+    it('is visible', function(){
+      assert(XDom.isVisible(XDom('.visible').select()[0]), 'normal element is visible');
+    });
+
+    it('is not visible', function(){
+      assert(!XDom.isVisible(XDom('.hidden').select()[0]), 'off element is not visible');
     });
 
     after(function(){
