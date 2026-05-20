@@ -295,7 +295,7 @@ exports = module.exports = function(jsh){
   };
 
   XDebugConsole.prototype.getBodyHeight = function(baseHeight){
-    var settingsEl = this.DebugPanel.selector('.debug-settings');
+    var settingsEl = this.DebugPanel.selector('.debug-settings').select()[0];
     var settingsHeight = (this.settings.settings_visible && settingsEl) ? settingsEl.offsetHeight : 0;
     return baseHeight - 31 - settingsHeight;
   };
@@ -326,8 +326,8 @@ exports = module.exports = function(jsh){
   };
 
   XDebugConsole.prototype.renderSettings = function(){
-    var settingsEl = this.DebugPanel.selector('.debug-settings');
-    settingsEl.style.display = !!this.settings.settings_visible;
+    var xdSettings = this.DebugPanel.selector('.debug-settings');
+    xdSettings.style.display = !!this.settings.settings_visible;
   };
 
   XDebugConsole.prototype.toggleSettings = function(){
