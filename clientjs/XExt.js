@@ -1845,10 +1845,10 @@ exports = module.exports = function(jsh){
     if (options.button_ok_caption){
       jsh.$XDdialogBlock('.xalertbox input.button_ok').style.display = true;
       jsh.$XDdialogBlock('.xalertbox input.button_ok').setValue = options.button_ok_caption;
-    } 
+    }
     else jsh.$XDdialogBlock('.xalertbox input.button_ok').style.display = false;
 
-    jsh.$XDdialogBlock('.xalertbox').off('acceptDialog')
+    jsh.$XDdialogBlock('.xalertbox').off('acceptDialog');
     jsh.$XDdialogBlock('.xalertbox').on('acceptDialog', acceptfunc);
     
     jsh.$XDdialogBlock('.xalertbox.base').style.display = true;
@@ -1964,9 +1964,9 @@ exports = module.exports = function(jsh){
     jsh.$XDdialogBlock('.xpromptbox input.button_ok').on('click', acceptfunc);
     jsh.$XDdialogBlock('.xpromptbox input.button_cancel').on('click', cancelfunc);
 
-    jsh.$XDdialogBlock('.xpromptbox').off('acceptDialog')
+    jsh.$XDdialogBlock('.xpromptbox').off('acceptDialog');
     jsh.$XDdialogBlock('.xpromptbox').on('acceptDialog', acceptfunc);
-    jsh.$XDdialogBlock('.xpromptbox').off('cancelDialog')
+    jsh.$XDdialogBlock('.xpromptbox').off('cancelDialog');
     jsh.$XDdialogBlock('.xpromptbox').on('cancelDialog', cancelfunc);
 
     jsh.$XDdialogBlock('.xpromptbox input').on('keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
