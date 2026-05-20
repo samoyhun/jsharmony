@@ -22,7 +22,6 @@ $.fn.$find = function(){ return $.fn.find.apply(this, arguments); };
 var _ = require('lodash');
 
 exports = module.exports = function(jsh){
-  var XDom = jsh.XDom;
   var XValidate = jsh.XValidate; // eslint-disable-line no-unused-vars
   var XExt = function(){ };
 
@@ -1831,7 +1830,7 @@ exports = module.exports = function(jsh){
     jsh.$XDdialogBlock('.xalertbox.base').style.zIndex = jsh.xDialog.length;
     
     var oldactive = document.activeElement;
-    if (oldactive) jsh.XDom(oldactive).select()[0].blur();
+    if (oldactive) jsh.XDom(oldactive).blur();
     jsh.$XDdialogBlock('.xalertmessage').content.replace(msg);
     jsh.$XDdialogBlock('.xalertbox input').off('click');
     jsh.$XDdialogBlock('.xalertbox input').off('keydown');
@@ -1856,7 +1855,7 @@ exports = module.exports = function(jsh){
     jsh.XDdialogBlock.style.display = true;
     jsh.XWindowResize();
     if (!XExt.isIOS()) {
-      jsh.$XDdialogBlock('.xalertbox.base input').select()[0].focus();
+      jsh.$XDdialogBlock('.xalertbox.base input').focus();
     }
     if(options.autohide) setTimeout(function(){ if(!isClosing) acceptfunc(); }, options.autohide);
   };
@@ -1886,7 +1885,7 @@ exports = module.exports = function(jsh){
     jsh.$XDdialogBlock('.xconfirmbox.base').style.zIndex = jsh.xDialog.length;
     
     var oldactive = document.activeElement;
-    if (oldactive) jsh.XDom(oldactive).select().blur();
+    if (oldactive) jsh.XDom(oldactive).blur();
     jsh.$XDdialogBlock('.xconfirmmessage').content.replace(msg);
     jsh.$XDdialogBlock('.xconfirmbox input').off('click');
     jsh.$XDdialogBlock('.xconfirmbox input').off('keydown');
@@ -1987,6 +1986,12 @@ exports = module.exports = function(jsh){
     //Classes - default_focus, button_ok, button_cancel
     var foundPrevDialog = jsh.$XDdialogBlock(sel).length;
     if (foundPrevDialog && !options.reuse) jsh.$XDdialogBlock(sel).remove();
+    if (html && html.jquery) {
+      var container = document.createElement('div');
+      html.appendTo(container);
+      html = container.innerHTML;
+      container = undefined;
+    }
     if (!foundPrevDialog || !options.reuse) jsh.XDdialogBlock.content.append(html);
     
     //ShowDialog
@@ -2060,7 +2065,8 @@ exports = module.exports = function(jsh){
         });
         if(options.backgroundClose){
           jsh.dialogBlock.on('mousedown.close' + sel, function(e){
-            if(!XDom(e.target).is('.xdialogoverlay,.xdialogblock')) return;
+            var xdTarget = jsh.XDom(e.target);
+            if(!(xdTarget.class.contains('xdialogoverlay') || !xdTarget.class.contains('xdialogblock'))) return;
             var mouseDownTime = new Date().getTime();
             jsh.dialogBlock.one('mouseup.close', function(e){
               var mouseUpTime = new Date().getTime();
@@ -2076,8 +2082,8 @@ exports = module.exports = function(jsh){
         jsh.XWindowResize();
         setTimeout(function(){
           jsh.XWindowResize();
-          if(jsh.$XDdialogBlock(sel + ' .default_focus').length) jsh.$XDdialogBlock(sel + ' .default_focus').select()[0].focus(); 
-          else jsh.$XDdialogBlock(sel).selector('input:visible,textarea:visible,select:visible').select()[0].focus(); 
+          if(jsh.$XDdialogBlock(sel + ' .default_focus').length) jsh.$XDdialogBlock(sel + ' .default_focus').focus();
+          else jsh.$XDdialogBlock(sel).selector('input,textarea,select').filter(jsh.XDom.isVisible).focus();
         }, 1);
       }
     );

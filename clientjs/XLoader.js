@@ -34,7 +34,7 @@ exports = module.exports = function(jsh){
     this.containerClass = _containerClass || '.xloadingblock.jsHarmonyElement_'+jsh._instanceClass;
 
     //Check if required elements have been rendered to the page
-    if(!jsh.$XDroot(_this.containerClass).length){
+    if(!jsh.$XDroot(_this.containerClass).select().length){
       console.error(_this.containerClass+' not found on page during XLoader initialization'); // eslint-disable-line no-console
     }
 
@@ -82,7 +82,7 @@ exports = module.exports = function(jsh){
     this.IsLoading = false;
     jsh.$XDroot(_this.containerClass+' .xloadingbox').stop();
     var curfade = GetOpacity(jsh.$XDroot(_this.containerClass+' .xloadingbox').select()[0]);
-    jsh.$XDroot(_this.containerClass+' .xloadingbox').animate({opacity:500 * curfade}, 0, function () { if (!this.IsLoading) { jsh.$XDroot(_this.containerClass).style.disply = false; } });
+    jsh.$XDroot(_this.containerClass+' .xloadingbox').animate({opacity:500 * curfade}, 0, function () { if (!this.IsLoading) { jsh.$XDroot(_this.containerClass).style.display = false; } });
     jsh.XDroot.style.cursor = '';;
   };
 

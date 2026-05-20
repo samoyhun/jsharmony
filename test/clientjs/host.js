@@ -19446,6 +19446,16 @@ var mocha = require('mocha');
       assert(handlerCalled, 'on added event and executed');
     });
 
+    it('on multiple events ', function() {
+      var handlerCalled = 0;
+      XDom.on('#item1', 'click foo', function() {
+        handlerCalled++;
+      });
+      XDom.selectOne('#item1').click();
+      XDom('#item1').emit('foo');
+      assertEqual(handlerCalled, 2, 'both events executed');
+    });
+
     after(function(){
       document.querySelector('#workspace').innerHTML = '';
     });
@@ -19467,6 +19477,18 @@ var mocha = require('mocha');
       XDom.off('#item1', 'click', handler);
       XDom.selectOne('#item1').click();
       assert(!handlerCalled, 'off removed added event');
+    });
+
+    it('off multiple events ', function() {
+      var handlerCalled = 0;
+      var handler = function() {
+        handlerCalled++;
+      }
+      XDom.on('#item1', 'click foo', handler);
+      XDom.off('#item1', 'click foo', handler);
+      XDom.selectOne('#item1').click();
+      XDom('#item1').emit('foo');
+      assertEqual(handlerCalled, 0, 'off removed all events');
     });
 
     after(function(){

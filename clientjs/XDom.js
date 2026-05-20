@@ -319,17 +319,23 @@ XDom.setAttribute = function(target, prop, val){
 };
 
 XDom.on = function(target, eventType, handler, eventOptions){
+  var _eventTypes = eventType.split(' ');
   _.each(XDom.resolve(target), function(el){
     if(el && el.addEventListener){
-      el.addEventListener(eventType, handler, eventOptions);
+      _.each(_eventTypes, function(et) {
+        el.addEventListener(et, handler, eventOptions);
+      });
     }
   });
 };
 
 XDom.off = function(target, eventType, handler, eventOptions){
+  var _eventTypes = eventType.split(' ');
   _.each(XDom.resolve(target), function(el){
     if(el && el.removeEventListener){
-      el.removeEventListener(eventType, handler, eventOptions);
+      _.each(_eventTypes, function(et) {
+        el.removeEventListener(et, handler, eventOptions);
+      });
     }
   });
 };
