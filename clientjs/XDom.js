@@ -224,7 +224,8 @@ XDom.resolve = function(target){
   if(!target) return [];
   if(_.isArray(target)) return target;
   if(_.isString(target)) return XDom.select(target);
-  if(_.isFunction(target.select)) return target.select();
+  // sniffing the select function does not work because target may be a dom element, and elements such as `input` may have select methods
+  if(target instanceof Selector) return target.select();
   return [target];
 };
 

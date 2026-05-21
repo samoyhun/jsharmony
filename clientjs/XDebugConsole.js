@@ -255,7 +255,7 @@ exports = module.exports = function(jsh){
     this.DebugPanel = this.DebugDialog.selector('.debug-panel');
     this.DebugPanel.selector('.debug-settings').content.append(settingsHtml);
     this.DebugPanelMin = this.DebugDialog.selector('.debug-panel-minimized');
-    var checkboxes = this.DebugPanel.selector('.xdebugconsole_source');
+    var checkboxes = this.DebugPanel.selector('.xdebugconsole_source').select();
     for (var i=0; i<checkboxes.length; i++){
       if (this.settings.sources[checkboxes[i].value]){
         checkboxes[i].click();// on click what?
@@ -287,7 +287,7 @@ exports = module.exports = function(jsh){
   };
 
   XDebugConsole.prototype.getWindowSize = function(){
-    var debugPanel = XDom('.debug-panel');
+    var debugPanel = XDom.selectOne('.debug-panel');
     var width = debugPanel ? debugPanel.offsetWidth : 0;
     var height = debugPanel ? debugPanel.offsetHeight : 0;
     if(this.settings.dock == 'bottom') return { height: height };

@@ -59,8 +59,8 @@ exports = module.exports = function(jsh){
     jsh.XDroot.style.cursor = 'wait';
     this.IsLoading = true;
     this.MouseStack = 0;
-    if(jsh.xDialog.length) jsh.$XDroot('input:not([type=button]),select,textarea').select()[0].blur();
-    else jsh.$XDroot('input,select,textarea').select()[0].blur();
+    if(jsh.xDialog.length) jsh.$XDroot('input:not([type=button]),select,textarea').blur();
+    else jsh.$XDroot('input,select,textarea').blur();
     jsh.$XDroot(_this.containerClass+' .xloadingbox').animate({opacity: 0}, 0);
     jsh.$XDroot(_this.containerClass).style.display = true;
     jsh.$XDroot(_this.containerClass+' .xloadingbox').animate({opacity: 1}, 2000);

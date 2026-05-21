@@ -168,7 +168,6 @@ var jsHarmony = function(options){
   this._instanceClass = this.XExt.escapeCSSClass(this._instance);
   this.root = $(document);
   this.XDroot = XDom(document);
-  this.dom = new XDom.Selector(document);
   this.dialogBlock = null;
   this.XDdialogBlock = null;
   this.globalsMonitorCache = {};

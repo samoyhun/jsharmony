@@ -1826,7 +1826,7 @@ exports = module.exports = function(jsh){
     }
     //alert(msg);
     jsh.xDialog.unshift('.xalertbox');
-    jsh.$XDdialogBlock('.xalertbox').style = options.style;
+    jsh.$XDdialogBlock('.xalertbox').attr.style = options.style;
     jsh.$XDdialogBlock('.xalertbox.base').style.zIndex = jsh.xDialog.length;
     
     var oldactive = document.activeElement;
@@ -1844,7 +1844,7 @@ exports = module.exports = function(jsh){
 
     if (options.button_ok_caption){
       jsh.$XDdialogBlock('.xalertbox input.button_ok').style.display = true;
-      jsh.$XDdialogBlock('.xalertbox input.button_ok').setValue = options.button_ok_caption;
+      jsh.$XDdialogBlock('.xalertbox input.button_ok').value = options.button_ok_caption;
     }
     else jsh.$XDdialogBlock('.xalertbox input.button_ok').style.display = false;
 
@@ -1896,9 +1896,9 @@ exports = module.exports = function(jsh){
       jsh.$XDdialogBlock('.xconfirmbox input.button_cancel').on('click', XExt.dialogButtonFunc('.xconfirmbox', oldactive, options.onCancel));
     }
     else jsh.$XDdialogBlock('.xconfirmbox input.button_cancel').style.display = false;
-    if (options.button_ok_caption) jsh.$XDdialogBlock('.xconfirmbox input.button_ok').setValue(options.button_ok_caption);
-    if (options.button_no_caption) jsh.$XDdialogBlock('.xconfirmbox input.button_no').setValue(options.button_no_caption);
-    if (options.button_cancel_caption) jsh.$XDdialogBlock('.xconfirmbox input.button_cancel').setValue(options.button_cancel_caption);
+    if (options.button_ok_caption) jsh.$XDdialogBlock('.xconfirmbox input.button_ok').value = options.button_ok_caption;
+    if (options.button_no_caption) jsh.$XDdialogBlock('.xconfirmbox input.button_no').value =options.button_no_caption;
+    if (options.button_cancel_caption) jsh.$XDdialogBlock('.xconfirmbox input.button_cancel').value = options.button_cancel_caption;
 
     jsh.$XDdialogBlock('.xconfirmbox').off('acceptDialog');
     jsh.$XDdialogBlock('.xconfirmbox').on('acceptDialog', acceptfunc);
@@ -1911,7 +1911,7 @@ exports = module.exports = function(jsh){
     jsh.$XDdialogBlock('.xconfirmbox.base').style.display = true;
     jsh.dialogBlock.style.display = true;
     jsh.XWindowResize();
-    if (!XExt.isIOS()) jsh.$XDdialogBlock('.xconfirmbox.base input.button_ok').select()[0].focus();
+    if (!XExt.isIOS()) jsh.$XDdialogBlock('.xconfirmbox.base input.button_ok').focus();
   };
 
   XExt.stringify = function (origvalue, replacer, space) {
@@ -1958,9 +1958,9 @@ exports = module.exports = function(jsh){
     jsh.$XDdialogBlock('.xpromptmessage').content.replace(msg);
     jsh.$XDdialogBlock('.xpromptbox input').off('click');
     jsh.$XDdialogBlock('.xpromptbox input').off('keydown');
-    jsh.$XDdialogBlock('.xpromptfield').setValue(dflt);
+    jsh.$XDdialogBlock('.xpromptfield').value = dflt;
     var cancelfunc = XExt.dialogButtonFunc('.xpromptbox', oldactive, function () { if (onComplete) onComplete(null); });
-    var acceptfunc = XExt.dialogButtonFunc('.xpromptbox', oldactive, function () { if (onComplete) onComplete(jsh.$XDdialogBlock('.xpromptfield').getValue()); });
+    var acceptfunc = XExt.dialogButtonFunc('.xpromptbox', oldactive, function () { if (onComplete) onComplete(jsh.$XDdialogBlock('.xpromptfield').value); });
     jsh.$XDdialogBlock('.xpromptbox input.button_ok').on('click', acceptfunc);
     jsh.$XDdialogBlock('.xpromptbox input.button_cancel').on('click', cancelfunc);
 
@@ -1974,7 +1974,7 @@ exports = module.exports = function(jsh){
     jsh.$XDdialogBlock('.xpromptbox.base').style.display = true;
     jsh.XDdialogBlock.style.display = true;
     jsh.XWindowResize();
-    jsh.$XDdialogBlock('.xpromptfield').select()[0].focus();
+    jsh.$XDdialogBlock('.xpromptfield').focus();
   };
 
   //html - HTML or jQuery object
