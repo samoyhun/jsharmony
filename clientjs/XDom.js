@@ -524,103 +524,107 @@ XDom.style = {
   }),
 };
 
-function withFirstTarget(f){
+function execOnFirstElWithProp(prop, f){
   return function(target, arg1) {
     var _el = XDom.resolve(target);
-    if(_el.length) return f(_el[0], arg1);
+    if(!_el.length) return undefined;
+    for(var i=0;i<_el.length; i++){
+      if(_el[i] && (prop in _el[i])) return f(_el[0], arg1);
+    }
+    return undefined;
   };
 }
 
 XDom.calc = {
-  widthToPadding: withFirstTarget(function(el){
+  widthToPadding: execOnFirstElWithProp('clientWidth', function(el){
     return el.clientWidth;
   }),
-  widthToBorder: withFirstTarget(function(el){
+  widthToBorder: execOnFirstElWithProp('offsetWidth', function(el){
     return el.offsetWidth;
   }),
-  widthToMargin: withFirstTarget(function(el){
+  widthToMargin: execOnFirstElWithProp('offsetWidth', function(el){
     var elStyles = window.getComputedStyle && window.getComputedStyle(el);
     return el.offsetWidth + (parseFloat(elStyles.marginLeft)||0) + (parseFloat(elStyles.marginRight)||0);
   }),
-  widthToContent: withFirstTarget(function(el){
+  widthToContent: execOnFirstElWithProp('clientWidth', function(el){
     var elStyles = window.getComputedStyle && window.getComputedStyle(el);
     return el.clientWidth - (parseFloat(elStyles.paddingLeft)||0) - (parseFloat(elStyles.paddingRight)||0);
   }),
 
-  heightToPadding: withFirstTarget(function(el){
+  heightToPadding: execOnFirstElWithProp('clientHeight', function(el){
     return el.clientHeight;
   }),
-  heightToBorder: withFirstTarget(function(el){
+  heightToBorder: execOnFirstElWithProp('offsetHeight', function(el){
     return el.offsetHeight;
   }),
-  heightToMargin: withFirstTarget(function(el){
+  heightToMargin: execOnFirstElWithProp('offsetHeight', function(el){
     var elStyles = window.getComputedStyle && window.getComputedStyle(el);
     return el.offsetHeight + (parseFloat(elStyles.marginTop)||0) + (parseFloat(elStyles.marginBottom)||0);
   }),
-  heightToContent: withFirstTarget(function(el){
+  heightToContent: execOnFirstElWithProp('clientHeight', function(el){
     var elStyles = window.getComputedStyle && window.getComputedStyle(el);
     return el.clientHeight - (parseFloat(elStyles.paddingTop)||0) - (parseFloat(elStyles.paddingBottom)||0);
   }),
 
-  top: withFirstTarget(function(el){
+  top: execOnFirstElWithProp('', function(el){
     return el.getBoundingClientRect().top;
   }),
-  topFromDocument: withFirstTarget(function(el){
+  topFromDocument: execOnFirstElWithProp('getBoundingClientRect', function(el){
     return el.getBoundingClientRect().top + window.scrollY;
   }),
-  topFromParent: withFirstTarget(function(el){
+  topFromParent: execOnFirstElWithProp('getBoundingClientRect', function(el){
     var parent = el.parentNode;
-    if (parent) {
+    if (parent && parent.getBoundingClientRect) {
       return el.getBoundingClientRect().top - parent.getBoundingClientRect().top;
     } else {
       return el.getBoundingClientRect().top + window.scrollY;
     }
   }),
-  topFromOffsetParent: withFirstTarget(function(el){
+  topFromOffsetParent: execOnFirstElWithProp('getBoundingClientRect', function(el){
     var parent = el.offsetParent;
-    if (parent) {
+    if (parent && parent.getBoundingClientRect) {
       return el.getBoundingClientRect().top - parent.getBoundingClientRect().top;
     } else {
       return el.getBoundingClientRect().top + window.scrollY;
     }
   }),
-  topFrom: withFirstTarget(function(el, otherEl){
+  topFrom: execOnFirstElWithProp('getBoundingClientRect', function(el, otherEl){
     if (otherEl && otherEl.getBoundingClientRect) {
       return el.getBoundingClientRect().top - otherEl.getBoundingClientRect().top;
     } else {
       console.warn('invalid argument to XDom.calc.topFrom'); // eslint-disable-line no-console
-      return 0;
+      return undefined;
     }
   }),
 
-  left: withFirstTarget(function(el){
+  left: execOnFirstElWithProp('getBoundingClientRect', function(el){
     return el.getBoundingClientRect().left;
   }),
-  leftFromDocument: withFirstTarget(function(el){
+  leftFromDocument: execOnFirstElWithProp('getBoundingClientRect', function(el){
     return el.getBoundingClientRect().left + window.scrollY;
   }),
-  leftFromParent: withFirstTarget(function(el){
+  leftFromParent: execOnFirstElWithProp('getBoundingClientRect', function(el){
     var parent = el.parentNode;
-    if (parent) {
+    if (parent && parent.getBoundingClientRect) {
       return el.getBoundingClientRect().left - parent.getBoundingClientRect().left;
     } else {
       return el.getBoundingClientRect().left + window.scrollX;
     }
   }),
-  leftFromOffsetParent: withFirstTarget(function(el){
+  leftFromOffsetParent: execOnFirstElWithProp('getBoundingClientRect', function(el){
     var parent = el.offsetParent;
-    if (parent) {
+    if (parent && parent.getBoundingClientRect) {
       return el.getBoundingClientRect().left - parent.getBoundingClientRect().left;
     } else {
       return el.getBoundingClientRect().left + window.scrollX;
     }
   }),
-  leftFrom: withFirstTarget(function(el, otherEl){
+  leftFrom: execOnFirstElWithProp('getBoundingClientRect', function(el, otherEl){
     if (otherEl && otherEl.getBoundingClientRect) {
       return el.getBoundingClientRect().left - otherEl.getBoundingClientRect().left;
     } else {
-      console.warn('invalid argument to XDom.calc.leftFrom');
-      return 0;
+      console.warn('invalid argument to XDom.calc.leftFrom'); // eslint-disable-line no-console
+      return undefined;
     }
   }),
 };
@@ -656,7 +660,7 @@ XDom.animate = function(target, props, duration, callback){
       var start = parseStyleUnit(startRaw);
       var end = parseStyleUnit(endStr);
       // TODO: Consider unit mismatch between start and end - error out
-      //    console.warning(...)
+      //    console warning(...)
       //    Push null onto array, and set to end size at end
       animationMap.set(el, myAnimationID);
       if(start.unit != end.unit){
