@@ -83,7 +83,7 @@ exports = module.exports = function(jsh){
     jsh.$XDroot(_this.containerClass+' .xloadingbox').stop();
     var curfade = GetOpacity(jsh.$XDroot(_this.containerClass+' .xloadingbox').select()[0]);
     jsh.$XDroot(_this.containerClass+' .xloadingbox').animate({opacity:500 * curfade}, 0, function () { if (!this.IsLoading) { jsh.$XDroot(_this.containerClass).style.disply = false; } });
-    jsh.XDroot.style.cursor = '';;
+    jsh.XDroot.style.cursor = '';
   };
 
   function GetOpacity(elem) {

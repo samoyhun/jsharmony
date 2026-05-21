@@ -23,16 +23,6 @@ var _ = require('lodash');
 
 exports = module.exports = function(jsh){
 
-  function lteIE7(){
-    if (/MSIE (\d+\.\d+);/.test(navigator.userAgent)){
-      var ieversion=new Number(RegExp.$1);
-      if (ieversion<=7){
-        return true;
-      }
-    }
-    return false;
-  }
-
   function XGrid(options){
     var _this = this;
 
@@ -41,7 +31,7 @@ exports = module.exports = function(jsh){
       modelid: undefined,
       API: undefined,
       Paging: undefined,
-      CustomScroll: undefined,
+      CustomScroll: undefined, /* { init(XGrid, updateFunc), update(XGrid), destroy(XGrid) } */
       ScrollControl: undefined,
       PlaceholderID: undefined,
       TemplateID: undefined,
@@ -53,16 +43,7 @@ exports = module.exports = function(jsh){
     this.ColSpan = jsh.$root(this.PlaceholderID).parent().$find('thead th').length;
     this.modelid = options.modelid;
     
-    if(typeof options.CustomScroll == 'undefined') this.CustomScroll = '';
-    else {
-      if(lteIE7()){
-        this.CustomScroll = '';
-        options.ScrollControl = options.CustomScroll;
-        jsh.$(options.CustomScroll).css('overflow','auto');
-      }
-      else this.CustomScroll = options.CustomScroll;
-    }
-    
+    this.CustomScroll = options.CustomScroll || undefined;
     if(options.Paging === undefined) this.Paging = true;
     else this.Paging = options.Paging;
     if(options.ScrollControl === undefined) this.ScrollControl = window;
@@ -283,9 +264,7 @@ exports = module.exports = function(jsh){
               return false;
             });
           }
-          if (_this.CustomScroll != '') {
-            jsh.$(_this.CustomScroll).mCustomScrollbar('update');
-          }
+          if (_this.CustomScroll) _this.CustomScroll.update(_this);
         }
         if(loader) loader.StopLoading(_this);
         _this.IsLoading = false;
@@ -406,23 +385,13 @@ exports = module.exports = function(jsh){
         }
       }
     };
-    if(_this.CustomScroll != ''){
-      jsh.$(_this.CustomScroll).mCustomScrollbar({
-        theme:'dark',
-        autoScrollOnFocus: false,
-        scrollButtons:{ enable:true },
-        scrollInertia:0,
-        callbacks:{
-          onTotalScroll: updateFunc
-        }
-      });
-    }
+    if(_this.CustomScroll) _this.CustomScroll.init(_this, updateFunc);
     else if(this.ScrollControl == window) this._WindowOnScrollBottom(updateFunc);
     else this._ControlOnScrollBottom(updateFunc);
   };
   XGrid.prototype.Destroy = function (){
     var _this = this;
-    if (_this.CustomScroll != '') { jsh.$(_this.CustomScroll).mCustomScrollbar('destroy'); }
+    if(_this.CustomScroll) { _this.CustomScroll.destroy(_this); }
     else { jsh.$(_this.ScrollControl).unbind('scroll', _this.scrollFunc); }
   };
 

@@ -228,9 +228,9 @@ jsHarmony.prototype.$root = function(sel){ return this.root.$find(sel); };
 jsHarmony.prototype.$dialogBlock = function(sel){ if(!this.dialogBlock) return $(); return this.dialogBlock.$find(sel); };
 
 // NOTE: $ used to avoid naming conflicts with this.XDialogBlock
-jsHarmony.prototype.$XDdialogBlock = function(sel){ 
-  if(!this.XDdialogBlock) return XDom(); 
-  return this.XDdialogBlock.selector(sel); 
+jsHarmony.prototype.$XDdialogBlock = function(sel){
+  if(!this.XDdialogBlock) return XDom();
+  return this.XDdialogBlock.selector(sel);
 };
 // NOTE: $ used to avoid naming conflicts with this.XDroot
 jsHarmony.prototype.$XDroot = function(sel){ return this.XDroot.selector(sel); };

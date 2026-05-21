@@ -383,7 +383,7 @@ XDom.focus = function(target){
     var el = _el[i];
     if(el && el.focus) el.focus();
   }
-}
+};
 
 XDom.blur = function(target){
   var _el = XDom.resolve(target);
@@ -391,11 +391,11 @@ XDom.blur = function(target){
     var el = _el[i];
     if(el && el.blur) el.blur();
   }
-}
+};
 
 XDom.isVisible = function(el){
   return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
-}
+};
 
 function nodeMap(target, f){
   var _el = XDom.resolve(target);
@@ -403,37 +403,37 @@ function nodeMap(target, f){
 }
 
 function propertyMap(target, property){
-  return nodeMap(target, function(el) {return el && el[property]});
+  return nodeMap(target, function(el) {return el && el[property];});
 }
 
 XDom.parent = function(target, parentSelector){
   return nodeMap(target, parentSelector ?
-    function(el){ return el && el.closest(parentSelector); } : 
+    function(el){ return el && el.closest(parentSelector); } :
     function(el){ return el && el.parentNode; }
   );
-}
+};
 
 XDom.nextSibling = function(target){
   return propertyMap(target, 'nextSibling');
-}
+};
 
 XDom.previousSibling = function(target){
   return propertyMap(target, 'previousSibling');
-}
+};
 
 XDom.first = function(target){
   var _el = XDom.resolve(target);
   if (_el.length) {
     return _el[0];
   }
-};  
+};
 
 XDom.last = function(target){
   var _el = XDom.resolve(target);
   if (_el.length) {
     return _el[_el.length-1];
   }
-};  
+};
 
 XDom.getChildren = function(target){
   var _el = XDom.resolve(target);
@@ -528,7 +528,7 @@ function withFirstTarget(f){
   return function(target, arg1) {
     var _el = XDom.resolve(target);
     if(_el.length) return f(_el[0], arg1);
-  }
+  };
 }
 
 XDom.calc = {
@@ -588,7 +588,7 @@ XDom.calc = {
     if (otherEl && otherEl.getBoundingClientRect) {
       return el.getBoundingClientRect().top - otherEl.getBoundingClientRect().top;
     } else {
-      console.warn('invalid argument to XDom.calc.topFrom');
+      console.warn('invalid argument to XDom.calc.topFrom'); // eslint-disable-line no-console
       return 0;
     }
   }),
@@ -660,7 +660,7 @@ XDom.animate = function(target, props, duration, callback){
       //    Push null onto array, and set to end size at end
       animationMap.set(el, myAnimationID);
       if(start.unit != end.unit){
-        console.warning("Unit mismatch between start and end for animate.");
+        console.warning('Unit mismatch between start and end for animate.');
         aniobj[key].push({from: null, to:end.val, unit: end.unit});
       } else {
       // TODO: Add support for "start" and "end"
@@ -673,7 +673,7 @@ XDom.animate = function(target, props, duration, callback){
   }
   requestAnimationFrame(step);
 
-  // update animationIndex 
+  // update animationIndex
   // TODO: remove elements from animationIndex as the animation is complete
   for(var el of _el){
     animationMap.delete(el);
@@ -690,7 +690,7 @@ XDom.animate = function(target, props, duration, callback){
         continue;
       } else {
         for(var key in aniobj){
-          var { from, to, unit } = aniobj[key][i];
+          var from=aniobj[key][i].from,to=aniobj[key][i].to,unit=aniobj[key][i].unit;
           if(inProgress && (from != null)){
             el.style[key] = (from + (((to - from) * (curTime - startTime)) / duration)).toString() + unit;
           }
