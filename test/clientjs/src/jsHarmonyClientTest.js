@@ -367,6 +367,16 @@ var mocha = require('mocha');
       assert(handlerCalled, 'on added event and executed');
     });
 
+    it('on multiple events ', function() {
+      var handlerCalled = 0;
+      XDom.on('#item1', 'click foo', function() {
+        handlerCalled++;
+      });
+      XDom.selectOne('#item1').click();
+      XDom('#item1').emit('foo');
+      assertEqual(handlerCalled, 2, 'both events executed');
+    });
+
     after(function(){
       document.querySelector('#workspace').innerHTML = '';
     });
@@ -388,6 +398,18 @@ var mocha = require('mocha');
       XDom.off('#item1', 'click', handler);
       XDom.selectOne('#item1').click();
       assert(!handlerCalled, 'off removed added event');
+    });
+
+    it('off multiple events ', function() {
+      var handlerCalled = 0;
+      var handler = function() {
+        handlerCalled++;
+      }
+      XDom.on('#item1', 'click foo', handler);
+      XDom.off('#item1', 'click foo', handler);
+      XDom.selectOne('#item1').click();
+      XDom('#item1').emit('foo');
+      assertEqual(handlerCalled, 0, 'off removed all events');
     });
 
     after(function(){
@@ -823,7 +845,8 @@ var mocha = require('mocha');
         '<div id="item2" class="sharedClass1 sharedClass3"></div>',
         '<div id="item3" class="sharedClass2 sharedClass2"></div>',
         '<div id="item4" class="singleClass"></div>',
-        '<footer></footer>'
+        '<footer></footer>',
+        '<input id="iteminput"></input>'
       ].join('');
     });
 
@@ -832,11 +855,13 @@ var mocha = require('mocha');
     });
 
     it('resolve array', function(){
-      assert(XDom.resolve(['#item1', '#item2']).length == 2,'Array has resolved length 2');
+      assertEqual(XDom.resolve(['#item1', '#item2']).length, 2,'Array has resolved length 2');
+      assertEqual(XDom.resolve(['#item1', '#item2'])[0],'#item1','Contents of arrays are not processed');
     });
 
     it('resolve css string ', function(){
-      assert(XDom.resolve('.sharedClass1').length == 2,'Css string has resolved length 2');
+      assertEqual(XDom.resolve('.sharedClass1').length, 2,'Css string has resolved length 2');
+      assert(XDom.resolve('.sharedClass1')[0] instanceof HTMLElement,'Css string resovles to dom elements');
     });
 
     // it('resolve selector ', function() { //selector is not well understood to test
@@ -844,8 +869,20 @@ var mocha = require('mocha');
     //   assert(XDom.resolve(XDom.selector('.sharedClass1')).length == 2, 'Resolved selector');
     // });
 
-    it('resolve DOM elem ', function() {
-      assert(XDom.resolve('footer').length == 1, 'Resolved DOM elem');
+    it('resolve DOM elem query ', function() {
+      assertEqual(XDom.resolve('footer').length, 1, 'Resolved one DOM elem');
+      assert(XDom.resolve('footer')[0] instanceof HTMLElement, 'Resolved DOM elem');
+    });
+
+    it('resolve DOM elem query - input', function() {
+      assertEqual(XDom.resolve('input').length, 1, 'Resolved one DOM elem');
+      assert(XDom.resolve('input')[0] instanceof HTMLInputElement, 'Resolved DOM elem');
+    });
+
+    it('resolve DOM elem - input', function() {
+      var input = document.querySelector('#iteminput');
+      assertEqual(XDom.resolve(input).length, 1, 'Resolved one DOM elem');
+      assert(XDom.resolve(input)[0] instanceof HTMLInputElement, 'Resolved DOM elem');
     });
 
     after(function(){

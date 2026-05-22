@@ -34,7 +34,7 @@ exports = module.exports = function(jsh){
     this.containerClass = _containerClass || '.xloadingblock.jsHarmonyElement_'+jsh._instanceClass;
 
     //Check if required elements have been rendered to the page
-    if(!jsh.$XDroot(_this.containerClass).length){
+    if(!jsh.$XDroot(_this.containerClass).select().length){
       console.error(_this.containerClass+' not found on page during XLoader initialization'); // eslint-disable-line no-console
     }
 
@@ -59,8 +59,8 @@ exports = module.exports = function(jsh){
     jsh.XDroot.style.cursor = 'wait';
     this.IsLoading = true;
     this.MouseStack = 0;
-    if(jsh.xDialog.length) jsh.$XDroot('input:not([type=button]),select,textarea').select()[0].blur();
-    else jsh.$XDroot('input,select,textarea').select()[0].blur();
+    if(jsh.xDialog.length) jsh.$XDroot('input:not([type=button]),select,textarea').blur();
+    else jsh.$XDroot('input,select,textarea').blur();
     jsh.$XDroot(_this.containerClass+' .xloadingbox').animate({opacity: 0}, 0);
     jsh.$XDroot(_this.containerClass).style.display = true;
     jsh.$XDroot(_this.containerClass+' .xloadingbox').animate({opacity: 1}, 2000);
@@ -82,7 +82,7 @@ exports = module.exports = function(jsh){
     this.IsLoading = false;
     jsh.$XDroot(_this.containerClass+' .xloadingbox').stop();
     var curfade = GetOpacity(jsh.$XDroot(_this.containerClass+' .xloadingbox').select()[0]);
-    jsh.$XDroot(_this.containerClass+' .xloadingbox').animate({opacity:500 * curfade}, 0, function () { if (!this.IsLoading) { jsh.$XDroot(_this.containerClass).style.disply = false; } });
+    jsh.$XDroot(_this.containerClass+' .xloadingbox').animate({opacity:500 * curfade}, 0, function () { if (!this.IsLoading) { jsh.$XDroot(_this.containerClass).style.display = false; } });
     jsh.XDroot.style.cursor = '';
   };
 

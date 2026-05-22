@@ -255,7 +255,7 @@ exports = module.exports = function(jsh){
     this.DebugPanel = this.DebugDialog.selector('.debug-panel');
     this.DebugPanel.selector('.debug-settings').content.append(settingsHtml);
     this.DebugPanelMin = this.DebugDialog.selector('.debug-panel-minimized');
-    var checkboxes = this.DebugPanel.selector('.xdebugconsole_source');
+    var checkboxes = this.DebugPanel.selector('.xdebugconsole_source').select();
     for (var i=0; i<checkboxes.length; i++){
       if (this.settings.sources[checkboxes[i].value]){
         checkboxes[i].click();// on click what?
@@ -287,7 +287,7 @@ exports = module.exports = function(jsh){
   };
 
   XDebugConsole.prototype.getWindowSize = function(){
-    var debugPanel = XDom('.debug-panel');
+    var debugPanel = XDom.selectOne('.debug-panel');
     var width = debugPanel ? debugPanel.offsetWidth : 0;
     var height = debugPanel ? debugPanel.offsetHeight : 0;
     if(this.settings.dock == 'bottom') return { height: height };
@@ -295,7 +295,7 @@ exports = module.exports = function(jsh){
   };
 
   XDebugConsole.prototype.getBodyHeight = function(baseHeight){
-    var settingsEl = this.DebugPanel.selector('.debug-settings');
+    var settingsEl = this.DebugPanel.selector('.debug-settings').select()[0];
     var settingsHeight = (this.settings.settings_visible && settingsEl) ? settingsEl.offsetHeight : 0;
     return baseHeight - 31 - settingsHeight;
   };
@@ -326,8 +326,8 @@ exports = module.exports = function(jsh){
   };
 
   XDebugConsole.prototype.renderSettings = function(){
-    var settingsEl = this.DebugPanel.selector('.debug-settings');
-    settingsEl.style.display = !!this.settings.settings_visible;
+    var xdSettings = this.DebugPanel.selector('.debug-settings');
+    xdSettings.style.display = !!this.settings.settings_visible;
   };
 
   XDebugConsole.prototype.toggleSettings = function(){

@@ -224,7 +224,8 @@ XDom.resolve = function(target){
   if(!target) return [];
   if(_.isArray(target)) return target;
   if(_.isString(target)) return XDom.select(target);
-  if(_.isFunction(target.select)) return target.select();
+  // sniffing the select function does not work because target may be a dom element, and elements such as `input` may have select methods
+  if(target instanceof Selector) return target.select();
   return [target];
 };
 
@@ -319,17 +320,23 @@ XDom.setAttribute = function(target, prop, val){
 };
 
 XDom.on = function(target, eventType, handler, eventOptions){
+  var _eventTypes = eventType.split(' ');
   _.each(XDom.resolve(target), function(el){
     if(el && el.addEventListener){
-      el.addEventListener(eventType, handler, eventOptions);
+      _.each(_eventTypes, function(et) {
+        el.addEventListener(et, handler, eventOptions);
+      });
     }
   });
 };
 
 XDom.off = function(target, eventType, handler, eventOptions){
+  var _eventTypes = eventType.split(' ');
   _.each(XDom.resolve(target), function(el){
     if(el && el.removeEventListener){
-      el.removeEventListener(eventType, handler, eventOptions);
+      _.each(_eventTypes, function(et) {
+        el.removeEventListener(et, handler, eventOptions);
+      });
     }
   });
 };
@@ -566,7 +573,7 @@ XDom.calc = {
     return el.clientHeight - (parseFloat(elStyles.paddingTop)||0) - (parseFloat(elStyles.paddingBottom)||0);
   }),
 
-  top: execOnFirstElWithProp('', function(el){
+  top: execOnFirstElWithProp('getBoundingClientRect', function(el){
     return el.getBoundingClientRect().top;
   }),
   topFromDocument: execOnFirstElWithProp('getBoundingClientRect', function(el){
@@ -679,8 +686,8 @@ XDom.animate = function(target, props, duration, callback){
 
   // update animationIndex
   // TODO: remove elements from animationIndex as the animation is complete
-  for(var el of _el){
-    animationMap.delete(el);
+  for(var e of _el){
+    animationMap.delete(e);
   }
 
   var startTime = document.timeline.currentTime;
@@ -694,7 +701,9 @@ XDom.animate = function(target, props, duration, callback){
         continue;
       } else {
         for(var key in aniobj){
-          var from=aniobj[key][i].from,to=aniobj[key][i].to,unit=aniobj[key][i].unit;
+          var from = aniobj[key][i].from;
+          var to = aniobj[key][i].to;
+          var unit = aniobj[key][i].unit;
           if(inProgress && (from != null)){
             el.style[key] = (from + (((to - from) * (curTime - startTime)) / duration)).toString() + unit;
           }
