@@ -33,6 +33,9 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
   var xform = null;
   var gridCustomTemplate = <%=!!model.templates.grid%>;
 
+  // FIXME: temporary while names are in flux
+  jsh.selector = function(sel) {return jsh.XDom(document).selector(sel);}
+
   xcontroller.Init = function(callback){
     xsearch = xcontroller.search = new jsh.XForm({
       TemplateID: '.xsearch_template_'+xmodel.class,
@@ -118,10 +121,11 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       xmodel.datamodel.prototype.BindLOV(xform,jobj);
       if(xmodel.onrowbind) xmodel.onrowbind(xmodel,jobj,datarow);
     };
-    xgrid.OnDestroyingRows = function(jobj){
+    xgrid.OnDestroyingRows = function(xdObj){
       if(!xeditablegrid) return;
-      jobj.filter('tr[data-id]').each(function(){
-        var jobj = $(this);
+      xdObj.selector('tr[data-id]').select().forEach(function(tr){
+        // FIXME: model.onrowunbind specifies a jobj
+        var jobj = $(tr);
         if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,jobj,jobj.data('id'));
       });
     }
@@ -708,7 +712,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     if('Sort' in state){
       xgrid.State.Sort = state.Sort;
       xgrid.Sort = state.Sort;
-      xgrid.ResetSortGlyphs(jsh.$root('.xform'+xmodel.class));
+      xgrid.ResetSortGlyphs(jsh.selector('.xform'+xmodel.class));
     }
     if('Search' in state){
       xgrid.State.Search = state.Search;

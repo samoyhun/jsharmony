@@ -1909,7 +1909,7 @@ exports = module.exports = function(jsh){
     jsh.$XDdialogBlock('.xconfirmbox input.button_no').on('click', XExt.dialogButtonFunc('.xconfirmbox', oldactive, onNo));
     jsh.$XDdialogBlock('.xconfirmbox input').on('keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
     jsh.$XDdialogBlock('.xconfirmbox.base').style.display = true;
-    jsh.dialogBlock.style.display = true;
+    jsh.XDdialogBlock.style.display = true;
     jsh.XWindowResize();
     if (!XExt.isIOS()) jsh.$XDdialogBlock('.xconfirmbox.base input.button_ok').focus();
   };
