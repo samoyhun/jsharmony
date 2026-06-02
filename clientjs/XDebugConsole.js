@@ -19,7 +19,6 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
 var _ = require('lodash');
 
-
 exports = module.exports = function(jsh){
   var XDom = jsh.XDom;
 
@@ -251,14 +250,14 @@ exports = module.exports = function(jsh){
           '<input type="checkbox" class="xdebugconsole_source" id="' + obj_id + '" value="' + source_id + '"> ' + _this.all_sources[source_id] +
         '</label>';
     }
-    this.DebugDialog = XDom('.xdebugconsole');
-    this.DebugPanel = this.DebugDialog.selector('.debug-panel');
-    this.DebugPanel.selector('.debug-settings').content.append(settingsHtml);
-    this.DebugPanelMin = this.DebugDialog.selector('.debug-panel-minimized');
-    var checkboxes = this.DebugPanel.selector('.xdebugconsole_source').select();
+    this.DebugDialog = XDom(jsh.xdroot, '.xdebugconsole');
+    this.DebugPanel = XDom(this.DebugDialog, '.debug-panel');
+    XDom.content.append(this.DebugPanel.select('.debug-settings'), settingsHtml);
+    this.DebugPanelMin = XDom(this.DebugDialog, '.debug-panel-minimized');
+    var checkboxes = this.DebugPanel.select('.xdebugconsole_source');
     for (var i=0; i<checkboxes.length; i++){
       if (this.settings.sources[checkboxes[i].value]){
-        checkboxes[i].click();// on click what?
+        checkboxes[i].click();
       }
     }
     this.DebugDialog.style.display = false;
@@ -275,27 +274,33 @@ exports = module.exports = function(jsh){
       _this.saveSettings();
     } });
     //Source Checkboxes
-    XDom(checkboxes).on('click', function(){
-      _this.settings.sources[this.value] = !!this.checked;
-      _this.saveSettings();
-      _this.updateWebSocketSources();
+    XDom.on(this.DebugPanel, 'click', function(eventPtr){
+      var _target = XDom(_this.DebugPanel, '.xdebugconsole_source').select();
+      var parentFound = false;
+      for(var i=0;i<_target.length;i++) 
+        if(_target[i] == eventPtr.target) parentFound = true;
+      if (parentFound){
+        _this.settings.sources[eventPtr.target.value] = !!eventPtr.target.checked;
+        _this.saveSettings();
+        _this.updateWebSocketSources();
+      }
     });
-    this.DebugDialog.selector('.controls i').on('click', function(){
+    XDom.on(this.DebugDialog.select('.controls i'), 'click', function(){
       var action = XDom(this).data.action;
       if(action && _this[action]) _this[action]();
     });
   };
 
   XDebugConsole.prototype.getWindowSize = function(){
-    var debugPanel = XDom.selectOne('.debug-panel');
-    var width = debugPanel ? debugPanel.offsetWidth : 0;
-    var height = debugPanel ? debugPanel.offsetHeight : 0;
+    var debugPanel = XDom('.debug-panel');
+    var width = debugPanel ? debugPanel.calc.width() : 0;
+    var height = debugPanel ? debugPanel.calc.height() : 0;
     if(this.settings.dock == 'bottom') return { height: height };
     return { width: width, height: height };
   };
 
   XDebugConsole.prototype.getBodyHeight = function(baseHeight){
-    var settingsEl = this.DebugPanel.selector('.debug-settings').select()[0];
+    var settingsEl = XDom(this.DebugPanel, '.debug-settings').select()[0];
     var settingsHeight = (this.settings.settings_visible && settingsEl) ? settingsEl.offsetHeight : 0;
     return baseHeight - 31 - settingsHeight;
   };
@@ -326,7 +331,7 @@ exports = module.exports = function(jsh){
   };
 
   XDebugConsole.prototype.renderSettings = function(){
-    var xdSettings = this.DebugPanel.selector('.debug-settings');
+    var xdSettings = XDom(this.DebugPanel, '.debug-settings');
     xdSettings.style.display = !!this.settings.settings_visible;
   };
 
@@ -363,18 +368,18 @@ exports = module.exports = function(jsh){
     this.settings.dock = 'bottom';
     this.DebugPanel.attr.style = null;
     this.DebugPanel.style.display = true;
-    this.DebugPanel.selector('.xdebuginfo-body').attr.style = null;
+    XDom.setAttribute(this.DebugPanel.select(".xdebuginfo-body"), 'style', null);
     this.updatePanelLayout();
     this.saveSettings();
   };
 
   XDebugConsole.prototype.clear = function() {
-    this.DebugPanel.selector('.xdebuginfo-body').content.clear();
+    XDom.content.clear(this.DebugPanel.select('.xdebuginfo-body'));
   };
 
   XDebugConsole.prototype.log = function (txt, clear) {
     if(clear) this.clear();
-    this.DebugPanel.selector('.xdebuginfo-body').content.prepend('<div class="info-message">'+txt+'</div>');
+    XDom.content.prepend(this.DebugPanel.select('.xdebuginfo-body'), '<div class="info-message">'+txt+'</div>');
   };
 
   return XDebugConsole;
