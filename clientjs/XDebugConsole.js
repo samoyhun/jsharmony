@@ -57,6 +57,7 @@ exports = module.exports = function(jsh){
     };
     this.saveSettingsTimer = null;
 
+//DOM Elements
     this.DebugDialog = null;
     this.DebugPanel = null;
     this.DebugPanelMin = null;
@@ -267,7 +268,7 @@ exports = module.exports = function(jsh){
       }
     }
     this.DebugDialog.style.display = false;
-    this.DebugDialog.class.remove('visible'); // visable was never added to be removed?
+    this.DebugDialog.class.remove('visible');
     this.updatePanelLayout();
     jsh.XExt.makeResizableDiv('.debug-panel',[
       {selector:'.xdebuginfo-body',
@@ -280,10 +281,9 @@ exports = module.exports = function(jsh){
       _this.saveSettings();
     } });
     //Source Checkboxes
-    XDom.on(this.DebugPanel, 'click', function(eventPtr){
-      var clickedSrc = !!jsh.XDom.parent(eventPtr.target, '.xdebugconsole_source').length;
-      if(clickedSrc) {
-        _this.settings.sources[eventPtr.target.value] = !!eventPtr.target.checked;
+    XDom.on(this.DebugPanel, 'click', function(e){
+      if(jsh.XDom.parent(e.target, '.xdebugconsole_source').length) {
+        _this.settings.sources[e.target.value] = !!e.target.checked;
         _this.saveSettings();
         _this.updateWebSocketSources();
       }
