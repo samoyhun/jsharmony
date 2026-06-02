@@ -275,11 +275,8 @@ exports = module.exports = function(jsh){
     } });
     //Source Checkboxes
     XDom.on(this.DebugPanel, 'click', function(eventPtr){
-      var _target = XDom(_this.DebugPanel, '.xdebugconsole_source').select();
-      var parentFound = false;
-      for(var i=0;i<_target.length;i++) 
-        if(_target[i] == eventPtr.target) parentFound = true;
-      if (parentFound){
+      var clickedSrc = !!jsh.XDom.parent(eventPtr.target, '.xdebugconsole_source').length;
+      if(clickedSrc) {
         _this.settings.sources[eventPtr.target.value] = !!eventPtr.target.checked;
         _this.saveSettings();
         _this.updateWebSocketSources();
