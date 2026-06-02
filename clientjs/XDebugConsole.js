@@ -57,6 +57,11 @@ exports = module.exports = function(jsh){
     };
     this.saveSettingsTimer = null;
 
+    this.DebugDialog = null;
+    this.DebugPanel = null;
+    this.DebugPanelMin = null;
+    this.XDebugInfoBody = null;
+
     this.init();
   };
 
@@ -254,6 +259,7 @@ exports = module.exports = function(jsh){
     this.DebugPanel = XDom(this.DebugDialog, '.debug-panel');
     XDom.content.append(this.DebugPanel.select('.debug-settings'), settingsHtml);
     this.DebugPanelMin = XDom(this.DebugDialog, '.debug-panel-minimized');
+    this.XDebugInfoBody = XDom(this.DebugPanel, '.xdebuginfo-body');
     var checkboxes = this.DebugPanel.select('.xdebugconsole_source');
     for (var i=0; i<checkboxes.length; i++){
       if (this.settings.sources[checkboxes[i].value]){
@@ -290,16 +296,14 @@ exports = module.exports = function(jsh){
 
   XDebugConsole.prototype.getWindowSize = function(){
     var debugPanel = XDom('.debug-panel');
-    var width = debugPanel ? debugPanel.calc.width() : 0;
-    var height = debugPanel ? debugPanel.calc.height() : 0;
+    var width = debugPanel.calc.width() || 0;
+    var height = debugPanel.calc.height() || 0;
     if(this.settings.dock == 'bottom') return { height: height };
     return { width: width, height: height };
   };
 
   XDebugConsole.prototype.getBodyHeight = function(baseHeight){
-    var settingsEl = XDom(this.DebugPanel, '.debug-settings').select()[0];
-    var settingsHeight = (this.settings.settings_visible && settingsEl) ? settingsEl.offsetHeight : 0;
-    return baseHeight - 31 - settingsHeight;
+    return baseHeight - 31 - (this.settings.settings_visible ? jsh.XDom.calc.heightToBorder(this.DebugPanel.select('.debug-settings')) : 0);
   };
 
   XDebugConsole.prototype.setWindowSize = function(size){
@@ -308,13 +312,13 @@ exports = module.exports = function(jsh){
     if(!('height' in size)) size.height = this.default_settings.window_size.height;
 
     if(this.settings.dock == 'bottom'){
-      XDom('.debug-panel').style.height = size.height;
-      XDom('.xdebuginfo-body').style.height = this.getBodyHeight(size.height);
+      this.DebugPanel.style.height = size.height;
+      this.XDebugInfoBody.style.height = this.getBodyHeight(size.height);
     }
     else if(this.settings.dock == 'right'){
-      XDom('.debug-panel').style.width = size.width;
-      XDom('.debug-panel').style.height = size.height;
-      XDom('.xdebuginfo-body').style.height = this.getBodyHeight(size.height);
+      this.DebugPanel.style.width = size.width;
+      this.DebugPanel.style.height = size.height;
+      this.XDebugInfoBody.style.height = this.getBodyHeight(size.height);
     }
   };
 
@@ -365,18 +369,18 @@ exports = module.exports = function(jsh){
     this.settings.dock = 'bottom';
     this.DebugPanel.attr.style = null;
     this.DebugPanel.style.display = true;
-    XDom.setAttribute(this.DebugPanel.select(".xdebuginfo-body"), 'style', null);
+    XDom.setAttribute(this.XDebugInfoBody, 'style', null);
     this.updatePanelLayout();
     this.saveSettings();
   };
 
   XDebugConsole.prototype.clear = function() {
-    XDom.content.clear(this.DebugPanel.select('.xdebuginfo-body'));
+    this.XDebugInfoBody.content.clear();
   };
 
   XDebugConsole.prototype.log = function (txt, clear) {
     if(clear) this.clear();
-    XDom.content.prepend(this.DebugPanel.select('.xdebuginfo-body'), '<div class="info-message">'+txt+'</div>');
+    this.XDebugInfoBody.content.prepend('<div class="info-message">'+txt+'</div>');
   };
 
   return XDebugConsole;
