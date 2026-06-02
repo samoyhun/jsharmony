@@ -37,20 +37,48 @@ function selectWithin(selector, within){
   return _rslt;
 }
 
-var Selector = function(target, options){
-  options = _.extend({ base: null }, options);
-  target = target || '';
+var Selector = function(){
   var _this = this;
 
-  if(!target) throw new Error('Target is required');
-  if(_.isString(target)){
-    _this.target = target;
-    _this.base = options.base;
+  var args = arguments;
+  //<string> target
+  //<string> target, <object> options
+  //<object> base
+  //<object, string> base, <string> target
+  //<object, string> base, <string> target, <object> options
+
+  _this.base = null;
+  _this.target = null;
+  _this.options = null;
+
+  if(_.isString(args[0])){
+    if(_.isString(args[1])){
+      //<string> base, <string> target
+      //<string> base, <string> target, <object> options
+      _this.base = args[0];
+      _this.target = args[1];
+      _this.options = args[2];
+    }
+    else{
+      //<string> target
+      //<string> target, <object> options
+      _this.target = args[0];
+      _this.options = args[1];
+    }
   }
   else {
-    _this.target = '';
-    _this.base = target;
+    //<object> base
+    //<object, string> base, <string> target
+    //<object, string> base, <string> target, <object> options
+    _this.base = args[0];
+    _this.target = args[1];
+    _this.options = args[2];
   }
+
+  _this.options = _.extend({}, _this.options);
+  _this.target = _this.target || '';
+
+  if(!_this.target && !_this.base) throw new Error('Target or base element is required');
 
   _this.select = function(childSelector){
     return selectWithin((_this.target + ' ' + (childSelector||'')).trim(), _this.base);
@@ -58,14 +86,14 @@ var Selector = function(target, options){
 
   _this.selector = function(childSelector){
     if(!childSelector) return _this;
-    if(!_this.target) return new Selector(childSelector, { base: _this.base });
+    if(!_this.target) return new Selector(_this.base, childSelector);
     var _selectorPart = _this.target.split(',');
     var _childSelectorPart = childSelector.split(',');
-    return new Selector(_.map(_selectorPart, function(selectorPart){
+    return new Selector(_this.base, _.map(_selectorPart, function(selectorPart){
       return _.map(_childSelectorPart, function(childSelectorPart){
         return (selectorPart.trim() + ' ' + childSelectorPart.trim()).trim();
       }).join(',');
-    }).join(','), { base: _this.base });
+    }).join(','));
   };
 
   _this.class = {
@@ -182,7 +210,7 @@ var Selector = function(target, options){
   //insertBefore => insertBefore
   //next => nextSibling
   //prev => previousSibling
-  //offsetParent => .calc.top({ from: 'offsetparent' })
+  //offsetParent => .calc.top({ from: 'offsetparent' }) //offsetParent !- .calc.top
   //offset => offset() .calc.top()
   //wrap => create element, insertBefore, and then put contents inside
   //not => .omit
@@ -192,6 +220,10 @@ var Selector = function(target, options){
   //slideDown => .animate({ height: 'auto' })
   //fadeTo => .animate({ opacity: 0 })
   //.is(:visible) => .isVisible
+  //.empty => .content.clear()
+  //.html('html string') => .content.replace('html string')
+  //.outerWidth => .calc.widthToBorder
+  //.outerHeight => .calc.heightToBorder
 };
 XDom.Selector = Selector;
 
@@ -264,21 +296,18 @@ function renderHtml(val){
 
 XDom.content = {
   append: function(target, val){
-    var html = renderHtml(val);
     _.each(XDom.resolve(target), function(el){
-      if(el && el.append) el.append.apply(el, html);
+      if(el && el.append) el.append.apply(el, renderHtml(val));
     });
   },
   prepend: function(target, val){
-    var html = renderHtml(val);
     _.each(XDom.resolve(target), function(el){
-      if(el && el.prepend) el.prepend.apply(el, html);
+      if(el && el.prepend) el.prepend.apply(el, renderHtml(val));
     });
   },
   replace: function(target, val){
-    var html = renderHtml(val);
     _.each(XDom.resolve(target), function(el){
-      if(el && el.replaceChildren) el.replaceChildren.apply(el, html);
+      if(el && el.replaceChildren) el.replaceChildren.apply(el, renderHtml(val));
     });
   },
   clear: function(target){
@@ -608,7 +637,7 @@ XDom.calc = {
     return el.getBoundingClientRect().left;
   }),
   leftFromDocument: execOnFirstElWithProp('getBoundingClientRect', function(el){
-    return el.getBoundingClientRect().left + window.scrollY;
+    return el.getBoundingClientRect().left + window.scrollX;
   }),
   leftFromParent: execOnFirstElWithProp('getBoundingClientRect', function(el){
     var parent = el.parentNode;
@@ -638,99 +667,172 @@ XDom.calc = {
 XDom.calc.width = XDom.calc.widthToContent;
 XDom.calc.height = XDom.calc.heightToContent;
 
-function parseStyleUnit(value){
-  if(value == null) return null;
-  var regexp = /(^-?\d+(?:\.\d+)?)([a-zA-Z%]+)?$/;
-  var match = String(value).match(regexp);
-  if(!match) return {};
-  //TODO if Number(match[1]) is NaN, then...
-  return {val: Number(match[1]), unit: match[2] || ''};
+function parseStyleUnit(value) {
+  if (value == null) return null;
+  var vals, unit, arr;
+  if(value.replace(' ', '').startsWith('rgb')){
+    arr = value.replace(')', '').split('(');
+    vals = arr[1].split(/\s*,\s*/);
+    if(arr[0] === 'rgb') vals.push('1');
+    unit = 'rgba';
+  } else if(value.replace(' ', '').startsWith('#')){
+    if(value.length === 7){ // #RRGGBB
+      arr = value.replace('#', '').match(/.{1,2}/g);
+      arr.push('FF');
+    } else if(value.length === 9){ //#RRGGBBaa
+      arr = value.replace('#', '').match(/.{1,2}/g);
+    } else return;
+    vals = arr.map(function(hex){return '0x' + hex;});
+    vals[3] = Number(vals[3])/255;
+    unit = 'rgba';
+  }
+  else{
+    value = value.replace(' ', '');
+    arr = value.match(/(^-?\d+(?:\.\d+)?)([a-zA-Z%]+)?$/);
+    if(arr === null){
+      var testval = Number(value.replace(' ', ''));
+      if(isNaN(testval)) return null;
+      vals = [testval];
+      unit = null;
+    }
+    else{
+      vals = [arr[1]];
+      unit = arr[2];
+    }
+  }
+  vals = vals.map(Number);
+  return {val: vals, unit: unit};
 }
 
-var animationMap = new Map();
-var animationID = 0; //there has to be a better way??
-var animationStopIndex;
+function add(vec1, vec2){
+  if( !Array.isArray(vec1) || !Array.isArray(vec2)) return;
+  if(vec1.length !== vec2.length) return;
+  return vec1.map(function(num, i){
+    return num + vec2[i];
+  });
+}
 
-XDom.animate = function(target, props, duration, callback){
+function sub(vec1, vec2){
+  if( !Array.isArray(vec1) || !Array.isArray(vec2)) return;
+  if(vec1.length !== vec2.length) return;
+  return vec1.map(function(num, i){
+    return num - vec2[i];
+  });
+}
+
+function simple_mult(vec, scalar){
+  if(!Array.isArray(vec)) return;
+  if(Number(scalar) === NaN) return;
+  return vec.map(function(num, i){
+    return num * Number(scalar);
+  });
+}
+
+function simple_div(vec, scalar){
+  if(!Array.isArray(vec)) return;
+  if(Number(scalar) === 0) return;
+  return result = vec.map(function(num, i){
+    return num / Number(scalar);
+  });
+}
+
+function step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete) {
+  var duration = endTime - startTime;
+  var inProgress = ((curTime < endTime) && (duration > 0));
+  var xdom_animatestopidx = Number(el.dataset.xdom_animatestopidx);
+  if(elAnimateIdx <= xdom_animatestopidx){
+    return onComplete(true);
+  }
+  else {
+    _.each(elProps, function(value, key) {
+      var from = value.from;
+      var to = value.to;
+      var unit = value.unit || '';
+      var progressVec = [];
+      if(inProgress && (from != null)) {
+        progressVec = add(from, simple_div(simple_mult(sub(to, from), (curTime - startTime)), (duration)));
+        if(progressVec.length === 1){
+          el.style[key] = (progressVec[0]).toString() + unit;
+        }
+        else{ // I no like
+          el.style[key] = ('rgba(' + progressVec[0] + ', ' + progressVec[1] + ', ' + progressVec[2] + ', ' + progressVec[3] + ')').toString();
+        }
+      }
+      else {
+        if(to.length === 1){
+          el.style[key] = (to[0]).toString() + unit;
+        }
+        else{ // I no like
+          el.style[key] = ('rgba(' + to[0] + ', ' + to[1] + ', ' + to[2] + ', ' + to[3] + ')').toString();
+        }
+      }
+    });
+    if(inProgress){
+      requestAnimationFrame(function(curTime){
+        step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete);
+      });
+    }
+    else {
+      onComplete(false);//if an element reaches this point then it would have "completed" naturally
+    }
+  }
+}
+
+XDom.stop = function(target) {
+  var _el = XDom.resolve(target);
+  _.each(_el, function(el){
+    el.dataset.xdom_animatestopidx = parseInt(el.dataset.xdom_animateidx);
+  });
+};
+
+XDom.animate = function(target, props, duration, callback) {
+  if(!callback) callback = function(){};
   if(!props) props = {};
   if(!duration) duration = 0;
   var _el = XDom.resolve(target);
-  var aniobj = {};
-  var myAnimationID = animationID++;
-  for(var key in props){
-    var endStr = props[key];
-    if((endStr === null) || (typeof endStr == 'undefined') || (endStr === '')) continue;
-    endStr = endStr.toString();
-    aniobj[key] = [];
-    for(var el of _el){
-      var startRaw = window.getComputedStyle(el)[key];
-      var start = parseStyleUnit(startRaw);
-      var end = parseStyleUnit(endStr);
-      // TODO: Consider unit mismatch between start and end - error out
-      //    console warning(...)
-      //    Push null onto array, and set to end size at end
-      animationMap.set(el, myAnimationID);
-      if(start.unit != end.unit){
-        console.warning('Unit mismatch between start and end for animate.');
-        aniobj[key].push({from: null, to:end.val, unit: end.unit});
-      } else {
-      // TODO: Add support for "start" and "end"
-      //    animate(tgt, { width: '200px' });
-      //    animate(tgt, { width: 200 }); => animate(tgt, { width: '200' });
-      //    animate(tgt, { width: { from: '100px', to: '200px' } });
-        aniobj[key].push({from: start.val, to: end.val, unit: end.unit});
-      }
+  if(_el.length === 0) return;
+  var completeCnt = 0;
+  var hasSuccess = false;
+  _.each( _el, function(el){
+    var elAnimateIdx = parseInt(el.dataset.xdom_animateidx || 0) + 1;
+    el.dataset.xdom_animateidx = elAnimateIdx;
+    var elProps = {};
+    for(var key in props){
+      var rawEnd = props[key];
+      if((rawEnd === null) || (typeof rawEnd == 'undefined') || (rawEnd === '')) continue;
+      rawEnd = rawEnd.toString();
+      var rawStart = window.getComputedStyle(el)[key];
+      var start = parseStyleUnit(rawStart);
+      var end = parseStyleUnit(rawEnd);
+      //if start.unit != end.unit what should we do?
+      if(!start || !end) continue;
+      elProps[key] = {from: start.val, to: end.val, unit: end.unit};
     }
-  }
-  requestAnimationFrame(step);
-
-  // update animationIndex
-  // TODO: remove elements from animationIndex as the animation is complete
-  for(var e of _el){
-    animationMap.delete(e);
-  }
-
-  var startTime = document.timeline.currentTime;
-  var endTime = startTime + duration;
-  function step(curTime){
-    var inProgress = (curTime < endTime);
-    for (var i = 0; i < _el.length; i++){
-      var el = _el[i];
-      var id = animationMap.get(el);
-      if(id === undefined || id < animationStopIndex){ // skip elements with invalid ID
-        continue;
-      } else {
-        for(var key in aniobj){
-          var from = aniobj[key][i].from;
-          var to = aniobj[key][i].to;
-          var unit = aniobj[key][i].unit;
-          if(inProgress && (from != null)){
-            el.style[key] = (from + (((to - from) * (curTime - startTime)) / duration)).toString() + unit;
+    if(elProps !== {}){
+      if(duration > 0){
+        var startTime = document.timeline.currentTime;
+        var endTime = startTime + duration;
+        requestAnimationFrame(function(curTime){
+          step(curTime, el, elProps, startTime, endTime, elAnimateIdx, function(aborted){
+            completeCnt++;
+            if(!aborted) hasSuccess = true;
+            if(hasSuccess && (completeCnt === _el.length)) callback();
+          });
+        });
+      }
+      else {
+        _.each(elProps, function(value, key) {
+          var to = value.to;
+          var unit = value.unit || '';
+          if(to.length === 1){
+            el.style[key] = (to[0]).toString() + unit;
           }
-          else {
-            el.style[key] = to.toString() + unit;
+          else{ // I no like
+            el.style[key] = ('rgba(' + to[0] + ', ' + to[1] + ', ' + to[2] + ', ' + to[3] + ')').toString();
           }
-        }
+        });
       }
     }
-    if(inProgress){
-      requestAnimationFrame(step);
-    } else {
-      if(typeof callback === 'function') {
-        callback();
-      }
-    }
-  }
-};
-
-XDom.stop = function(){
-  // update animationStopIndex
-  animationStopIndex = animationID;
-  //TODO: create a function to stop animation
-  /*
-  * IDEAS:
-  * stop all ID < current
-  * set attri to "stop"
-  */
-  //this stops all animations, no matter where it is called?
+  });
+  if(duration <= 0) callback();
 };
