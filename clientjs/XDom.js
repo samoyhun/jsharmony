@@ -670,12 +670,12 @@ XDom.calc.height = XDom.calc.heightToContent;
 function parseStyleUnit(value) {
   if (value == null) return null;
   var vals, unit, arr;
-  if(value.replace(' ', '').startsWith('rgb')){
+  if(value.replace(' ', '').indexOf('rgb')===0){
     arr = value.replace(')', '').split('(');
     vals = arr[1].split(/\s*,\s*/);
     if(arr[0] === 'rgb') vals.push('1');
     unit = 'rgba';
-  } else if(value.replace(' ', '').startsWith('#')){
+  } else if(value.replace(' ', '').indexOf('#')===0){
     if(value.length === 7){ // #RRGGBB
       arr = value.replace('#', '').match(/.{1,2}/g);
       arr.push('FF');
@@ -722,7 +722,7 @@ function sub(vec1, vec2){
 
 function simple_mult(vec, scalar){
   if(!Array.isArray(vec)) return;
-  if(Number(scalar) === NaN) return;
+  if(isNaN(scalar)) return;
   return vec.map(function(num, i){
     return num * Number(scalar);
   });
@@ -730,8 +730,8 @@ function simple_mult(vec, scalar){
 
 function simple_div(vec, scalar){
   if(!Array.isArray(vec)) return;
-  if(Number(scalar) === 0) return;
-  return result = vec.map(function(num, i){
+  if(isNaN(scalar) === 0) return;
+  return vec.map(function(num, i){
     return num / Number(scalar);
   });
 }
