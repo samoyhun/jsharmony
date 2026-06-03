@@ -58,7 +58,6 @@ exports = module.exports = function(jsh){
   }
 
   XLoader.prototype.StartLoading = function(obj){
-    var _this = this;
     if(!_.includes(this.LoadQueue,obj)) this.LoadQueue.push(obj);
     if(this.IsLoading) return;
     jsh.xdroot.style.cursor = 'wait';
@@ -94,8 +93,8 @@ exports = module.exports = function(jsh){
   function GetOpacity(elem) {
     var opacity = jsh.XDom.getStyle(elem, 'opacity');
     var filter = jsh.XDom.getStyle(elem, 'filter');
-    var ori = (!!opacity) ? opacity : window.getComputedStyle(elem).opacity;
-    var ori2 = (!!filter) ? filter : window.getComputedStyle(elem).filter;
+    var ori = (opacity) ? opacity : window.getComputedStyle(elem).opacity;
+    var ori2 = (filter) ? filter : window.getComputedStyle(elem).filter;
     if (ori2) {
       ori2 = parseInt( ori2.replace(')','').replace('alpha(opacity=','') ) / 100;
       if (!isNaN(ori2) && ori2 != '') {
