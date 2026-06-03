@@ -334,6 +334,12 @@ exports.ProcessFileParams = function (req, res, model, P, fieldlist, sql_extfiel
         if (field.controlparams._data_file_has_extension) tdest += '%%%EXT%%%';
         fileops.push({ op: 'move', src: '', dest: tdest });
       }
+      //Delete cached files in main operation
+      if (field.controlparams.cache) for (var cname in field.controlparams.cache) {
+        var cdest = jsh.Config.datadir + field.controlparams.data_folder + '/' + (field.controlparams.data_file_prefix||field.name) + '_' + cname + '_%%%KEY%%%';
+        if (field.controlparams._data_file_has_extension) cdest += '%%%EXT%%%';
+        fileops.push({ op: 'move', src: '', dest: cdest });
+      }
       filecallback(null);
     }
     else {
@@ -378,6 +384,12 @@ exports.ProcessFileParams = function (req, res, model, P, fieldlist, sql_extfiel
             fileops.push({ op: 'move', src: '', dest: tdest });
           }
         }
+        //Clear cached files
+        if (field.controlparams.cache) for (var cname in field.controlparams.cache) {
+          var cdest = jsh.Config.datadir + field.controlparams.data_folder + '/' + (field.controlparams.data_file_prefix||field.name) + '_' + cname + '_%%%KEY%%%';
+          if (field.controlparams._data_file_has_extension) cdest += '.' + (field.controlparams.cache[cname].format || '');
+          fileops.push({ op: 'move', src: '', dest: cdest });
+        }
         //Resize Image, if applicable
         if (field.controlparams.image && _.includes(jsh.Config.supported_images, file_ext)) {
           filedest = Helper.ReplaceAll(filedest, '%%%EXT%%%', '.' + field.controlparams.image.format);
@@ -413,7 +425,7 @@ exports.ProcessFileOperations = function (keyval, fileops, rslt, stats, callback
       function(filehandlercb){
         //Get src file extension
         HelperFS.getExtFileName(filesrc, function(err, filename){
-          if(err) return callback(Helper.NewError('File not found', -33));
+          if(err) return opcallback(Helper.NewError('File not found', -33));
           filesrc = filename;
           return filehandlercb();
         });
@@ -421,7 +433,10 @@ exports.ProcessFileOperations = function (keyval, fileops, rslt, stats, callback
       function(filehandlercb){
         //Get dest file extension
         HelperFS.getExtFileName(filedest, function(err, filename){
-          if(err) return callback(Helper.NewError('File not found', -33));
+          if(err){
+            if((fileop.op == 'move') && !filesrc) return opcallback(null);
+            return opcallback(Helper.NewError('File not found', -33));
+          }
           filedest = filename;
           return filehandlercb();
         });
@@ -445,6 +460,7 @@ exports.ProcessFileOperations = function (keyval, fileops, rslt, stats, callback
       else return opcallback(null);
     });
   }, function (fileerr) {
+    if(fileerr && (fileerr.number == -33)) return callback(fileerr);
     if ((fileerr != null) && ('code' in fileerr) && (fileerr.code == 'ENOENT')) { /* Ignore this error */ }
     else if (fileerr != null) {
       jsh.Log.error(fileerr);
@@ -458,7 +474,10 @@ exports.ProcessFileOperationsDone = function (fileops, callback) {
   async.eachSeries(fileops, function (fileop, opcallback) {
     if ((fileop.op == 'move') || (fileop.op == 'delete_on_complete')) {
       if (fileop.src == '') return opcallback(null);
-      HelperFS.unlink(fileop.src, function (err) { opcallback(null); });
+      HelperFS.getExtFileName(fileop.src, function(err, filename){
+        if(err) return opcallback(null);
+        HelperFS.unlink(filename, function (err) { opcallback(null); });
+      });
     }
     else return opcallback(null);
   }, function (err) { callback(null, null); });
