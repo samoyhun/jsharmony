@@ -19,7 +19,6 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
 var _ = require('lodash');
 
-
 exports = module.exports = function(jsh){
   var XDom = jsh.XDom;
 
@@ -57,6 +56,12 @@ exports = module.exports = function(jsh){
       'settings_visible': true
     };
     this.saveSettingsTimer = null;
+
+    //DOM Elements
+    this.xdDebugDialog = null;
+    this.xdDebugPanel = null;
+    this.xdDebugPanelMin = null;
+    this.xdDebugPanelBody = null;
 
     this.init();
   };
@@ -136,7 +141,7 @@ exports = module.exports = function(jsh){
     this.settings.running = 0;
     this.saveSettings();
 
-    this.DebugDialog.style.display = false;
+    this.xdDebugDialog.style.display = false;
     this.clear();
 
     if(this.isRunning()){
@@ -251,18 +256,19 @@ exports = module.exports = function(jsh){
           '<input type="checkbox" class="xdebugconsole_source" id="' + obj_id + '" value="' + source_id + '"> ' + _this.all_sources[source_id] +
         '</label>';
     }
-    this.DebugDialog = XDom('.xdebugconsole');
-    this.DebugPanel = this.DebugDialog.selector('.debug-panel');
-    this.DebugPanel.selector('.debug-settings').content.append(settingsHtml);
-    this.DebugPanelMin = this.DebugDialog.selector('.debug-panel-minimized');
-    var checkboxes = this.DebugPanel.selector('.xdebugconsole_source').select();
-    for (var i=0; i<checkboxes.length; i++){
-      if (this.settings.sources[checkboxes[i].value]){
-        checkboxes[i].click();// on click what?
+    this.xdDebugDialog = XDom(jsh.xdroot, '.xdebugconsole');
+    this.xdDebugPanel = XDom(this.xdDebugDialog, '.debug-panel');
+    XDom.content.append(this.xdDebugPanel.select('.debug-settings'), settingsHtml);
+    this.xdDebugPanelMin = XDom(this.xdDebugDialog, '.debug-panel-minimized');
+    this.xdDebugPanelBody = XDom(this.xdDebugPanel, '.xdebuginfo-body');
+    var chkSource = this.xdDebugPanel.select('.xdebugconsole_source');
+    for (var i=0; i<chkSource.length; i++){
+      if (this.settings.sources[chkSource[i].value]){
+        chkSource[i].click();
       }
     }
-    this.DebugDialog.style.display = false;
-    this.DebugDialog.class.remove('visible'); // visable was never added to be removed?
+    this.xdDebugDialog.style.display = false;
+    this.xdDebugDialog.class.remove('visible');
     this.updatePanelLayout();
     jsh.XExt.makeResizableDiv('.debug-panel',[
       {selector:'.xdebuginfo-body',
@@ -275,29 +281,29 @@ exports = module.exports = function(jsh){
       _this.saveSettings();
     } });
     //Source Checkboxes
-    XDom(checkboxes).on('click', function(){
-      _this.settings.sources[this.value] = !!this.checked;
-      _this.saveSettings();
-      _this.updateWebSocketSources();
+    XDom.on(this.xdDebugPanel, 'click', function(e){
+      if(jsh.XDom.parent(e.target, '.xdebugconsole_source').length) {
+        _this.settings.sources[e.target.value] = !!e.target.checked;
+        _this.saveSettings();
+        _this.updateWebSocketSources();
+      }
     });
-    this.DebugDialog.selector('.controls i').on('click', function(){
+    XDom.on(this.xdDebugDialog.select('.controls i'), 'click', function(){
       var action = XDom(this).data.action;
       if(action && _this[action]) _this[action]();
     });
   };
 
   XDebugConsole.prototype.getWindowSize = function(){
-    var debugPanel = XDom.selectOne('.debug-panel');
-    var width = debugPanel ? debugPanel.offsetWidth : 0;
-    var height = debugPanel ? debugPanel.offsetHeight : 0;
+    var debugPanel = XDom('.debug-panel');
+    var width = debugPanel.calc.width() || 0;
+    var height = debugPanel.calc.height() || 0;
     if(this.settings.dock == 'bottom') return { height: height };
     return { width: width, height: height };
   };
 
   XDebugConsole.prototype.getBodyHeight = function(baseHeight){
-    var settingsEl = this.DebugPanel.selector('.debug-settings').select()[0];
-    var settingsHeight = (this.settings.settings_visible && settingsEl) ? settingsEl.offsetHeight : 0;
-    return baseHeight - 31 - settingsHeight;
+    return baseHeight - 31 - (this.settings.settings_visible ? jsh.XDom.calc.heightToBorder(this.xdDebugPanel.select('.debug-settings')) : 0);
   };
 
   XDebugConsole.prototype.setWindowSize = function(size){
@@ -306,27 +312,27 @@ exports = module.exports = function(jsh){
     if(!('height' in size)) size.height = this.default_settings.window_size.height;
 
     if(this.settings.dock == 'bottom'){
-      XDom('.debug-panel').style.height = size.height;
-      XDom('.xdebuginfo-body').style.height = this.getBodyHeight(size.height);
+      this.xdDebugPanel.style.height = size.height;
+      this.xdDebugPanelBody.style.height = this.getBodyHeight(size.height);
     }
     else if(this.settings.dock == 'right'){
-      XDom('.debug-panel').style.width = size.width;
-      XDom('.debug-panel').style.height = size.height;
-      XDom('.xdebuginfo-body').style.height = this.getBodyHeight(size.height);
+      this.xdDebugPanel.style.width = size.width;
+      this.xdDebugPanel.style.height = size.height;
+      this.xdDebugPanelBody.style.height = this.getBodyHeight(size.height);
     }
   };
 
   XDebugConsole.prototype.updatePanelLayout = function() {
     for(var i=0; i<this.dock_positions.length; i++){
-      this.DebugDialog.class.remove(this.dock_positions[i]);
+      this.xdDebugDialog.class.remove(this.dock_positions[i]);
     }
-    this.DebugDialog.class.add(this.settings.dock);
+    this.xdDebugDialog.class.add(this.settings.dock);
     this.setWindowSize(this.settings.window_size);
     this.renderSettings();
   };
 
   XDebugConsole.prototype.renderSettings = function(){
-    var xdSettings = this.DebugPanel.selector('.debug-settings');
+    var xdSettings = XDom(this.xdDebugPanel, '.debug-settings');
     xdSettings.style.display = !!this.settings.settings_visible;
   };
 
@@ -337,18 +343,18 @@ exports = module.exports = function(jsh){
   };
 
   XDebugConsole.prototype.minimizeWindow = function(){
-    this.DebugPanel.style.display = false;
-    this.DebugPanelMin.style.display = true;
-    this.DebugDialog.class.remove('visible');
+    this.xdDebugPanel.style.display = false;
+    this.xdDebugPanelMin.style.display = true;
+    this.xdDebugDialog.class.remove('visible');
     this.settings.minimized = 1;
     this.saveSettings();
   };
 
   XDebugConsole.prototype.expandWindow = function(){
-    this.DebugPanel.style.display = true;
-    this.DebugPanelMin.style.display = false;
-    this.DebugDialog.style.display = true;
-    this.DebugDialog.class.add('visible');
+    this.xdDebugPanel.style.display = true;
+    this.xdDebugPanelMin.style.display = false;
+    this.xdDebugDialog.style.display = true;
+    this.xdDebugDialog.class.add('visible');
     this.settings.minimized = 0;
     this.saveSettings();
   };
@@ -361,20 +367,20 @@ exports = module.exports = function(jsh){
 
   XDebugConsole.prototype.dockBottom = function(){
     this.settings.dock = 'bottom';
-    this.DebugPanel.attr.style = null;
-    this.DebugPanel.style.display = true;
-    this.DebugPanel.selector('.xdebuginfo-body').attr.style = null;
+    this.xdDebugPanel.attr.style = null;
+    this.xdDebugPanel.style.display = true;
+    XDom.setAttribute(this.xdDebugPanelBody, 'style', null);
     this.updatePanelLayout();
     this.saveSettings();
   };
 
   XDebugConsole.prototype.clear = function() {
-    this.DebugPanel.selector('.xdebuginfo-body').content.clear();
+    this.xdDebugPanelBody.content.clear();
   };
 
   XDebugConsole.prototype.log = function (txt, clear) {
     if(clear) this.clear();
-    this.DebugPanel.selector('.xdebuginfo-body').content.prepend('<div class="info-message">'+txt+'</div>');
+    this.xdDebugPanelBody.content.prepend('<div class="info-message">'+txt+'</div>');
   };
 
   return XDebugConsole;

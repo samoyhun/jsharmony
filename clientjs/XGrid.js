@@ -22,7 +22,7 @@ var _ = require('lodash');
 exports = module.exports = function(jsh){
 
   // FIXME: temporary while names are in flux
-  jsh.selector = function(sel) {return jsh.XDom(document).selector(sel);}
+  jsh.selector = function(sel) {return jsh.XDom(document).selector(sel);};
 
   function XGrid(options){
     var _this = this;
@@ -300,7 +300,7 @@ exports = module.exports = function(jsh){
   };
   XGrid.prototype.ResetSortGlyphs = function (xd_tbl){
     var xd_thead = xd_tbl.selector('thead tr');
-    xd_th = xd_thead.selector('th');
+    var xd_th = xd_thead.selector('th');
     xd_th.class.remove('sortAsc');
     xd_th.class.remove('sortDesc');
     if (!this.Sort || (this.Sort.length == 0)) return;

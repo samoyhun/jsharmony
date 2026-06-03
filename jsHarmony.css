@@ -229,6 +229,7 @@ BODY
 <%-rootcss%> .xform_file_download .xform_file_download_button { padding-right:25px; }
 <%-rootcss%> .xform_file_download.nodocument .xform_file_download_button { display:none; }
 <%-rootcss%> .xform_image, .xform_image_preview { display:inline-block; }
+<%-rootcss%> .xtbl td .xform_image_preview { vertical-align: text-top; }
 <%-rootcss%> .xform .xform_label,
 <%-rootcss%> .xform input,
 <%-rootcss%> .xform select,
