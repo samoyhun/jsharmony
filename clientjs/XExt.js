@@ -1811,7 +1811,7 @@ exports = module.exports = function(jsh){
 
   /**
    * Retrives and wraps a template element
-   * 
+   *
    * @param {String} sel - The CSS selector used to find the template
    * @returns {XDom} An XDom wrapped template
    */
@@ -1998,7 +1998,7 @@ exports = module.exports = function(jsh){
 
     var container = document.createElement('div');
     jsh.XDom.content.append(container, html);
-    var xobj = jsh.XDom(jsh.XDom(container).children.select()[0])
+    var xobj = jsh.XDom(jsh.XDom(container).children.select()[0]);
     var customPromptEl = xobj.select()[0];
 
     //ShowDialog
@@ -2073,7 +2073,7 @@ exports = module.exports = function(jsh){
               var mouseUpTime = new Date().getTime();
               if((mouseUpTime - mouseDownTime) > 5000) return;
               if(!(e.target.matches('.xdialogoverlay,.xdialogblock'))) return;
-              if(jsh.xDialog.length && (jsh.xDialog[0]==customPromptEl)){ e.preventDefault(); e.stopImmediatePropagation(); cancelfunc(); jsh.onDialogOverlayClick.shift()}
+              if(jsh.xDialog.length && (jsh.xDialog[0]==customPromptEl)){ e.preventDefault(); e.stopImmediatePropagation(); cancelfunc(); jsh.onDialogOverlayClick.shift();}
             }, {once: true});
           });
         }
@@ -2117,9 +2117,9 @@ exports = module.exports = function(jsh){
     
     jsh.XDom.setAttribute(xobj.select('.xtextzoomfield'), 'readonly', (options.readonly?true:false));
     if(options.readonly) {
-      jsh.XDom.class.remove(xobj.select('.xtextzoomfield'), 'editable')
+      jsh.XDom.class.remove(xobj.select('.xtextzoomfield'), 'editable');
       jsh.XDom.class.add(xobj.select('.xtextzoomfield'), 'uneditable');
-    } 
+    }
     else {
       jsh.XDom.class.remove(xobj.select('.xtextzoomfield'), 'uneditable');
       jsh.XDom.class.add(xobj.select('.xtextzoomfield'), 'editable');
