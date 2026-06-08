@@ -61,7 +61,7 @@ var mocha = require('mocha');
 
   function assertEqual(a, b, msg){
     if(a !== b){
-      throwError((msg || 'Assertion failed') + ": " + a.toString() + " !== " + b.toString());
+      throwError((msg || 'Assertion failed') + ": " + (a && a.toString()) + " !== " + (b && b.toString()));
     }
   }
 
@@ -241,17 +241,51 @@ var mocha = require('mocha');
   });
 
   describe('XDom appendHtml ', function() {
-    before(function(){
+    beforeEach(function(){
       document.querySelector('#workspace').innerHTML = [
         '<div id="item4" class="singleClass"></div>',
       ].join('');
     });
 
     it('appendHtml css id ', function() {
-      XDom('#item4').content.append('<p>Test</p>');
+      XDom('#item4').content.append('<p>Test1</p>');
       var el = XDom.selectOne('#item4');
       assert(el.querySelector('p') !== null, 'p element was appended');
-      assert(el.querySelector('p').textContent === 'Test', 'p element contains correct text');
+      assert(el.querySelector('p').textContent === 'Test1', 'p element contains correct text');
+    });
+
+    it('appendHtml multiple nodes ', function() {
+      XDom('#item4').content.append('before <p>Test2</p> after');
+      var el = XDom.selectOne('#item4');
+      assert(el.querySelector('p') !== null, 'p element was appended');
+      assert(el.querySelector('p').textContent === 'Test2', 'p element contains correct text');
+    });
+
+    it('appendHtml tr', function() {
+      XDom('#item4').content.append('<tr><td><p>Test3</p></td></tr>');
+      var el = XDom.selectOne('#item4');
+      assert(el.querySelector('tr') !== null, 'tr element was appended');
+      assert(el.querySelector('p').textContent === 'Test3', 'p element contains correct text');
+    });
+
+    it('appendHtml input elements have a type property', function() {
+      XDom('#item4').content.append('<input type="text"/>');
+      var el = XDom.selectOne('#item4');
+      assertEqual(el.querySelector('input').type, 'text', 'input element has a type property');
+    });
+
+    it('appendHtml does not execute scripts', function() {
+      delete window.jsh_xdom_runs_scripts;
+      XDom('#item4').content.append('<script>window.jsh_xdom_runs_scripts = true;</script>');
+      assertEqual(window.jsh_xdom_runs_scripts, undefined, 'script execution');
+    });
+
+    it('appendHtml does execute handlers', function() {
+      delete window.jsh_xdom_runs_handlers;
+      XDom('#item4').content.append('<div id="clickable" onclick="window.jsh_xdom_runs_handlers = true;"></div>');
+      XDom('#clickable').emit('click');
+      assertEqual(window.jsh_xdom_runs_handlers, true, 'script execution');
+      delete window.jsh_xdom_runs_handlers;
     });
 
     after(function(){
@@ -760,8 +794,8 @@ var mocha = require('mocha');
     function setup(){
       document.querySelector('#workspace').innerHTML = [
         '<div id="parent">',
-          '<div id="child1" class="child"></div>',
-          '<div id="child2" class="child"></div>',
+          '<div id="child1" class="child">1</div>',
+          '<div id="child2" class="child">2</div>',
         '</div>',
       ].join('');
     }
@@ -809,6 +843,14 @@ var mocha = require('mocha');
       XDom.selector('.child').insertBefore(el, null);
       assert(XDom.selector('#child1').children.select().length == 0, 'not in child1');
       assert(XDom.selector('#child2').children.select().length == 1, 'in child2');
+    });
+
+    it('multiple elements', function() {
+      setup();
+      var _el = XDom.render('before <div>inside</div> after');
+      var ref = document.getElementById('child2');
+      XDom.selector('#parent').insertBefore(_el, ref);
+      assertEqual(XDom.selector('#parent').select()[0].textContent, '1before inside after2', 'inserted all nodes in order');
     });
 
     after(function(){

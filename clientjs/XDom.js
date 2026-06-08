@@ -288,26 +288,27 @@ XDom.class = {
   },
 };
 
-function renderHtml(val){
-  var container = document.createElement('div');
-  container.innerHTML = val;
-  return container.childNodes;
-}
+XDom.render = function(html){
+  var container = document.createElement('template');
+  container.innerHTML = html;
+  // childNodes is a live NodeList, if we return it direclty, it will likely have surpriseing results as nodes are moved elsewhere.
+  return Array.prototype.slice.call(container.content.childNodes);
+};
 
 XDom.content = {
   append: function(target, val){
     _.each(XDom.resolve(target), function(el){
-      if(el && el.append) el.append.apply(el, renderHtml(val));
+      if(el && el.append) el.append.apply(el, XDom.render(val));
     });
   },
   prepend: function(target, val){
     _.each(XDom.resolve(target), function(el){
-      if(el && el.prepend) el.prepend.apply(el, renderHtml(val));
+      if(el && el.prepend) el.prepend.apply(el, XDom.render(val));
     });
   },
   replace: function(target, val){
     _.each(XDom.resolve(target), function(el){
-      if(el && el.replaceChildren) el.replaceChildren.apply(el, renderHtml(val));
+      if(el && el.replaceChildren) el.replaceChildren.apply(el, XDom.render(val));
     });
   },
   clear: function(target){
@@ -321,7 +322,16 @@ XDom.insertBefore = function(target, newNode, referenceNode){
   var _el = XDom.resolve(target);
   if(!_el.length) return;
   // a node can only have one parent, so there is no point in inserting into any other targets that would just have it immediately removed.
-  _el[_el.length-1].insertBefore(newNode, referenceNode || null);
+  var targetNode = _el[_el.length-1];
+  // since XDom.render results in an array we anticpate that it will be common argument to this function.
+  if (newNode.length) {
+    // we also copy the list in case a live NodeList is passed, as having the list change during iteration will not have the expected result
+    Array.prototype.slice.call(newNode,0).forEach(function(node){
+      targetNode.insertBefore(node, referenceNode || null);
+    });
+  } else {
+    targetNode.insertBefore(newNode, referenceNode || null);
+  }
 };
 
 XDom.remove = function(target){
