@@ -2311,7 +2311,14 @@ exports = module.exports = function(jsh){
           xsubform.css('overflow','auto');
         }
         jsh.xPopupStack.push(popup_options);
-        $.colorbox(popup_options);
+        var onInit = popup_options.onComplete;
+        var onClosed = popup_options.onClosed;
+        var template = XExt.getTemplate('.template_xpopup');
+        template.content.append(jsh.XDom.select(POPUP_CONTAINER)[0].innerHTML);
+        console.log(jsh.XDom.select(POPUP_CONTAINER)[0]);
+        console.log('this is template:', template.select()[0]);
+        var html = template.select()[0].outerHTML;
+        XExt.CustomPrompt(null, html, onInit, null, null, onClosed, {backgroundClose: true});
       });
   };
 
