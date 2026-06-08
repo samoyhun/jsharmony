@@ -61,7 +61,7 @@ var mocha = require('mocha');
 
   function assertEqual(a, b, msg){
     if(a !== b){
-      throwError((msg || 'Assertion failed') + ": " + a.toString() + " !== " + b.toString());
+      throwError((msg || 'Assertion failed') + ": " + (a && a.toString()) + " !== " + (b && b.toString()));
     }
   }
 
@@ -241,17 +241,51 @@ var mocha = require('mocha');
   });
 
   describe('XDom appendHtml ', function() {
-    before(function(){
+    beforeEach(function(){
       document.querySelector('#workspace').innerHTML = [
         '<div id="item4" class="singleClass"></div>',
       ].join('');
     });
 
     it('appendHtml css id ', function() {
-      XDom('#item4').content.append('<p>Test</p>');
+      XDom('#item4').content.append('<p>Test1</p>');
       var el = XDom.selectOne('#item4');
       assert(el.querySelector('p') !== null, 'p element was appended');
-      assert(el.querySelector('p').textContent === 'Test', 'p element contains correct text');
+      assert(el.querySelector('p').textContent === 'Test1', 'p element contains correct text');
+    });
+
+    it('appendHtml multiple nodes ', function() {
+      XDom('#item4').content.append('before <p>Test2</p> after');
+      var el = XDom.selectOne('#item4');
+      assert(el.querySelector('p') !== null, 'p element was appended');
+      assert(el.querySelector('p').textContent === 'Test2', 'p element contains correct text');
+    });
+
+    it('appendHtml tr', function() {
+      XDom('#item4').content.append('<tr><td><p>Test3</p></td></tr>');
+      var el = XDom.selectOne('#item4');
+      assert(el.querySelector('tr') !== null, 'tr element was appended');
+      assert(el.querySelector('p').textContent === 'Test3', 'p element contains correct text');
+    });
+
+    it('appendHtml input elements have a type property', function() {
+      XDom('#item4').content.append('<input type="text"/>');
+      var el = XDom.selectOne('#item4');
+      assertEqual(el.querySelector('input').type, 'text', 'input element has a type property');
+    });
+
+    it('appendHtml does not execute scripts', function() {
+      delete window.jsh_xdom_runs_scripts;
+      XDom('#item4').content.append('<script>window.jsh_xdom_runs_scripts = true;</script>');
+      assertEqual(window.jsh_xdom_runs_scripts, undefined, 'script execution');
+    });
+
+    it('appendHtml does execute handlers', function() {
+      delete window.jsh_xdom_runs_handlers;
+      XDom('#item4').content.append('<div id="clickable" onclick="window.jsh_xdom_runs_handlers = true;"></div>');
+      XDom('#clickable').emit('click');
+      assertEqual(window.jsh_xdom_runs_handlers, true, 'script execution');
+      delete window.jsh_xdom_runs_handlers;
     });
 
     after(function(){
@@ -605,15 +639,15 @@ var mocha = require('mocha');
     it('higher level parent', function(){
       var parent = XDom('#child').parent('.target');
       assert(parent.attr.id === 'grandparent', 'found grandparent');
-      assert(parent.select().length == 1, 'found only grandparent');
+      assert(parent.length == 1, 'found only grandparent');
     });
 
     it('parent not found', function(){
-      assert(XDom('#child').parent('.not.found').select().length == 0, 'no parent found');
+      assert(XDom('#child').parent('.not.found').length == 0, 'no parent found');
     });
 
     it('deduplication', function(){
-      assert(XDom('.sibling').parent().select().length == 1, 'siblings have one parent');
+      assert(XDom('.sibling').parent().length == 1, 'siblings have one parent');
     });
 
     after(function(){
@@ -634,7 +668,7 @@ var mocha = require('mocha');
     });
 
     it('next when last', function(){
-      assert(XDom('#item2').nextSibling().select().length == 0, 'nothing is next');
+      assert(XDom('#item2').nextSibling().length == 0, 'nothing is next');
     });
 
     it('previous', function(){
@@ -642,7 +676,7 @@ var mocha = require('mocha');
     });
 
     it('previous when first', function(){
-      assert(XDom('#item1').previousSibling().select().length == 0, 'nothing is previous');
+      assert(XDom('#item1').previousSibling().length == 0, 'nothing is previous');
     });
 
     after(function(){
@@ -664,7 +698,7 @@ var mocha = require('mocha');
     });
 
     it('first of of nothing', function(){
-      assert(XDom('.not.found').first().select().length == 0, 'nothing is first');
+      assert(XDom('.not.found').first().length == 0, 'nothing is first');
     });
 
     it('last', function(){
@@ -672,7 +706,7 @@ var mocha = require('mocha');
     });
 
     it('last of of nothing', function(){
-      assert(XDom('.not.found').last().select().length == 0, 'nothing is last');
+      assert(XDom('.not.found').last().length == 0, 'nothing is last');
     });
 
     after(function(){
@@ -694,11 +728,11 @@ var mocha = require('mocha');
     });
 
     it('has children', function(){
-      assert(XDom('#parent').children.select().length === 2, 'parent has children');
+      assert(XDom('#parent').children.length === 2, 'parent has children');
     });
 
     it('no children', function(){
-      assert(XDom('#empty').children.select().length === 0, 'element should have no children');
+      assert(XDom('#empty').children.length === 0, 'element should have no children');
     });
 
     after(function(){
@@ -716,39 +750,39 @@ var mocha = require('mocha');
     });
 
     it('base case', function(){
-      assert(XDom('.target').select().length === 3, 'starting with correct number of elements');
+      assert(XDom('.target').length === 3, 'starting with correct number of elements');
     });
 
     it('filter true', function(){
-      assert(XDom('.target').filter(function(el){return true;}).select().length === 3, 'filtered all elements');
+      assert(XDom('.target').filter(function(el){return true;}).length === 3, 'filtered all elements');
     });
 
     it('filter false', function(){
-      assert(XDom('.target').filter(function(el){return false;}).select().length === 0, 'filtered all elements');
+      assert(XDom('.target').filter(function(el){return false;}).length === 0, 'filtered all elements');
     });
 
     it('filter selective', function(){
-      assert(XDom('.target').filter(function(el){return el.id == 'item1';}).select().length === 1, 'filtered one element');
+      assert(XDom('.target').filter(function(el){return el.id == 'item1';}).length === 1, 'filtered one element');
     });
 
     it('filter empty set', function(){
-      assert(XDom('.not.found').filter(function(el){return true;}).select().length === 0, 'empty is empty');
+      assert(XDom('.not.found').filter(function(el){return true;}).length === 0, 'empty is empty');
     });
 
     it('omit true', function(){
-      assert(XDom('.target').omit(function(el){return true;}).select().length === 0, 'omited all elements');
+      assert(XDom('.target').omit(function(el){return true;}).length === 0, 'omited all elements');
     });
 
     it('omit false', function(){
-      assert(XDom('.target').omit(function(el){return false;}).select().length === 3, 'omited all elements');
+      assert(XDom('.target').omit(function(el){return false;}).length === 3, 'omited all elements');
     });
 
     it('omit selective', function(){
-      assert(XDom('.target').omit(function(el){return el.id == 'item1';}).select().length === 2, 'omited one element');
+      assert(XDom('.target').omit(function(el){return el.id == 'item1';}).length === 2, 'omited one element');
     });
 
     it('omit empty set', function(){
-      assert(XDom('.not.found').omit(function(el){return true;}).select().length === 0, 'empty is empty');
+      assert(XDom('.not.found').omit(function(el){return true;}).length === 0, 'empty is empty');
     });
 
     after(function(){
@@ -760,8 +794,8 @@ var mocha = require('mocha');
     function setup(){
       document.querySelector('#workspace').innerHTML = [
         '<div id="parent">',
-          '<div id="child1" class="child"></div>',
-          '<div id="child2" class="child"></div>',
+          '<div id="child1" class="child">1</div>',
+          '<div id="child2" class="child">2</div>',
         '</div>',
       ].join('');
     }
@@ -770,7 +804,7 @@ var mocha = require('mocha');
       setup();
       var el = document.createElement('div');
       XDom.selector('#child1').insertBefore(el, null);
-      assert(XDom.selector('#child1').children.select().length == 1, 'an empty target now has one child');
+      assert(XDom.selector('#child1').children.length == 1, 'an empty target now has one child');
     });
 
     it('insert with no reference', function() {
@@ -807,8 +841,16 @@ var mocha = require('mocha');
       setup();
       var el = document.createElement('div');
       XDom.selector('.child').insertBefore(el, null);
-      assert(XDom.selector('#child1').children.select().length == 0, 'not in child1');
-      assert(XDom.selector('#child2').children.select().length == 1, 'in child2');
+      assert(XDom.selector('#child1').children.length == 0, 'not in child1');
+      assert(XDom.selector('#child2').children.length == 1, 'in child2');
+    });
+
+    it('multiple elements', function() {
+      setup();
+      var _el = XDom.render('before <div>inside</div> after');
+      var ref = document.getElementById('child2');
+      XDom.selector('#parent').insertBefore(_el, ref);
+      assertEqual(XDom.selector('#parent').select()[0].textContent, '1before inside after2', 'inserted all nodes in order');
     });
 
     after(function(){

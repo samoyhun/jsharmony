@@ -21,9 +21,6 @@ var _ = require('lodash');
 
 exports = module.exports = function(jsh){
 
-  // FIXME: temporary while names are in flux
-  jsh.selector = function(sel) {return jsh.XDom(document).selector(sel);};
-
   function XGrid(options){
     var _this = this;
 
@@ -41,7 +38,7 @@ exports = module.exports = function(jsh){
     this._this = this;
     this.TemplateID = options.TemplateID;
     this.PlaceholderID = options.PlaceholderID;
-    this.ColSpan = jsh.selector(this.PlaceholderID).parent().selector('thead th').select().length;
+    this.ColSpan = jsh.XDom(jsh.xdroot, this.PlaceholderID).parent().selector('thead th').length;
     this.modelid = options.modelid;
     
     this.CustomScroll = options.CustomScroll || undefined;
@@ -113,8 +110,8 @@ exports = module.exports = function(jsh){
     
     if(rowstart > 0){
       if(_this.EOF) return;
-      jsh.selector(_this.PlaceholderID).selector('tr.xtbl_loadmore').remove();
-      jsh.selector(_this.PlaceholderID).content.append('<tr class="xtbl_loadmore"><td colspan="'+_this.ColSpan+'"><a href="#">Loading...</div></td></tr>');
+      jsh.XDom(jsh.xdroot, _this.PlaceholderID).selector('tr.xtbl_loadmore').remove();
+      jsh.XDom(jsh.xdroot, _this.PlaceholderID).content.append('<tr class="xtbl_loadmore"><td colspan="'+_this.ColSpan+'"><a href="#">Loading...</div></td></tr>');
     }
     var starttime = (new Date()).getTime();
     
@@ -170,7 +167,7 @@ exports = module.exports = function(jsh){
     var _this = this;
     var loader = jsh.xLoader;
     if(rowstart > 0){
-      jsh.selector(_this.PlaceholderID).selector('tr.xtbl_loadmore').remove();
+      jsh.XDom(jsh.xdroot, _this.PlaceholderID).selector('tr.xtbl_loadmore').remove();
     }
     var renderData = false;
     var ejssource = '';
@@ -212,7 +209,7 @@ exports = module.exports = function(jsh){
       }
       if ((data[this.modelid].length == 0) && ((_this.NoResultsMessage) || (_this.RequireSearch && _this.RequireSearchMessage))) {
         _this.EOF = true;
-        if (_this.OnDestroyingRows) _this.OnDestroyingRows(jsh.selector(_this.PlaceholderID).children);
+        if (_this.OnDestroyingRows) _this.OnDestroyingRows(jsh.XDom(jsh.xdroot, _this.PlaceholderID).children);
         _this.RenderNoResultsMessage({ search: (((reqdata.search||'').trim()) || ((reqdata.searchjson||'').trim())) });
         _this.RowCount = 0;
         if (_this.OnResetDataSet) _this.OnResetDataSet(data);
@@ -228,11 +225,11 @@ exports = module.exports = function(jsh){
             return;
           }
         }
-        else ejssource = jsh.selector(_this.TemplateID).select()[0].innerHTML;
+        else ejssource = jsh.XDom(jsh.xdroot, _this.TemplateID).select()[0].innerHTML;
         
         if (rowstart == 0) {
-          if (_this.OnDestroyingRows) _this.OnDestroyingRows(jsh.selector(_this.PlaceholderID).children);
-          jsh.selector(_this.PlaceholderID).content.clear();
+          if (_this.OnDestroyingRows) _this.OnDestroyingRows(jsh.XDom(jsh.xdroot, _this.PlaceholderID).children);
+          jsh.XDom(jsh.xdroot, _this.PlaceholderID).content.clear();
           _this.RowCount = 0;
           if (_this.OnResetDataSet) _this.OnResetDataSet(data);
         }
@@ -248,8 +245,8 @@ exports = module.exports = function(jsh){
               startrowid: undefined,
               datatable: data[_this.modelid],
             });
-            jsh.selector(_this.PlaceholderID).content.append(ejsrslt);
-            _this.RowCount = jsh.selector(_this.PlaceholderID).selector('tr').select().length;
+            jsh.XDom(jsh.xdroot, _this.PlaceholderID).content.append(ejsrslt);
+            _this.RowCount = jsh.XDom(jsh.xdroot, _this.PlaceholderID).selector('tr').length;
             return f();
           }
         }
@@ -258,8 +255,8 @@ exports = module.exports = function(jsh){
         if(renderData){
           _this.EOF = data['_eof_' + _this.modelid];
           if ((_this.Paging) && (!_this.EOF)) {
-            jsh.selector(_this.PlaceholderID).content.append('<tr class="xtbl_loadmore"><td colspan="' + _this.ColSpan + '"><a href="#">Load More Data</div></td></tr>');
-            jsh.selector(_this.PlaceholderID).selector('.xtbl_loadmore').on('click', function () {
+            jsh.XDom(jsh.xdroot, _this.PlaceholderID).content.append('<tr class="xtbl_loadmore"><td colspan="' + _this.ColSpan + '"><a href="#">Load More Data</div></td></tr>');
+            jsh.XDom(jsh.xdroot, _this.PlaceholderID).selector('.xtbl_loadmore').on('click', function () {
               if (_this.OnLoadMoreData) { _this.OnLoadMoreData(); return false; }
               _this.Load(_this.RowCount);
               return false;
@@ -296,7 +293,7 @@ exports = module.exports = function(jsh){
     var noresultsmessage = _this.NoResultsMessage.replace(/%%%FORSEARCHPHRASE%%%/g, (_this.hasSearch()?'for selected search phrase':''));
     if (_this.RequireSearch && !options.search) noresultsmessage = _this.RequireSearchMessage;
     else if (!options.search && _this.NoDataMessage) noresultsmessage = _this.NoDataMessage;
-    jsh.selector(_this.PlaceholderID).content.replace('<tr class="xtbl_noresults"><td colspan="' + _this.ColSpan + '" align="center" class="xtbl_noresults">' + noresultsmessage + '</td></tr>');
+    jsh.XDom(jsh.xdroot, _this.PlaceholderID).content.replace('<tr class="xtbl_noresults"><td colspan="' + _this.ColSpan + '" align="center" class="xtbl_noresults">' + noresultsmessage + '</td></tr>');
   };
   XGrid.prototype.ResetSortGlyphs = function (xd_tbl){
     var xd_thead = xd_tbl.selector('thead tr');
@@ -350,9 +347,9 @@ exports = module.exports = function(jsh){
         _this.lastDocumentHeight = curDocumentHeight;
         _this.scrolledPastBottom = false;
       }
-      var pastBottom = ((jsh.selector(window).calc.height() + window.scrollY) >= (curDocumentHeight));
+      var pastBottom = ((jsh.XDom(jsh.xdroot, window).calc.height() + window.scrollY) >= (curDocumentHeight));
       if(!_this.scrolledPastBottom && pastBottom) {
-        callback(jsh.selector(window).calc.height() + window.scrollY);
+        callback(jsh.XDom(jsh.xdroot, window).calc.height() + window.scrollY);
         _this.scrolledPastBottom = true;
       } else {
         if(!pastBottom) _this.scrolledPastBottom = false;
