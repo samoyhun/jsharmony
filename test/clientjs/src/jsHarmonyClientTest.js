@@ -1045,4 +1045,121 @@ var mocha = require('mocha');
       document.querySelector('#workspace').innerHTML = '';
     });
   });
+
+  describe('XDom animate', function() {
+    beforeEach(function(){
+      document.querySelector('#workspace').innerHTML = [
+        '<div id="item1" class="sharedClass1 sharedClass3"></div>',
+        '<div id="item2" class="sharedClass1 sharedClass3"></div>',
+        '<div id="item3" class="sharedClass2 sharedClass2"></div>',
+        '<div id="item4" class="singleClass"></div>',
+        '<footer></footer>'
+      ].join('');
+    });
+
+    it('animate duration zero ', function(done) {
+      var sharedClass1_el = XDom('.sharedClass1');
+      sharedClass1_el.animate({width: '400px'}, 0, function(){
+        assert(XDom.selector('#item1').calc.width() === 400, 'found correct width');
+        assert(XDom.selector('#item2').calc.width() === 400, 'found correct width');
+        done();
+      });
+    });
+
+    it('animate duration non zero ', function(done) {
+      var sharedClass1_el = XDom('.sharedClass1');
+      sharedClass1_el.animate({width: '400px'}, 100, function(){
+        assert(XDom.selector('#item1').calc.width() === 400, 'found correct width');
+        assert(XDom.selector('#item2').calc.width() === 400, 'found correct width');
+        done();
+      });
+    });
+      
+    it('animate stopped full set ', function(done) {
+      var sharedClass1_el = XDom('.sharedClass1');
+      setTimeout(function(){
+        sharedClass1_el.stop();
+        done();
+      }, 50);
+      sharedClass1_el.animate({width: '400px'}, 100, function(){
+        assert(XDom.selector('#item1').calc.width() !== 400, 'found correct width');
+        assert(XDom.selector('#item2').calc.width() !== 400, 'found correct width');
+        done(err);
+      });
+    });
+
+    it('animate stopped full set with callback ', function(done) {
+      var check = 0;
+      var sharedClass1_el = XDom('.sharedClass1');
+      var callback = function(){check = 1;};
+      sharedClass1_el.animate({width: '400px'}, 100, function(){check = 1});
+      setTimeout(function(){
+        sharedClass1_el.stop();
+        assert(XDom.selector('#item1').calc.width() !== 400, 'found correct width');
+        assert(XDom.selector('#item2').calc.width() !== 400, 'found correct width');
+        assert(check === 0, 'callback never fires');
+        done();
+      }, 50);
+    });
+
+    it('animate stopped subset ', function(done) {
+      var sharedClass1_el = XDom('.sharedClass1');
+      var first_el = XDom('#item1');
+      setTimeout(function(){
+        first_el.stop();
+      }, 50);
+      sharedClass1_el.animate({width: '400px'}, 100, function(){
+        assert(XDom.selector('#item1').calc.width() !== 400, 'found correct width');
+        assert(XDom.selector('#item2').calc.width() === 400, 'found correct width');
+        done();
+      });
+    });
+
+    it('animate multi props ', function(done) {
+      var sharedClass1_el = XDom('.sharedClass1');
+      sharedClass1_el.animate({width: '400px', height: '400px', opacity: 0}, 100, function(){
+        assert(XDom.selector('#item1').calc.width() === 400, 'found correct width');
+        assert(XDom.selector('#item2').calc.width() === 400, 'found correct width');
+        assert(XDom.selector('#item1').calc.height() === 400, 'found correct height');
+        assert(XDom.selector('#item2').calc.height() === 400, 'found correct height');
+        done();
+      });
+    });
+
+    it('animate color props rgb ', function(done) {
+      var sharedClass1_el = XDom('.sharedClass1');
+      sharedClass1_el.animate({color: 'rgb(1, 2, 3)'}, 100, function(){
+        assert(XDom.selector('#item1').style.color === 'rgb(1, 2, 3)', 'found correct color');
+        done();
+      });
+    });
+
+    it('animate color props rgba ', function(done) {
+      var sharedClass1_el = XDom('.sharedClass1');
+      sharedClass1_el.animate({color: 'rgba(1, 2, 3, 0.95)'}, 100, function(){
+        assert(XDom.selector('#item1').style.color === 'rgba(1, 2, 3, 0.95)', 'found correct color');
+        done();
+      });
+    });
+
+    it('animate color props hex RRGGBB ', function(done) {
+      var sharedClass1_el = XDom('.sharedClass1');
+      sharedClass1_el.animate({color: '#FF00FF'}, 100, function(){
+        assert(XDom.selector('#item1').style.color === 'rgb(255, 0, 255)', 'found correct color');
+        done();
+      });
+    });
+
+    it('animate color props hex RRGGBBAA ', function(done) {
+      var sharedClass1_el = XDom('.sharedClass1');
+      sharedClass1_el.animate({color: '#FF00FFF5'}, 100, function(){
+        assert(XDom.selector('#item1').style.color === 'rgba(255, 0, 255, 0.96)', 'found correct color');
+        done();
+      });
+    });
+    
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  })
 })();

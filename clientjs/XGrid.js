@@ -324,7 +324,7 @@ exports = module.exports = function(jsh){
     xd_th.class.remove('sortAsc');
     xd_th.class.remove('sortDesc');
     if(newdir == '^') { xd_thSort.class.add('sortAsc'); }
-    else{ xd_thSort.addClass('sortDesc'); }
+    else{ xd_thSort.class.add('sortDesc'); }
     this.Sort.unshift(newdir+col);
     this.Load();
     return false;

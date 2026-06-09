@@ -690,106 +690,78 @@ XDom.calc = {
 };
 XDom.calc.width = XDom.calc.widthToContent;
 XDom.calc.height = XDom.calc.heightToContent;
-
+/**
+ * parseStyleUnit parses a style string and returns an obj with a value and a unit. Returns null if
+ * unable to properly extract a value or unit from style string.
+ * @param {String} value - A style string like '100px' or 'rgba(12, 53, 67, 0.5)' or '1' (opacity)
+ * @returns {Object}
+ */
 function parseStyleUnit(value) {
   if (value == null) return null;
-  var vals, unit, arr;
-  if(value.replace(' ', '').indexOf('rgb')===0){
-    arr = value.replace(')', '').split('(');
-    vals = arr[1].split(/\s*,\s*/);
-    if(arr[0] === 'rgb') vals.push('1');
+  var vals = [];
+  var tempArray = [];
+  var unit = null;
+  value = value.replaceAll(' ', '');
+  if(value.indexOf('rgb')===0){     // rbg || rgba
+    tempArray = value.replace(')', '').split('(');
+    vals = tempArray[1].split(',');
+    if(tempArray[0] === 'rgb') vals.push('1');  // normalize to rgba
     unit = 'rgba';
-  } else if(value.replace(' ', '').indexOf('#')===0){
-    if(value.length === 7){ // #RRGGBB
-      arr = value.replace('#', '').match(/.{1,2}/g);
-      arr.push('FF');
-    } else if(value.length === 9){ //#RRGGBBaa
-      arr = value.replace('#', '').match(/.{1,2}/g);
-    } else return;
-    vals = arr.map(function(hex){return '0x' + hex;});
-    vals[3] = Number(vals[3])/255;
+  } else if(value.indexOf('#')===0){
+    value = value.replace('#', '');
+    vals = value.match(/.{1,2}/g);
+    if(value.length === 6) vals.push('FF');     // normalize to rgba
+    vals = vals.map(function(hex){return '0x' + hex;});
+    vals[3] = Number(vals[3])/255;  // alpha ratio
     unit = 'rgba';
   }
   else{
-    value = value.replace(' ', '');
-    arr = value.match(/(^-?\d+(?:\.\d+)?)([a-zA-Z%]+)?$/);
-    if(arr === null){
-      var testval = Number(value.replace(' ', ''));
+    tempArray = value.match(/(^-?\d+(?:\.\d+)?)([a-zA-Z%]+)?$/);
+    if(tempArray === null){         // if there is no match, make a last attempt for a result
+      var testval = Number(value);
       if(isNaN(testval)) return null;
       vals = [testval];
       unit = null;
     }
     else{
-      vals = [arr[1]];
-      unit = arr[2];
+      vals = [tempArray[1]];
+      unit = tempArray[2];
     }
   }
   vals = vals.map(Number);
   return {val: vals, unit: unit};
 }
 
-function add(vec1, vec2){
-  if( !Array.isArray(vec1) || !Array.isArray(vec2)) return;
-  if(vec1.length !== vec2.length) return;
-  return vec1.map(function(num, i){
-    return num + vec2[i];
-  });
-}
-
-function sub(vec1, vec2){
-  if( !Array.isArray(vec1) || !Array.isArray(vec2)) return;
-  if(vec1.length !== vec2.length) return;
-  return vec1.map(function(num, i){
-    return num - vec2[i];
-  });
-}
-
-function simple_mult(vec, scalar){
-  if(!Array.isArray(vec)) return;
-  if(isNaN(scalar)) return;
-  return vec.map(function(num, i){
-    return num * Number(scalar);
-  });
-}
-
-function simple_div(vec, scalar){
-  if(!Array.isArray(vec)) return;
-  if(isNaN(scalar) === 0) return;
-  return vec.map(function(num, i){
-    return num / Number(scalar);
-  });
+/**
+ * vectorOpp returns a progress vector of style values
+ * @param {Array} from        - original starting style array of element(s)
+ * @param {Array} to          - desired final style array of elements(s)
+ * @param {Number} derivative  - rate of change
+ * @returns {Array}
+ */
+function vectorOpp(from, to, derivative){
+  var progressVector = [];
+  progressVector = to.map(function(num, idx) { return num - from[idx]; });              // to - from
+  progressVector = progressVector.map(function(num) { return num * derivative; });      // (to - from) * (curtime-starttime)/duration
+  progressVector = progressVector.map(function(num, idx) { return num + from[idx]; });  // ((to - from) * (curtime-starttime)/duration) + from
+  return progressVector;
 }
 
 function step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete) {
   var duration = endTime - startTime;
   var inProgress = ((curTime < endTime) && (duration > 0));
   var xdom_animatestopidx = Number(el.dataset.xdom_animatestopidx);
-  if(elAnimateIdx <= xdom_animatestopidx){
-    return onComplete(true);
-  }
+  if(elAnimateIdx <= xdom_animatestopidx) return onComplete(true);
   else {
     _.each(elProps, function(value, key) {
       var from = value.from;
       var to = value.to;
       var unit = value.unit || '';
       var progressVec = [];
-      if(inProgress && (from != null)) {
-        progressVec = add(from, simple_div(simple_mult(sub(to, from), (curTime - startTime)), (duration)));
-        if(progressVec.length === 1){
-          el.style[key] = (progressVec[0]).toString() + unit;
-        }
-        else{ // I no like
-          el.style[key] = ('rgba(' + progressVec[0] + ', ' + progressVec[1] + ', ' + progressVec[2] + ', ' + progressVec[3] + ')').toString();
-        }
-      }
-      else {
-        if(to.length === 1){
-          el.style[key] = (to[0]).toString() + unit;
-        }
-        else{ // I no like
-          el.style[key] = ('rgba(' + to[0] + ', ' + to[1] + ', ' + to[2] + ', ' + to[3] + ')').toString();
-        }
-      }
+      if(inProgress) progressVec = vectorOpp(from, to, ((curTime-startTime)/duration));
+      else progressVec = to;
+      if(unit == 'rgba') el.style[key] = 'rgba(' + progressVec[0] + ', ' + progressVec[1] + ', ' + progressVec[2] + ', ' + progressVec[3] + ')';
+      else el.style[key] = progressVec[0] + unit;
     });
     if(inProgress){
       requestAnimationFrame(function(curTime){
@@ -797,7 +769,7 @@ function step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete
       });
     }
     else {
-      onComplete(false);//if an element reaches this point then it would have "completed" naturally
+      onComplete(false); //if an element reaches this point then it would have "completed" naturally
     }
   }
 }
@@ -821,6 +793,7 @@ XDom.animate = function(target, props, duration, callback) {
     var elAnimateIdx = parseInt(el.dataset.xdom_animateidx || 0) + 1;
     el.dataset.xdom_animateidx = elAnimateIdx;
     var elProps = {};
+    var containsProps = false;
     for(var key in props){
       var rawEnd = props[key];
       if((rawEnd === null) || (typeof rawEnd == 'undefined') || (rawEnd === '')) continue;
@@ -828,34 +801,28 @@ XDom.animate = function(target, props, duration, callback) {
       var rawStart = window.getComputedStyle(el)[key];
       var start = parseStyleUnit(rawStart);
       var end = parseStyleUnit(rawEnd);
-      //if start.unit != end.unit what should we do?
-      if(!start || !end) continue;
+      if((!start || !end) || (start.unit != end.unit)) continue; // leave prop out of elProps at unit mismatch (or missing values)
       elProps[key] = {from: start.val, to: end.val, unit: end.unit};
+      containsProps = true;
     }
-    if(elProps !== {}){
-      if(duration > 0){
-        var startTime = document.timeline.currentTime;
-        var endTime = startTime + duration;
-        requestAnimationFrame(function(curTime){
-          step(curTime, el, elProps, startTime, endTime, elAnimateIdx, function(aborted){
-            completeCnt++;
-            if(!aborted) hasSuccess = true;
-            if(hasSuccess && (completeCnt === _el.length)) callback();
-          });
+    if(duration <= 0 && containsProps){
+      _.each(elProps, function(valueObj, key) {
+        var to = valueObj.to;
+        var unit = valueObj.unit || '';
+        if(unit === 'rgba') el.style[key] = 'rgba(' + to[0] + ', ' + to[1] + ', ' + to[2] + ', ' + to[3] + ')';
+        else el.style[key] = to[0] + unit;
+      });
+    }
+    else if(containsProps) {
+      var startTime = document.timeline.currentTime;
+      var endTime = startTime + duration;
+      requestAnimationFrame(function(curTime){
+        step(curTime, el, elProps, startTime, endTime, elAnimateIdx, function(aborted){
+          completeCnt++;
+          if(!aborted) hasSuccess = true;
+          if(hasSuccess && (completeCnt === _el.length)) callback();
         });
-      }
-      else {
-        _.each(elProps, function(value, key) {
-          var to = value.to;
-          var unit = value.unit || '';
-          if(to.length === 1){
-            el.style[key] = (to[0]).toString() + unit;
-          }
-          else{ // I no like
-            el.style[key] = ('rgba(' + to[0] + ', ' + to[1] + ', ' + to[2] + ', ' + to[3] + ')').toString();
-          }
-        });
-      }
+      });
     }
   });
   if(duration <= 0) callback();
