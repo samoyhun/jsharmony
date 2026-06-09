@@ -347,9 +347,9 @@ exports = module.exports = function(jsh){
         _this.lastDocumentHeight = curDocumentHeight;
         _this.scrolledPastBottom = false;
       }
-      var pastBottom = ((jsh.XDom(jsh.xdroot, window).calc.height() + window.scrollY) >= (curDocumentHeight));
+      var pastBottom = ((jsh.XDom.calc.height(window) + window.scrollY) >= (curDocumentHeight));
       if(!_this.scrolledPastBottom && pastBottom) {
-        callback(jsh.XDom(jsh.xdroot, window).calc.height() + window.scrollY);
+        callback(jsh.XDom.calc.height(window) + window.scrollY);
         _this.scrolledPastBottom = true;
       } else {
         if(!pastBottom) _this.scrolledPastBottom = false;
