@@ -1791,7 +1791,7 @@ exports = module.exports = function(jsh){
         console.log(obj); // eslint-disable-line no-console
         console.log(jsh.xDialog); // eslint-disable-line no-console
       }
-      if (oldactive && oldactive.focus) oldactive.focus();
+      if(oldactive) XDom.focus(oldactive);
       window.setTimeout(function () { jsh.xDialog.shift(); if (onComplete) onComplete(); }, 1);
       if (params.onCompleteImmediate) params.onCompleteImmediate();
     };
@@ -1810,7 +1810,7 @@ exports = module.exports = function(jsh){
   };
 
   /**
-   * Retrives and wraps a template element
+   * Retrieves and wraps a template element
    *
    * @param {String} sel - The CSS selector used to find the template
    * @returns {XDom} An XDom wrapped template
@@ -2058,12 +2058,8 @@ exports = module.exports = function(jsh){
         XDom.on(xdobj.select('input, textarea, select'), 'keydown', function (e) {
           if (options.specialKeys.escape && (e.keyCode == 27)) { e.preventDefault(); e.stopImmediatePropagation(); cancelfunc(); }
         });
-        XDom.on(xdobj.select('input'), 'keydown', function (e) {
-          if (options.specialKeys.enter && (e.keyCode == 13)) {
-            var t = this.type && this.type.toLowerCase();
-            if (t === 'checkbox' || t === 'button') return;
-            e.preventDefault(); e.stopImmediatePropagation(); acceptfunc();
-          }
+        XDom.on(xdobj.select('input:not([type="checkbox"]):not([type="button"])'), 'keydown', function (e) {
+          if (options.specialKeys.enter && (e.keyCode == 13)) { e.preventDefault(); e.stopImmediatePropagation(); acceptfunc(); }
         });
         if(options.backgroundClose){
           jsh.onDialogOverlayClick.unshift(function(e){
@@ -2073,7 +2069,7 @@ exports = module.exports = function(jsh){
               var mouseUpTime = new Date().getTime();
               if((mouseUpTime - mouseDownTime) > 5000) return;
               if(!(e.target.matches('.xdialogoverlay,.xdialogblock'))) return;
-              if(jsh.xDialog.length && (jsh.xDialog[0]==customPrompt)){ e.preventDefault(); e.stopImmediatePropagation(); cancelfunc(); jsh.onDialogOverlayClick.shift();}
+              if(jsh.xDialog.length && (jsh.xDialog[0]==customPrompt)){ e.preventDefault(); e.stopImmediatePropagation(); cancelfunc(); jsh.onDialogOverlayClick.shift(); }
             }, {once: true});
           });
         }
