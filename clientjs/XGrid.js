@@ -225,7 +225,7 @@ exports = module.exports = function(jsh){
             return;
           }
         }
-        else ejssource = jsh.XDom(jsh.xdroot, _this.TemplateID).select()[0].innerHTML;
+        else ejssource = jsh.XDom(jsh.xdroot, _this.TemplateID).innerHTML;
         
         if (rowstart == 0) {
           if (_this.OnDestroyingRows) _this.OnDestroyingRows(jsh.XDom(jsh.xdroot, _this.PlaceholderID).children);
@@ -369,7 +369,7 @@ exports = module.exports = function(jsh){
     var _this = this;
     _this.scrollFunc = function () {
       var xdScrollControl = jsh.XDom(_this.ScrollControl);
-      var scrollElement = xdScrollControl.select()[0];
+      var scrollElement = xdScrollControl.selectOne();
       var pastBottom = ((xdScrollControl.height() + scrollElement.scrollTop()) >= scrollElement.scrollHeight);
       if (!_this.scrolledPastBottom && pastBottom) {
         callback(xdScrollControl.height() + scrollElement.scrollTop);

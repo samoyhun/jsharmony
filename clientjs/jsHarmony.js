@@ -97,10 +97,10 @@ var jsHarmony = function(options){
   this.ejs = ejs;
   this.async = async;
   this.moment = moment;
+  this.XDom = XDom;
   this.XGrid = XGrid(this);
   this.XForm = XForm(this);
   this.XExt = XExt(this);
-  this.XDom = XDom;
   this.XAPI = XAPI(this);
   this.XFormat = XFormat();
   this.XValidate = XValidate;
@@ -172,7 +172,7 @@ var jsHarmony = function(options){
   this.root = $(document);
   this.XDroot = XDom(document);
   this.xdroot = XDom(document);
-  this.dialogBlock = null;
+  this.xdDialogBlock = null;
   this.globalsMonitorCache = {};
   this.globalsMonitorTimer = null;
   this.jslocals = '';
@@ -450,8 +450,8 @@ jsHarmony.prototype.XDebugInfo = function (txt,clear) {
 jsHarmony.prototype.InitDialogs = function () {
   var _this = this;
   this.root.append($(ejs.render(XViews['jsh_system'],{ jsh: _this })));
-  this.dialogBlock = XDom(this.xdroot, '.xdialogblock.jsHarmonyElement_'+this._instanceClass);
-  this.dialogBlock.on('mousedown', this.DialogOverlayClick);
+  this.xdDialogBlock = XDom(this.xdroot, '.xdialogblock.jsHarmonyElement_'+this._instanceClass);
+  this.xdDialogBlock.on('mousedown', this.DialogOverlayClick);
 };
 jsHarmony.prototype.InitControls = function() {
   var _this = this;
@@ -482,17 +482,17 @@ jsHarmony.prototype.XWindowResize = function (source) {
   };
 };
 jsHarmony.prototype.XDialogResize = function (source, params) {
-  if(this.dialogBlock){
-    this.dialogBlock.style.width = params.pw + 'px';
-    this.dialogBlock.style.height =params.ph + 'px';
+  if(this.xdDialogBlock){
+    this.xdDialogBlock.style.width = params.pw + 'px';
+    this.xdDialogBlock.style.height = params.ph + 'px';
   }
 
-  var xddebugInfo = XDom(this.xdroot, '.xdebuginfo.jsHarmonyElement_'+this._instanceClass);
-  xddebugInfo.style.top = params.stop + 'px';
-  xddebugInfo.style.left = params.sleft + 'px';
-  xddebugInfo.style.width = params.ww + 'px';
+  var xdDebugInfo = XDom(this.xdroot, '.xdebuginfo.jsHarmonyElement_'+this._instanceClass);
+  xdDebugInfo.style.top = params.stop + 'px';
+  xdDebugInfo.style.left = params.sleft + 'px';
+  xdDebugInfo.style.width = params.ww + 'px';
 
-  _.forEach(this.dialogBlock.select('.xdialogbox'), function (obj) {
+  _.each(this.xdDialogBlock.select('.xdialogbox'), function (obj) {
     var xdobj = XDom(obj);
     if (!XDom.isVisible(obj)) return;
     if (document.activeElement && document.activeElement.matches('input,select,textarea') && XDom(document.activeElement).parent().select().length) {
@@ -509,8 +509,9 @@ jsHarmony.prototype.XDialogResize = function (source, params) {
     if (dtop < 0) dtop = 0;
     //dleft += sleft;
     //dtop += stop;
-    var dborderwidth = parseInt(xdobj.calc.widthToBorder() - xdobj.calc.widthToPadding()) || 0;
-    var dpadwidth = parseInt(xdobj.calc.widthToPadding() - xdobj.calc.widthToContent()) || 0;
+    var dwpad = xdobj.calc.widthToPadding();
+    var dborderwidth = parseInt(dw - dwpad) || 0;
+    var dpadwidth = parseInt(dwpad - xdobj.calc.widthToContent()) || 0;
 
     xdobj.style.left = dleft + 'px';
     xdobj.style.top = dtop + 'px';
