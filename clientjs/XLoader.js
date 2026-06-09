@@ -22,6 +22,7 @@ $.fn.$find = function(){ return $.fn.find.apply(this, arguments); };
 var _ = require('lodash');
 
 exports = module.exports = function(jsh){
+  var XDom = jsh.XDom;
 
   function XLoader(_containerClass){
     var _this = this;
@@ -33,37 +34,41 @@ exports = module.exports = function(jsh){
     this.onMouseUp = [];
     this.containerClass = _containerClass || '.xloadingblock.jsHarmonyElement_'+jsh._instanceClass;
 
+    //DOM Elements
+    this.xdContainer = XDom(jsh.xdroot, _this.containerClass);
+    this.xdLoadingBox = XDom(this.xdContainer, ' .xloadingbox');
+
     //Check if required elements have been rendered to the page
-    if(!jsh.$XDroot(_this.containerClass).select().length){
+    if(!this.xdContainer.length){
       console.error(_this.containerClass+' not found on page during XLoader initialization'); // eslint-disable-line no-console
     }
 
     //Keep counter to match mousedown / mouseup events, to detect squashed clicks (clicks blocked by the transparent loading background)
-    jsh.$XDroot(_this.containerClass).on('mousedown', function(e){
+    XDom.on(this.xdContainer, 'mousedown', function(e){
       _this.MouseStack++;
       jsh.XExt.trigger(_this.onMouseDown, e);
     });
-    jsh.$XDroot(_this.containerClass).on('mouseup', function(e){
+    XDom.on(this.xdContainer, 'mouseup', function(e){
       jsh.XExt.trigger(_this.onMouseUp, e);
     });
-    jsh.$XDroot(_this.containerClass).on('click mouseup', function(e){
+    XDom.on(this.xdContainer, 'click mouseup', function(e){
       if(_this.MouseStack<=0){ jsh.XExt.trigger(_this.onSquashedClick, e); }
       _this.MouseStack--;
     });
   }
 
   XLoader.prototype.StartLoading = function(obj){
-    var _this = this;
     if(!_.includes(this.LoadQueue,obj)) this.LoadQueue.push(obj);
     if(this.IsLoading) return;
-    jsh.XDroot.style.cursor = 'wait';
+    jsh.xdroot.style.cursor = 'wait';
     this.IsLoading = true;
     this.MouseStack = 0;
-    if(jsh.xDialog.length) jsh.$XDroot('input:not([type=button]),select,textarea').blur();
-    else jsh.$XDroot('input,select,textarea').blur();
-    jsh.$XDroot(_this.containerClass+' .xloadingbox').animate({opacity: 0}, 0);
-    jsh.$XDroot(_this.containerClass).style.display = true;
-    jsh.$XDroot(_this.containerClass+' .xloadingbox').animate({opacity: 1}, 2000);
+    if(jsh.xDialog.length) XDom.blur(jsh.xdroot.select('input:not([type=button]),select,textarea'));
+    else XDom.blur(jsh.xdroot.select('input,select,textarea'));
+    this.xdLoadingBox.stop();
+    this.xdLoadingBox.animate({opacity: 0}, 0);
+    this.xdContainer.style.display = true;
+    this.xdLoadingBox.animate({opacity: 1}, 2000);
   };
 
   XLoader.prototype.StopLoading = function (obj){
@@ -79,18 +84,19 @@ exports = module.exports = function(jsh){
 
   XLoader.prototype.StopLoadingBase = function () {
     var _this = this;
-    this.IsLoading = false;
-    jsh.$XDroot(_this.containerClass+' .xloadingbox').stop();
-    var curfade = GetOpacity(jsh.$XDroot(_this.containerClass+' .xloadingbox').select()[0]);
-    jsh.$XDroot(_this.containerClass+' .xloadingbox').animate({opacity:500 * curfade}, 0, function () { if (!this.IsLoading) { jsh.$XDroot(_this.containerClass).style.display = false; } });
-    jsh.XDroot.style.cursor = '';
+    _this.IsLoading = false;
+    _this.xdLoadingBox.stop();
+    var curfade = GetOpacity(_this.xdLoadingBox);
+    XDom.animate(_this.xdLoadingBox, {opacity: 0}, 500 * curfade, function () { if (!_this.IsLoading) { _this.xdContainer.style.display = false; } });
+    jsh.xdroot.style.cursor = '';
   };
 
-  function GetOpacity(elem) {
-    var ori = jsh.XDom(elem).style.opacity;
-    var ori2 = jsh.XDom(elem).style.filter;
+  function GetOpacity(tgt) {
+    var styles = jsh.XDom.style.calc(tgt);
+    var ori = styles.opacity;
+    var ori2 = styles.filter;
     if (ori2) {
-      ori2 = parseInt( ori2.content.replace(')','').replace('alpha(opacity=','') ) / 100;
+      ori2 = parseInt( ori2.replace(')','').replace('alpha(opacity=','') ) / 100;
       if (!isNaN(ori2) && ori2 != '') {
         ori = ori2;
       }

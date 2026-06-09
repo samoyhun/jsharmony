@@ -38,7 +38,7 @@ exports = module.exports = function(jsh){
     this._this = this;
     this.TemplateID = options.TemplateID;
     this.PlaceholderID = options.PlaceholderID;
-    this.ColSpan = jsh.XDom(jsh.xdroot, this.PlaceholderID).parent().selector('thead th').select().length;
+    this.ColSpan = jsh.XDom(jsh.xdroot, this.PlaceholderID).parent().selector('thead th').length;
     this.modelid = options.modelid;
     
     this.CustomScroll = options.CustomScroll || undefined;
@@ -246,7 +246,7 @@ exports = module.exports = function(jsh){
               datatable: data[_this.modelid],
             });
             jsh.XDom(jsh.xdroot, _this.PlaceholderID).content.append(ejsrslt);
-            _this.RowCount = jsh.XDom(jsh.xdroot, _this.PlaceholderID).selector('tr').select().length;
+            _this.RowCount = jsh.XDom(jsh.xdroot, _this.PlaceholderID).selector('tr').length;
             return f();
           }
         }

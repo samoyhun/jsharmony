@@ -120,18 +120,23 @@ var Selector = function(){
     get: function() { return XDom.getValue(this); },
     set: function(value) { XDom.setValue(this, value); },
   });
+  Object.defineProperty(this, 'length', {
+    get: function() { return this.select().length; },
+  });
   _this.data = new Proxy({}, {
     get: function(target, prop, receiver) { return XDom.getData(_this, prop); },
     set: function(target, prop, value) { return XDom.setData(_this, prop, value); },
   });
   _this.style = new Proxy({}, {
     get: function(target, prop, receiver) {
+      if(prop == 'calc') return XDom.style.calc(_this);
       if(prop == 'display') return XDom.style.display(_this);
       if(prop == 'width') return XDom.style.width(_this);
       if(prop == 'height') return XDom.style.height(_this);
       return XDom.getStyle(_this, prop);
     },
     set: function(target, prop, value) {
+      if(prop == 'calc') throw new Error('Cannot set calculated style');
       if(prop == 'display') return XDom.style.display(_this, value);
       if(prop == 'width') return XDom.style.width(_this, value);
       if(prop == 'height') return XDom.style.height(_this, value);
@@ -543,6 +548,15 @@ function styleFunc(prop, valTransform){
 }
 
 XDom.style = {
+  calc: function(target){
+    var _el = XDom.resolve(target);
+    if(!_el.length || !window.getComputedStyle) return undefined;
+    for(var i=0;i<_el.length; i++){
+      var rslt = window.getComputedStyle(_el[i]);
+      return rslt;
+    }
+    return undefined;
+  },
   display: styleFunc('display', function(val, el){
     if(val === false) return 'none';
     if(val === true){

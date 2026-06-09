@@ -586,12 +586,12 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     var oldindex = xform.Index;
     xform.NavTo(rowid,false);
     var xdControls = xdRow.selector('.xform_ctrl.editable:not(input[type=hidden]),.xlookup:not(input[type=hidden])').filter(jsh.XDom.isVisible).first();
-    if(xdControls.selector('.xform_ctrl_subfocus').select().length) xdControls = xdControls.selector('.xform_ctrl_subfocus').first();
+    if(xdControls.selector('.xform_ctrl_subfocus').length) xdControls = xdControls.selector('.xform_ctrl_subfocus').first();
     xdControls.focus();
     // TODO: onrowbind takes a jquery
     if(xgrid.OnRowBind) xgrid.OnRowBind($(xdRow.select()), newrow);
     xdControls.focus();
-    if(xdControls.select().length) xeditablegrid.CurrentCell = xdControls.select()[0];
+    if(xdControls.length) xeditablegrid.CurrentCell = xdControls.select()[0];
     else xeditablegrid.CurrentCell = document.activeElement;
     return rowid;
   }
@@ -675,7 +675,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
           // TODO: onrowunbind takes a jquery
           if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,$(xdRow.select()),rowid);
           xdRow.remove();
-          if(!jsh.XDom(jsh.xdroot, xgrid.PlaceholderID).selector('tr').select().length) xgrid.RenderNoResultsMessage();
+          if(!jsh.XDom(jsh.xdroot, xgrid.PlaceholderID).selector('tr').length) xgrid.RenderNoResultsMessage();
           xeditablegrid.CurrentCell = null;
           if(xform.Index==rowid){ 
             xform.Data._is_insert = false;
@@ -796,7 +796,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
   }
 
   xcontroller.SearchExpand = function(timeout){
-    if(jsh.XDom(jsh.xdroot, '.xsearch_'+xmodel.class).filter(jsh.XDom.isVisible).select().length) return;
+    if(jsh.XDom(jsh.xdroot, '.xsearch_'+xmodel.class).filter(jsh.XDom.isVisible).length) return;
     var selectFirstSearchInput = function(){
       var xdSearchValue = jsh.XDom(jsh.xdroot, '.xsearch_'+xmodel.class+' .xsearch_value').first();
       xdSearchValue.emit('select');
@@ -825,7 +825,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       xcontroller.RunSearch();
     }
     else{
-      if(jsh.XDom(jsh.xdroot, '.xsearch_'+xmodel.class).filter(jsh.XDom.isVisible).select().length){
+      if(jsh.XDom(jsh.xdroot, '.xsearch_'+xmodel.class).filter(jsh.XDom.isVisible).length){
         jsh.XDom(jsh.xdroot, '.xsearch_'+xmodel.class).animate({height: '0px'}, 400);
         // TODO: remove and test when animation system is working
         jsh.$root('.xsearch_'+xmodel.class).slideUp();
