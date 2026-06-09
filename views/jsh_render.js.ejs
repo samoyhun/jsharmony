@@ -79,7 +79,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     if(jsh.xDialog.length){
       var newobj = document.activeElement;
       if(newobj && !($(newobj).closest(jsh.xDialog[0]).length)){
-        window.setTimeout(function(){ if(jsh.xDialog[0].focus) jsh.xDialog[0].focus(); },1);
+        window.setTimeout(function(){ $(jsh.xDialog[0]).find('input:visible').first().focus(); },1);
       }
       return;
     }

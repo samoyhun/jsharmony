@@ -23,6 +23,7 @@ var _ = require('lodash');
 
 exports = module.exports = function(jsh){
   var XValidate = jsh.XValidate; // eslint-disable-line no-unused-vars
+  var XDom = jsh.XDom;
   var XExt = function(){ };
 
   XExt.XModel = require('./XExt.XModel.js')(jsh);
@@ -1764,8 +1765,8 @@ exports = module.exports = function(jsh){
   XExt.clearDialogs = function(){
     jsh.xDialog = [];
     jsh.onDialogOverlayClick = [];
-    jsh.XDom.remove(jsh.dialogBlock.select('.xdialogbox'));
-    jsh.dialogBlock.style.display = false;
+    XDom.remove(jsh.xdDialogBlock.select('.xdialogbox'));
+    jsh.xdDialogBlock.style.display = false;
   };
 
   XExt.dialogButtonFunc = function (obj, oldactive, onComplete, params) {
@@ -1783,15 +1784,14 @@ exports = module.exports = function(jsh){
       }
       //Verify this is the topmost dialog
       if ((jsh.xDialog.length > 0) && (jsh.xDialog[0] != obj)) return;
-      jsh.XDom.style.display(obj, false);
-      jsh.XDom.remove(obj);
-      if (jsh.xDialog.length == 1) { jsh.dialogBlock.style.display = false; }
+      XDom.remove(obj);
+      if (jsh.xDialog.length == 1) { jsh.xdDialogBlock.style.display = false; }
       if (jsh.xDialog[0] != obj) {
         alert('ERROR - Invalid Dialog Stack');
         console.log(obj); // eslint-disable-line no-console
         console.log(jsh.xDialog); // eslint-disable-line no-console
       }
-      if (oldactive && oldactive.focus) oldactive.focus();
+      if(oldactive) XDom.focus(oldactive);
       window.setTimeout(function () { jsh.xDialog.shift(); if (onComplete) onComplete(); }, 1);
       if (params.onCompleteImmediate) params.onCompleteImmediate();
     };
@@ -1802,24 +1802,25 @@ exports = module.exports = function(jsh){
   };
 
   XExt.getDialogContainer = function (sel) {
-    var xdsel = jsh.XDom(sel);
-    if(!xdsel.select().length) return window;
-    var xddialog = xdsel.parent('.xdialogbox');
-    if(!xddialog.select().length) return window;
-    return xddialog.select()[0];
+    var xdobj = XDom(sel);
+    if(!xdobj.length) return window;
+    var xdDialog = xdobj.parent('.xdialogbox');
+    if(!xdDialog.length) return window;
+    return xdDialog.selectOne();
   };
 
   /**
-   * Retrives and wraps a template element
+   * Retrieves and wraps a template element
    *
    * @param {String} sel - The CSS selector used to find the template
    * @returns {XDom} An XDom wrapped template
    */
-  XExt.getTemplate = function (sel) {
-    var templString = jsh.xdroot.select(sel)[0].innerHTML;
+  XExt.renderTemplate = function (sel) {
+    var tmpl = XDom.innerHTML(jsh.xdDialogBlock.select(sel));
     var container = document.createElement('div');
-    container.innerHTML = templString;
-    return jsh.XDom(jsh.XDom(container).children.select()[0]);
+    container.innerHTML = tmpl||'';
+    if(container.children.length != 1) return XDom(container);
+    return XDom(container.children[0]);
   };
 
   XExt.Alert = function (obj, onAccept, options) {
@@ -1837,37 +1838,36 @@ exports = module.exports = function(jsh){
       msg = XExt.ReplaceAll(XExt.ReplaceAll(msg, '\n', '<br/>'), '\r', '');
     }
     //alert(msg);
-    var xobj = XExt.getTemplate('.template_xalertbox');
-    var alertBoxEl = xobj.select()[0];
-    jsh.xDialog.unshift(alertBoxEl);
-    jsh.XDom.setAttribute(xobj, 'style', options.style);
-    xobj.style.zIndex = jsh.xDialog.length;
-    
+    var xdobj = XExt.renderTemplate('script.template_xalertbox');
+    var alertBox = xdobj.selectOne();
+    jsh.xDialog.unshift(alertBox);
+    XDom.setAttribute(xdobj, 'style', options.style);
+    xdobj.style.zIndex = jsh.xDialog.length;
     var oldactive = document.activeElement;
-    if (oldactive && oldactive.blur) oldactive.blur();
-    jsh.XDom.content.replace(xobj.select('.xalertmessage'), msg);
+    XDom.blur(oldactive);
+    XDom.content.replace(xdobj.select('.xalertmessage'), msg);
     var isClosing = false;
     var acceptfunc = function(){
       isClosing = true;
-      XExt.dialogButtonFunc(alertBoxEl, oldactive, onAccept, { onCompleteImmediate: options.onAcceptImmediate })();
+      XExt.dialogButtonFunc(alertBox, oldactive, onAccept, { onCompleteImmediate: options.onAcceptImmediate })();
     };
-    jsh.XDom.on(xobj.select('input'), 'click', acceptfunc);
-    jsh.XDom.on(xobj.select('input'), 'keydown', function (e) { if (e.keyCode == 27) { acceptfunc(); } });
+    XDom.on(xdobj.select('input'), 'click', acceptfunc);
+    XDom.on(xdobj.select('input'), 'keydown', function (e) { if (e.keyCode == 27) { acceptfunc(); } });
 
     if (options.button_ok_caption){
-      jsh.XDom.style.display(xobj.select('input.button_ok'), true);
-      jsh.XDom.setValue(xobj.select('input.button_ok'), options.button_ok_caption);
+      XDom.style.display(xdobj.select('input.button_ok'), true);
+      XDom.setValue(xdobj.select('input.button_ok'), options.button_ok_caption);
     }
-    else jsh.XDom.style.display(xobj.select('input.button_ok'), false);
+    else XDom.style.display(xdobj.select('input.button_ok'), false);
 
-    xobj.on('acceptDialog', acceptfunc);
+    xdobj.on('acceptDialog', acceptfunc);
     
-    jsh.dialogBlock.select()[0].appendChild(alertBoxEl);
-    xobj.style.display = true;
-    jsh.dialogBlock.style.display = true;
+    jsh.xdDialogBlock.selectOne().appendChild(alertBox);
+    xdobj.style.display = true;
+    jsh.xdDialogBlock.style.display = true;
     jsh.XWindowResize();
     if (!XExt.isIOS()) {
-      jsh.XDom.focus(xobj.select('input'));
+      XDom.focus(xdobj.select('input'));
     }
     if(options.autohide) setTimeout(function(){ if(!isClosing) acceptfunc(); }, options.autohide);
   };
@@ -1894,37 +1894,37 @@ exports = module.exports = function(jsh){
     //if (window.confirm(msg)) { if (onYes) onYes(); }
     //if (onNo) onNo();
     var oldactive = document.activeElement;
-    if (oldactive && oldactive.blur) oldactive.blur();
+    XDom.blur(oldactive);
 
-    var xobj = XExt.getTemplate('.template_xconfirmbox');
-    var confirmBoxEl = xobj.select()[0];
+    var xdobj = XExt.renderTemplate('.template_xconfirmbox');
+    var confirmBox = xdobj.selectOne();
 
-    jsh.xDialog.unshift(confirmBoxEl);
-    xobj.style.zIndex = jsh.xDialog.length;
+    jsh.xDialog.unshift(confirmBox);
+    xdobj.style.zIndex = jsh.xDialog.length;
 
     // prep content, values, and handlers for confirm box
-    jsh.XDom.content.replace(xobj.select('.xconfirmmessage'), msg);
-    var cancelfunc = XExt.dialogButtonFunc(confirmBoxEl, oldactive, (options.onCancel ? options.onCancel : onNo));
-    var acceptfunc = XExt.dialogButtonFunc(confirmBoxEl, oldactive, onYes); // passing element confirmBoxEl
+    XDom.content.replace(xdobj.select('.xconfirmmessage'), msg);
+    var cancelfunc = XExt.dialogButtonFunc(confirmBox, oldactive, (options.onCancel ? options.onCancel : onNo));
+    var acceptfunc = XExt.dialogButtonFunc(confirmBox, oldactive, onYes);
     if(options.onCancel){
-      jsh.XDom.style.display(xobj.select('input.button_cancel'), true);
-      jsh.XDom.on(xobj.select('.xconfirmbox input.button_cancel'), 'click', XExt.dialogButtonFunc(confirmBoxEl, oldactive, options.onCancel));
+      XDom.style.display(xdobj.select('input.button_cancel'), true);
+      XDom.on(xdobj.select('.xconfirmbox input.button_cancel'), 'click', XExt.dialogButtonFunc(confirmBox, oldactive, options.onCancel));
     }
-    else jsh.XDom.style.display(xobj.select('input.button_cancel'), false);
-    if (options.button_ok_caption) jsh.XDom.setValue(xobj.select('input.button_ok'), options.button_ok_caption);
-    if (options.button_no_caption) jsh.XDom.setValue(xobj.select('input.button_no'), options.button_no_caption);
-    if (options.button_cancel_caption) jsh.XDom.setValue(xobj.select('input.button_cancel'), options.button_cancel_caption);
-    jsh.XDom.on(xobj, 'acceptDialog', acceptfunc);
-    jsh.XDom.on(xobj, 'cancelDialog', cancelfunc);
-    jsh.XDom.on(xobj.select('input.button_ok'), 'click', acceptfunc);
-    jsh.XDom.on(xobj.select('input.button_no'), 'click', XExt.dialogButtonFunc(confirmBoxEl, oldactive, onNo));
-    jsh.XDom.on(xobj.select('input'), 'keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
+    else XDom.style.display(xdobj.select('input.button_cancel'), false);
+    if (options.button_ok_caption) XDom.setValue(xdobj.select('input.button_ok'), options.button_ok_caption);
+    if (options.button_no_caption) XDom.setValue(xdobj.select('input.button_no'), options.button_no_caption);
+    if (options.button_cancel_caption) XDom.setValue(xdobj.select('input.button_cancel'), options.button_cancel_caption);
+    xdobj.on('acceptDialog', acceptfunc);
+    xdobj.on('cancelDialog', cancelfunc);
+    XDom.on(xdobj.select('input.button_ok'), 'click', acceptfunc);
+    XDom.on(xdobj.select('input.button_no'), 'click', XExt.dialogButtonFunc(confirmBox, oldactive, onNo));
+    XDom.on(xdobj.select('input'), 'keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
     
-    jsh.dialogBlock.select()[0].appendChild(confirmBoxEl);
-    xobj.style.display = true;
-    jsh.dialogBlock.style.display = true;
+    jsh.xdDialogBlock.selectOne().appendChild(confirmBox);
+    xdobj.style.display = true;
+    jsh.xdDialogBlock.style.display = true;
     jsh.XWindowResize();
-    if (!XExt.isIOS()) jsh.XDom.focus(xobj.select('input.button_ok'));
+    if (!XExt.isIOS()) XDom.focus(xdobj.select('input.button_ok'));
   };
 
   XExt.stringify = function (origvalue, replacer, space) {
@@ -1963,31 +1963,31 @@ exports = module.exports = function(jsh){
     //var rslt = window.prompt(msg, dflt);
     //If cancel or close, rslt = null
     //if (onComplete) onComplete(rslt);
-    var xobj = XExt.getTemplate('.template_xpromptbox');
-    var promptBoxEl = xobj.select()[0];
-    jsh.xDialog.unshift(promptBoxEl);
-    xobj.style.zIndex = jsh.xDialog.length;
+    var xdobj = XExt.renderTemplate('.template_xpromptbox');
+    var promptBox = xdobj.selectOne();
+    jsh.xDialog.unshift(promptBox);
+    xdobj.style.zIndex = jsh.xDialog.length;
     
     var oldactive = document.activeElement;
-    if (oldactive && oldactive.blur) oldactive.blur();
-    jsh.XDom.content.replace(xobj.select('.xpromptmessage'), msg);
-    jsh.XDom.setValue(xobj.select('.xpromptfield'), dflt);
-    var cancelfunc = XExt.dialogButtonFunc(promptBoxEl, oldactive, function () { if (onComplete) onComplete(null); });
-    var acceptfunc = XExt.dialogButtonFunc(promptBoxEl, oldactive, function () { if (onComplete) onComplete(jsh.XDom.getValue(xobj.select('.xpromptfield'))); });
-    jsh.XDom.on(xobj.select('input.button_ok'), 'click', acceptfunc);
-    jsh.XDom.on(xobj.select('input.button_cancel'), 'click', cancelfunc);
+    XDom.blur(oldactive);
+    XDom.content.replace(xdobj.select('.xpromptmessage'), msg);
+    XDom.setValue(xdobj.select('.xpromptfield'), dflt);
+    var cancelfunc = XExt.dialogButtonFunc(promptBox, oldactive, function () { if (onComplete) onComplete(null); });
+    var acceptfunc = XExt.dialogButtonFunc(promptBox, oldactive, function () { if (onComplete) onComplete(XDom.getValue(xdobj.select('.xpromptfield'))); });
+    XDom.on(xdobj.select('input.button_ok'), 'click', acceptfunc);
+    XDom.on(xdobj.select('input.button_cancel'), 'click', cancelfunc);
 
-    xobj.on('acceptDialog', acceptfunc);
-    xobj.on('cancelDialog', cancelfunc);
+    xdobj.on('acceptDialog', acceptfunc);
+    xdobj.on('cancelDialog', cancelfunc);
 
-    jsh.XDom.on(xobj.select('input'), 'keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
-    jsh.XDom.on(xobj.select('.xpromptfield'), 'keydown', function (e) { if (e.keyCode == 13) { acceptfunc(); } });
+    XDom.on(xdobj.select('input'), 'keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
+    XDom.on(xdobj.select('.xpromptfield'), 'keydown', function (e) { if (e.keyCode == 13) { acceptfunc(); } });
     
-    jsh.dialogBlock.select()[0].appendChild(promptBoxEl);
-    xobj.style.display = true;
-    jsh.dialogBlock.style.display = true;
+    jsh.xdDialogBlock.selectOne().appendChild(promptBox);
+    xdobj.style.display = true;
+    jsh.xdDialogBlock.style.display = true;
     jsh.XWindowResize();
-    jsh.XDom.focus(xobj.select('.xpromptfield'));
+    XDom.focus(xdobj.select('.xpromptfield'));
   };
 
   //html - HTML or jQuery object
@@ -1997,24 +1997,24 @@ exports = module.exports = function(jsh){
     else options.specialKeys = _.extend({ enter: true, escape: true }, options.specialKeys);
 
     var container = document.createElement('div');
-    jsh.XDom.content.append(container, html);
-    var xobj = jsh.XDom(jsh.XDom(container).children.select()[0]);
-    var customPromptEl = xobj.select()[0];
+    XDom.content.append(container, html);
+    var xdobj = XDom(XDom.getChildren(container)[0]);
+    var customPrompt = xdobj.selectOne();
 
     //ShowDialog
-    jsh.xDialog.unshift(customPromptEl);
-    xobj.style.zIndex = jsh.xDialog.length;
+    jsh.xDialog.unshift(customPrompt);
+    xdobj.style.zIndex = jsh.xDialog.length;
 
     var oldactive = document.activeElement;
-    if (oldactive && oldactive.blur) oldactive.blur();
+    XDom.blur(oldactive);
     oldactive = options.restoreFocus ? oldactive : undefined;
 
     var cancelDialogFunc = function(_onClosed){
-      XExt.dialogButtonFunc(customPromptEl, oldactive, function () {
+      XExt.dialogButtonFunc(customPrompt, oldactive, function () {
         if (onClosed) onClosed();
         if (_onClosed) _onClosed();
-        if(options.reuse) xobj.style.display = false;
-        else xobj.remove();
+        if(options.reuse) xdobj.style.display = false;
+        else xdobj.remove();
       }, { onClosing: options.onClosing })();
     };
     var cancelfunc = function(options, _onClosed){
@@ -2026,14 +2026,14 @@ exports = module.exports = function(jsh){
       cancelDialogFunc(_onClosed);
     };
     var acceptfunc_aftervalidate = function(_onClosed){
-      XExt.dialogButtonFunc(customPromptEl, oldactive, function () {
+      XExt.dialogButtonFunc(customPrompt, oldactive, function () {
         if (onClosed) onClosed();
         if (_onClosed) _onClosed();
       }, { onClosing: options.onClosing })();
     };
     var acceptfunc = function (_onClosed) {
       //Verify this is the topmost dialog
-      if ((jsh.xDialog.length > 0) && (jsh.xDialog[0] != customPromptEl)) return;
+      if ((jsh.xDialog.length > 0) && (jsh.xDialog[0] != customPrompt)) return;
       
       if (onAccept) return onAccept(function () { acceptfunc_aftervalidate(_onClosed); });
       else acceptfunc_aftervalidate(_onClosed);
@@ -2049,43 +2049,39 @@ exports = module.exports = function(jsh){
         }
       },
       function(){
-        jsh.XDom.on(xobj.select('input.button_ok'), 'click', function(){ acceptfunc(); });
-        jsh.XDom.on(xobj.select('input.button_cancel'), 'click', function(){ cancelfunc(); });
+        XDom.on(xdobj.select('input.button_ok'), 'click', function(){ acceptfunc(); });
+        XDom.on(xdobj.select('input.button_cancel'), 'click', function(){ cancelfunc(); });
       
-        xobj.on('acceptDialog', function(){ acceptfunc(); });
-        xobj.on('cancelDialog', function(){ cancelfunc(); });
+        xdobj.on('acceptDialog', function(){ acceptfunc(); });
+        xdobj.on('cancelDialog', function(){ cancelfunc(); });
 
-        jsh.XDom.on(xobj.select('input, textarea, select'), 'keydown', function (e) {
+        XDom.on(xdobj.select('input, textarea, select'), 'keydown', function (e) {
           if (options.specialKeys.escape && (e.keyCode == 27)) { e.preventDefault(); e.stopImmediatePropagation(); cancelfunc(); }
         });
-        jsh.XDom.on(xobj.select('input'), 'keydown', function (e) {
-          if (options.specialKeys.enter && (e.keyCode == 13)) {
-            var t = this.type && this.type.toLowerCase();
-            if (t === 'checkbox' || t === 'button') return;
-            e.preventDefault(); e.stopImmediatePropagation(); acceptfunc();
-          }
+        XDom.on(xdobj.select('input:not([type="checkbox"]):not([type="button"])'), 'keydown', function (e) {
+          if (options.specialKeys.enter && (e.keyCode == 13)) { e.preventDefault(); e.stopImmediatePropagation(); acceptfunc(); }
         });
         if(options.backgroundClose){
           jsh.onDialogOverlayClick.unshift(function(e){
-            if(!(e.target.matches('.xdialogoverlay,.xdialogblock'))) return; // can i use (matches) 96%
+            if(!(e.target.matches('.xdialogoverlay,.xdialogblock'))) return;
             var mouseDownTime = new Date().getTime();
-            jsh.dialogBlock.on('mouseup', function(e){
+            jsh.xdDialogBlock.on('mouseup', function(e){
               var mouseUpTime = new Date().getTime();
               if((mouseUpTime - mouseDownTime) > 5000) return;
               if(!(e.target.matches('.xdialogoverlay,.xdialogblock'))) return;
-              if(jsh.xDialog.length && (jsh.xDialog[0]==customPromptEl)){ e.preventDefault(); e.stopImmediatePropagation(); cancelfunc(); jsh.onDialogOverlayClick.shift();}
+              if(jsh.xDialog.length && (jsh.xDialog[0]==customPrompt)){ e.preventDefault(); e.stopImmediatePropagation(); cancelfunc(); jsh.onDialogOverlayClick.shift(); }
             }, {once: true});
           });
         }
-        jsh.dialogBlock.select()[0].appendChild(customPromptEl);
-        xobj.style.display = true;
-        jsh.dialogBlock.style.display = true;
-        if(jsh.XPage && jsh.XPage.LayoutOneColumn) jsh.XPage.LayoutOneColumn(customPromptEl, { reset: true });
+        jsh.xdDialogBlock.selectOne().appendChild(customPrompt);
+        xdobj.style.display = true;
+        jsh.xdDialogBlock.style.display = true;
+        if(jsh.XPage && jsh.XPage.LayoutOneColumn) jsh.XPage.LayoutOneColumn(customPrompt, { reset: true });
         jsh.XWindowResize();
         setTimeout(function(){
           jsh.XWindowResize();
-          if(xobj.select('.default_focus').length) jsh.XDom.focus(xobj.select('.default_focus'));
-          else jsh.XDom.focus(xobj.select('input,textarea,select').filter(jsh.XDom.isVisible)[0]);
+          if(xdobj.select('.default_focus').length) XDom.focus(xdobj.select('.default_focus'));
+          else XDom.focus(xdobj.select('input,textarea,select').filter(XDom.isVisible)[0]);
         }, 1);
       }
     );
@@ -2093,91 +2089,93 @@ exports = module.exports = function(jsh){
 
   XExt.AcceptDialog = function(){
     if(!jsh.xDialog.length) throw new Error('No dialog currently active');
-    jsh.XDom.emit(jsh.xDialog[0], 'acceptDialog');
+    XDom.emit(jsh.xDialog[0], 'acceptDialog');
   };
 
   XExt.CancelDialog = function(){
     if(!jsh.xDialog.length) throw new Error('No dialog currently active');
-    jsh.XDom.emit(jsh.xDialog[0], 'cancelDialog');
+    XDom.emit(jsh.xDialog[0], 'cancelDialog');
   };
 
   XExt.ZoomEdit = function (val, caption, options, onAccept, onCancel) {
     if(!options) options = {};
     if(!val) val = '';
     val = val.toString();
-    var xobj = XExt.getTemplate('.template_xtextzoombox');
-    var textZoomBoxEl = xobj.select()[0];
-    jsh.xDialog.unshift(textZoomBoxEl);
-    xobj.style.zIndex = jsh.xDialog.length;
+    var xdobj = XExt.renderTemplate('.template_xtextzoombox');
+    var textZoomBox = xdobj.selectOne();
+    jsh.xDialog.unshift(textZoomBox);
+    xdobj.style.zIndex = jsh.xDialog.length;
     
     var oldactive = document.activeElement;
-    if (oldactive && oldactive.blur) oldactive.blur();
-    jsh.XDom.content.replace(xobj.select('.xtextzoommessage'), caption);
-    jsh.XDom.setValue(xobj.select('.xtextzoomfield'), val);
+    XDom.blur(oldactive);
+    XDom.content.replace(xdobj.select('.xtextzoommessage'), caption);
+    var TextZoomField = xdobj.select('.xtextzoomfield');
+    XDom.setValue(TextZoomField, val);
     
-    jsh.XDom.setAttribute(xobj.select('.xtextzoomfield'), 'readonly', (options.readonly?true:false));
+    
     if(options.readonly) {
-      jsh.XDom.class.remove(xobj.select('.xtextzoomfield'), 'editable');
-      jsh.XDom.class.add(xobj.select('.xtextzoomfield'), 'uneditable');
+      XDom.setAttribute(TextZoomField, 'readonly', true); //TODO: setting readonly to anything results in readonly behavior
+      XDom.class.remove(TextZoomField, 'editable');
+      XDom.class.add(TextZoomField, 'uneditable');
     }
     else {
-      jsh.XDom.class.remove(xobj.select('.xtextzoomfield'), 'uneditable');
-      jsh.XDom.class.add(xobj.select('.xtextzoomfield'), 'editable');
+      XDom.class.remove(TextZoomField, 'uneditable');
+      XDom.class.add(TextZoomField, 'editable');
     }
-    var cancelfunc = XExt.dialogButtonFunc(textZoomBoxEl, oldactive, function () { if (onCancel) onCancel(); });
-    var acceptfunc = XExt.dialogButtonFunc(textZoomBoxEl, oldactive, function () { if (onAccept) onAccept(jsh.XDom.getValue(xobj.select('.xtextzoomfield'))); });
-    jsh.XDom.on(xobj.select('input.button_ok'), 'click', acceptfunc);
-    jsh.XDom.on(xobj.select('input.button_cancel'), 'click', cancelfunc);
-    jsh.XDom.on(xobj.select('input'), 'keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
-    jsh.dialogBlock.select()[0].appendChild(textZoomBoxEl);
-    xobj.style.display = true;
-    jsh.dialogBlock.style.display = true;
+    var cancelfunc = XExt.dialogButtonFunc(textZoomBox, oldactive, function () { if (onCancel) onCancel(); });
+    var acceptfunc = XExt.dialogButtonFunc(textZoomBox, oldactive, function () { if (onAccept) onAccept(XDom.getValue(TextZoomField)); });
+    XDom.on(xdobj.select('input.button_ok'), 'click', acceptfunc);
+    XDom.on(xdobj.select('input.button_cancel'), 'click', cancelfunc);
+    XDom.on(xdobj.select('input'), 'keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
+    jsh.xdDialogBlock.selectOne().appendChild(textZoomBox);
+    xdobj.style.display = true;
+    jsh.xdDialogBlock.style.display = true;
     jsh.XWindowResize();
-    jsh.XDom.focus(xobj.select('.xtextzoomfield'));
+    XDom.focus(TextZoomField);
   };
 
   XExt.ShowHints = function (lov, caption, options, onInsert, onCancel) {
     if(!options) options = {};
     if(!lov) lov = [];
-    var xobj = XExt.getTemplate('.template_xhintsbox');
-    var hintsBoxEl = xobj.select()[0];
-    jsh.xDialog.unshift(hintsBoxEl);
-    xobj.style.zIndex = jsh.xDialog.length;
+    var xdobj = XExt.renderTemplate('.template_xhintsbox');
+    var hintsBox = xdobj.selectOne();
+    jsh.xDialog.unshift(hintsBox);
+    xdobj.style.zIndex = jsh.xDialog.length;
 
     var oldactive = document.activeElement;
-    if (oldactive && oldactive.blur) oldactive.blur();
-    jsh.XDom.content.replace(xobj.select('.xhintsmessage'), caption);
+    XDom.blur(oldactive);
+    XDom.content.replace(xdobj.select('.xhintsmessage'), caption);
 
-    var xtmpl = XExt.getTemplate('.xhints_rowtemplate');
-    jsh.XDom.content.clear(xobj.select('.xhints_listing'));
+    var xdRowTemplate = XExt.renderTemplate('.xhints_rowtemplate');
+    XDom.content.clear(xdobj.select('.xhints_listing'));
     if(_.isArray(lov)) _.each(lov, function(item){
-      jsh.XDom.setValue(xtmpl.select('input'), item[jsh.uimap.code_val]);
-      jsh.XDom.content.replace(xtmpl.select('span'), item[jsh.uimap.code_txt]);
-      if(options.readonly) jsh.XDom.remove(xtmpl.select('input'));
-      jsh.XDom.content.append(xobj.select('.xhints_listing'), xtmpl.select()[0].outerHTML);
+      XDom.setValue(xdRowTemplate.select('input'), item[jsh.uimap.code_val]);
+      XDom.content.replace(xdRowTemplate.select('span'), item[jsh.uimap.code_txt]);
+      if(options.readonly) XDom.remove(xdRowTemplate.select('input'));
+      XDom.content.append(xdobj.select('.xhints_listing'), xdRowTemplate.outerHTML);
     });
 
-    if(!options.readonly) jsh.XDom.style.display(xobj.select('input.button_ok,input[type="checkbox"]'), true);
-    else jsh.XDom.style.display(xobj.select('input.button_ok,input[type="checkbox"]'), false);
+    if(!options.readonly) XDom.style.display(xdobj.select('input.button_ok,input[type="checkbox"]'), true);
+    else XDom.style.display(xdobj.select('input.button_ok,input[type="checkbox"]'), false);
 
     var getValues = function(){
       var rslt = [];
-      xobj.select('.xhints_listing input[type="checkbox"]:checked').forEach(function(obj){ rslt.push(jsh.XDom.getValue(obj)); });
+      xdobj.select('.xhints_listing input[type="checkbox"]:checked').forEach(function(obj){ rslt.push(XDom.getValue(obj)); });
       return rslt;
     };
-    var cancelfunc = XExt.dialogButtonFunc(hintsBoxEl, oldactive, function () { if (onCancel) onCancel(); });
-    var insertfunc = XExt.dialogButtonFunc(hintsBoxEl, oldactive, function () { if (onInsert) onInsert(getValues()); });
-    jsh.XDom.on(xobj.select('input.button_ok'), 'click', function(){
+    var cancelfunc = XExt.dialogButtonFunc(hintsBox, oldactive, function () { if (onCancel) onCancel(); });
+    var insertfunc = XExt.dialogButtonFunc(hintsBox, oldactive, function () { if (onInsert) onInsert(getValues()); });
+    XDom.on(xdobj.select('input.button_ok'), 'click', function(){
       if(!getValues().length) return XExt.Alert('Please select one or more values to insert');
       insertfunc();
     });
-    jsh.XDom.on(xobj.select('input.button_cancel'), 'click', cancelfunc);
-    jsh.XDom.on(xobj.select('input'), 'keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
-    jsh.dialogBlock.select()[0].appendChild(hintsBoxEl);
-    xobj.style.display = true;
-    jsh.dialogBlock.style.display = true;
+    XDom.on(xdobj.select('input.button_cancel'), 'click', cancelfunc);
+    XDom.on(xdobj.select('input'), 'keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
+    jsh.xdDialogBlock.selectOne().appendChild(hintsBox);
+    xdobj.style.display = true;
+    jsh.xdDialogBlock.style.display = true;
     jsh.XWindowResize();
-    jsh.XDom.focus(xobj.select('input')[0]);
+    XDom.focus(xdobj.selectOne('input'));
   };
 
   var popupData = {};

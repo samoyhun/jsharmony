@@ -84,6 +84,10 @@ var Selector = function(){
     return selectWithin((_this.target + ' ' + (childSelector||'')).trim(), _this.base);
   };
 
+  _this.selectOne = function(childSelector){
+    return XDom.selectOne((_this.target + ' ' + (childSelector||'')).trim(), _this.base);
+  };
+
   _this.selector = function(childSelector){
     if(!childSelector) return _this;
     if(!_this.target) return new Selector(_this.base, childSelector);
@@ -120,23 +124,34 @@ var Selector = function(){
     get: function() { return XDom.getValue(this); },
     set: function(value) { XDom.setValue(this, value); },
   });
+  Object.defineProperty(this, 'length', {
+    get: function() { return this.select().length; },
+  });
   _this.data = new Proxy({}, {
     get: function(target, prop, receiver) { return XDom.getData(_this, prop); },
     set: function(target, prop, value) { return XDom.setData(_this, prop, value); },
   });
   _this.style = new Proxy({}, {
     get: function(target, prop, receiver) {
+      if(prop == 'calc') return XDom.style.calc(_this);
       if(prop == 'display') return XDom.style.display(_this);
       if(prop == 'width') return XDom.style.width(_this);
       if(prop == 'height') return XDom.style.height(_this);
       return XDom.getStyle(_this, prop);
     },
     set: function(target, prop, value) {
+      if(prop == 'calc') throw new Error('Cannot set calculated style');
       if(prop == 'display') return XDom.style.display(_this, value);
       if(prop == 'width') return XDom.style.width(_this, value);
       if(prop == 'height') return XDom.style.height(_this, value);
       return XDom.setStyle(_this, prop, value);
     },
+  });
+  Object.defineProperty(this, 'innerHTML', {
+    get: function() { return XDom.innerHTML(this); },
+  });
+  Object.defineProperty(this, 'outerHTML', {
+    get: function() { return XDom.outerHTML(this); },
   });
   _this.calc = {
     width: XDom.calc.width.bind(XDom, this),
@@ -288,26 +303,27 @@ XDom.class = {
   },
 };
 
-function renderHtml(val){
-  var container = document.createElement('div');
-  container.innerHTML = val;
-  return container.childNodes;
-}
+XDom.render = function(html){
+  var container = document.createElement('template');
+  container.innerHTML = html;
+  // childNodes is a live NodeList, if we return it direclty, it will likely have surprising results as nodes are moved elsewhere.
+  return Array.prototype.slice.call(container.content.childNodes);
+};
 
 XDom.content = {
   append: function(target, val){
     _.each(XDom.resolve(target), function(el){
-      if(el && el.append) el.append.apply(el, renderHtml(val));
+      if(el && el.append) el.append.apply(el, XDom.render(val));
     });
   },
   prepend: function(target, val){
     _.each(XDom.resolve(target), function(el){
-      if(el && el.prepend) el.prepend.apply(el, renderHtml(val));
+      if(el && el.prepend) el.prepend.apply(el, XDom.render(val));
     });
   },
   replace: function(target, val){
     _.each(XDom.resolve(target), function(el){
-      if(el && el.replaceChildren) el.replaceChildren.apply(el, renderHtml(val));
+      if(el && el.replaceChildren) el.replaceChildren.apply(el, XDom.render(val));
     });
   },
   clear: function(target){
@@ -321,7 +337,16 @@ XDom.insertBefore = function(target, newNode, referenceNode){
   var _el = XDom.resolve(target);
   if(!_el.length) return;
   // a node can only have one parent, so there is no point in inserting into any other targets that would just have it immediately removed.
-  _el[_el.length-1].insertBefore(newNode, referenceNode || null);
+  var targetNode = _el[_el.length-1];
+  // since XDom.render results in an array we anticpate that it will be common argument to this function.
+  if (newNode.length) {
+    // we also copy the list in case a live NodeList is passed, as having the list change during iteration will not have the expected result
+    Array.prototype.slice.call(newNode,0).forEach(function(node){
+      targetNode.insertBefore(node, referenceNode || null);
+    });
+  } else {
+    targetNode.insertBefore(newNode, referenceNode || null);
+  }
 };
 
 XDom.remove = function(target){
@@ -533,6 +558,15 @@ function styleFunc(prop, valTransform){
 }
 
 XDom.style = {
+  calc: function(target){
+    var _el = XDom.resolve(target);
+    if(!_el.length || !window.getComputedStyle) return undefined;
+    for(var i=0;i<_el.length; i++){
+      var rslt = window.getComputedStyle(_el[i]);
+      return rslt;
+    }
+    return undefined;
+  },
   display: styleFunc('display', function(val, el){
     if(val === false) return 'none';
     if(val === true){
@@ -570,6 +604,9 @@ function execOnFirstElWithProp(prop, f){
     return undefined;
   };
 }
+
+XDom.innerHTML = execOnFirstElWithProp('innerHTML', function(el){ return el.innerHTML; });
+XDom.outerHTML = execOnFirstElWithProp('outerHTML', function(el){ return el.outerHTML; });
 
 XDom.calc = {
   widthToPadding: execOnFirstElWithProp('clientWidth', function(el){
