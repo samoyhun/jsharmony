@@ -124,7 +124,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       if (obj.jquery) jobj = obj;
       if (_.isArray(obj)) jobj = $(obj[0]);
       else jobj = $(obj);
-      if(!readonly) xeditablegrid.BindRow(jobj,datarow);
+      if(!readonly) xeditablegrid.BindRow(obj,datarow);
       xmodel.datamodel.prototype.BindLOV(xform,jobj);
       if(xmodel.onrowbind) xmodel.onrowbind(xmodel,jobj,datarow);
     };
