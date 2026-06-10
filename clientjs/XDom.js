@@ -317,7 +317,7 @@ XDom.render = function(html){
 
 XDom.renderOne = function(html){
   var _el = XDom.render(html);
-  if(_el.length) return _el[0];
+  if(_el.length) return _el[1];
   return document.createElement('div');
 };
 

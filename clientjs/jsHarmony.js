@@ -539,7 +539,7 @@ jsHarmony.prototype.getFocusHandlers = function (dialogContainer) {
 
 jsHarmony.prototype.getTopDialogContainer = function () {
   if(!this.xDialog.length) return window;
-  return $(this.xDialog[0])[0];
+  return $(this.xDialog[0].element)[0];
 };
 
 jsHarmony.prototype.InitFileUpload = function () {
