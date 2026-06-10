@@ -65,9 +65,6 @@ var jsHarmony = function(options){
   this.onNavigated = [];
   this.Navigated = function(obj){ _this.XExt.trigger(_this.onNavigated, obj); };
 
-  this.onDialogOverlayClick = [];
-  this.DialogOverlayClick = function(e){ _this.XExt.trigger(_this.onDialogOverlayClick, e);};
-
   this.onMessage = [];
   this.Message = function(data){
     _this.XExt.trigger(_this.onMessage, data);
@@ -451,7 +448,6 @@ jsHarmony.prototype.InitDialogs = function () {
   var _this = this;
   this.root.append($(ejs.render(XViews['jsh_system'],{ jsh: _this })));
   this.xdDialogBlock = XDom(this.xdroot, '.xdialogblock.jsHarmonyElement_'+this._instanceClass);
-  this.xdDialogBlock.on('mousedown', this.DialogOverlayClick);
 };
 jsHarmony.prototype.InitControls = function() {
   var _this = this;

@@ -1770,13 +1770,16 @@ exports = module.exports = function(jsh){
   };
 
   /**
-   * Using XDom.off, DestroyHandlers will remove handlers given the required context from the parameter '_handlers'
-   * @param {Array} _handlers - Expects an array of objects with properties 'target', 'eventType', and 'handler' {target: , eventType: , handler: }
+   * Using XDom.off, Destroy will remove handlers and may remove the object given the context from xDialogObj
+   * @param {Object} xDialogObj - Expects an object {element: DOM element, reuse: bool, handlers: [{target: target, eventType: String, handler: function}, ...]}
    */
-  XExt.DestroyHandlers = function(_handlers) {
-    _handlers.forEach(function(obj) {
+  XExt.Destroy = function(xDialogObj) {
+    // We always remove handlers even if reuse is false. This is to remove handlers applied beyond the obj (xdialogblock)
+    xDialogObj.handlers.forEach(function(obj) {
       XDom.off(obj.target, obj.eventType, obj.handler);
     });
+    if(!xDialogObj.reuse) XDom.remove(xDialogObj.element);
+    else XDom.style.display(xDialogObj.element, false);
   };
 
   XExt.dialogButtonFunc = function (obj, oldactive, onComplete, params) {
@@ -1794,11 +1797,8 @@ exports = module.exports = function(jsh){
       }
       //Verify this is the topmost dialog
       if ((jsh.xDialog.length > 0) && (jsh.xDialog[0].element != obj)) return;
-      if (jsh.xDialog[0].reuse) {
-        XDom.style.display(jsh.xDialog[0].element, false);
-        XExt.DestroyHandlers(jsh.xDialog[0].handlers);
-      }
-      else XDom.remove(obj);
+      XExt.Destroy(jsh.xDialog[0]);
+
       if (jsh.xDialog.length == 1) { jsh.xdDialogBlock.style.display = false; }
       if (jsh.xDialog[0].element != obj) {
         alert('ERROR - Invalid Dialog Stack');
@@ -2110,7 +2110,8 @@ exports = module.exports = function(jsh){
         if(reuse) xDialogObj.handlers.push({target: xdobj.select('input:not([type="checkbox"]):not([type="button"])'), eventType: 'keydown', handler: handler});
 
         if(options.backgroundClose){
-          jsh.onDialogOverlayClick.push((function onBackgroundClick(e){
+          jsh.xdDialogBlock.on('mousedown', (function onBackgroundClick(e){
+            xDialogObj.handlers.push({target: jsh.xdDialogBlock, eventType: 'mousedown', handler: onBackgroundClick});
             if(!(XDom.class.contains(e.target, 'xdialogoverlay') || XDom.class.contains(e.target,'xdialogblock'))) return;
             var mouseDownTime = new Date().getTime();
             jsh.xdDialogBlock.on('mouseup', (function mouseUpHandler(e){
@@ -2122,8 +2123,7 @@ exports = module.exports = function(jsh){
                 e.preventDefault();
                 e.stopImmediatePropagation();
                 cancelfunc();
-                for(var i=0; jsh.onDialogOverlayClick.length; i++)
-                  if(jsh.onDialogOverlayClick[i] == onBackgroundClick) jsh.onDialogOverlayClick.splice(i, 1);
+                XDom.off(jsh.xdDialogBlock, 'mousedown', onBackgroundClick);
               }
             }));
           }));
