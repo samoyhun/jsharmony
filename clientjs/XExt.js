@@ -2023,7 +2023,8 @@ exports = module.exports = function(jsh){
     }
     else {
       reuse = true;
-      customPrompt = (html && html.html) ? html[0] : html; // TODO: while JQuery, html[0] returns the element
+      customPrompt = html;
+      if(html && html.jquery) customPrompt = html[0];// TODO: For JQuery, html[0] returns the element
       if(!customPrompt) customPrompt = document.createElement('div');
       for(var i=0;i<jsh.xDialog.length;i++){
         if(jsh.xDialog[i].obj == customPrompt){
