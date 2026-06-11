@@ -78,8 +78,8 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     //If a dialog is open, make sure focus is on an element in the top dialog
     if(jsh.xDialog.length){
       var newobj = document.activeElement;
-      if(newobj && !($(newobj).closest(jsh.xDialog[0]).length)){
-        window.setTimeout(function(){ $(jsh.xDialog[0]).find('input:visible').first().focus(); },1);
+      if(newobj && !($(newobj).closest(jsh.xDialog[0].element).length)){
+        window.setTimeout(function(){ $(jsh.xDialog[0].element).find('input:visible').first().focus(); },1);
       }
       return;
     }

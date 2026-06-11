@@ -19,6 +19,11 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
 var _ = require('lodash');
 
+///////////////////////////////
+// Ideas for ".select()" alternative
+// .resolve(), .get(), .multi(), .single(), .element, .el  , ._el
+///////////////////////////////
+
 var XDom = function(target, options){ return new Selector(target, options); };
 exports = module.exports = XDom;
 
@@ -308,6 +313,12 @@ XDom.render = function(html){
   container.innerHTML = html;
   // childNodes is a live NodeList, if we return it direclty, it will likely have surprising results as nodes are moved elsewhere.
   return Array.prototype.slice.call(container.content.childNodes);
+};
+
+XDom.renderOne = function(html){
+  var _el = XDom.render(html);
+  if(_el.length) return _el[1];
+  return document.createElement('div');
 };
 
 XDom.content = {

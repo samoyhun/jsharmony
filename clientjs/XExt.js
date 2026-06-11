@@ -1769,13 +1769,26 @@ exports = module.exports = function(jsh){
     jsh.xdDialogBlock.style.display = false;
   };
 
+  /**
+   * Using XDom.off, Destroy will remove handlers and may remove the object given the context from xDialogObj
+   * @param {Object} xDialogObj - Expects an object {element: DOM element, reuse: bool, handlers: [{target: target, eventType: String, handler: function}, ...]}
+   */
+  XExt.Destroy = function(xDialogObj) {
+    // We always remove handlers even if reuse is false. This is to remove handlers applied beyond the obj (xdialogblock)
+    xDialogObj.handlers.forEach(function(obj) {
+      XDom.off(obj.target, obj.eventType, obj.handler);
+    });
+    if(!xDialogObj.reuse) XDom.remove(xDialogObj.element);
+    else XDom.style.display(xDialogObj.element, false);
+  };
+
   XExt.dialogButtonFunc = function (obj, oldactive, onComplete, params) {
     if (!params) params = {};
     var rslt = function () {
       //Delete duplicates from stack
       for (var i = 0; i < jsh.xDialog.length; i++) {
         for (var j = 0; j < i; j++) {
-          if (jsh.xDialog[j] == jsh.xDialog[i]) {
+          if (jsh.xDialog[j].element == jsh.xDialog[i].element) {
             jsh.xDialog.splice(i, 1);
             i--;
             break;
@@ -1783,10 +1796,11 @@ exports = module.exports = function(jsh){
         }
       }
       //Verify this is the topmost dialog
-      if ((jsh.xDialog.length > 0) && (jsh.xDialog[0] != obj)) return;
-      XDom.remove(obj);
+      if ((jsh.xDialog.length > 0) && (jsh.xDialog[0].element != obj)) return;
+      XExt.Destroy(jsh.xDialog[0]);
+
       if (jsh.xDialog.length == 1) { jsh.xdDialogBlock.style.display = false; }
-      if (jsh.xDialog[0] != obj) {
+      if (jsh.xDialog[0].element != obj) {
         alert('ERROR - Invalid Dialog Stack');
         console.log(obj); // eslint-disable-line no-console
         console.log(jsh.xDialog); // eslint-disable-line no-console
@@ -1840,7 +1854,8 @@ exports = module.exports = function(jsh){
     //alert(msg);
     var xdobj = XExt.renderTemplate('script.template_xalertbox');
     var alertBox = xdobj.selectOne();
-    jsh.xDialog.unshift(alertBox);
+    var xDialogObj = {element: alertBox, reuse: false, handlers: []};
+    jsh.xDialog.unshift(xDialogObj);
     XDom.setAttribute(xdobj, 'style', options.style);
     xdobj.style.zIndex = jsh.xDialog.length;
     var oldactive = document.activeElement;
@@ -1896,35 +1911,39 @@ exports = module.exports = function(jsh){
     var oldactive = document.activeElement;
     XDom.blur(oldactive);
 
-    var xdobj = XExt.renderTemplate('.template_xconfirmbox');
+    var xdobj = XExt.renderTemplate('script.template_xconfirmbox');
     var confirmBox = xdobj.selectOne();
 
-    jsh.xDialog.unshift(confirmBox);
+    var xDialogObj = {element: confirmBox, reuse: false, handlers: []};
+    jsh.xDialog.unshift(xDialogObj);
     xdobj.style.zIndex = jsh.xDialog.length;
 
     // prep content, values, and handlers for confirm box
     XDom.content.replace(xdobj.select('.xconfirmmessage'), msg);
     var cancelfunc = XExt.dialogButtonFunc(confirmBox, oldactive, (options.onCancel ? options.onCancel : onNo));
     var acceptfunc = XExt.dialogButtonFunc(confirmBox, oldactive, onYes);
+    var btnOk = xdobj.select('input.button_ok');
+    var btnNo = xdobj.select('input.button_no');
+    var btnCancel = xdobj.select('input.button_cancel');
     if(options.onCancel){
-      XDom.style.display(xdobj.select('input.button_cancel'), true);
-      XDom.on(xdobj.select('.xconfirmbox input.button_cancel'), 'click', XExt.dialogButtonFunc(confirmBox, oldactive, options.onCancel));
+      XDom.style.display(btnCancel, true);
+      XDom.on(btnCancel, 'click', XExt.dialogButtonFunc(confirmBox, oldactive, options.onCancel));
     }
-    else XDom.style.display(xdobj.select('input.button_cancel'), false);
-    if (options.button_ok_caption) XDom.setValue(xdobj.select('input.button_ok'), options.button_ok_caption);
-    if (options.button_no_caption) XDom.setValue(xdobj.select('input.button_no'), options.button_no_caption);
-    if (options.button_cancel_caption) XDom.setValue(xdobj.select('input.button_cancel'), options.button_cancel_caption);
+    else XDom.style.display(btnCancel, false);
+    if (options.button_ok_caption) XDom.setValue(btnOk, options.button_ok_caption);
+    if (options.button_no_caption) XDom.setValue(btnNo, options.button_no_caption);
+    if (options.button_cancel_caption) XDom.setValue(btnCancel, options.button_cancel_caption);
     xdobj.on('acceptDialog', acceptfunc);
     xdobj.on('cancelDialog', cancelfunc);
-    XDom.on(xdobj.select('input.button_ok'), 'click', acceptfunc);
-    XDom.on(xdobj.select('input.button_no'), 'click', XExt.dialogButtonFunc(confirmBox, oldactive, onNo));
+    XDom.on(btnOk, 'click', acceptfunc);
+    XDom.on(btnNo, 'click', XExt.dialogButtonFunc(confirmBox, oldactive, onNo));
     XDom.on(xdobj.select('input'), 'keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
     
     jsh.xdDialogBlock.selectOne().appendChild(confirmBox);
     xdobj.style.display = true;
     jsh.xdDialogBlock.style.display = true;
     jsh.XWindowResize();
-    if (!XExt.isIOS()) XDom.focus(xdobj.select('input.button_ok'));
+    if (!XExt.isIOS()) XDom.focus(btnOk);
   };
 
   XExt.stringify = function (origvalue, replacer, space) {
@@ -1963,9 +1982,11 @@ exports = module.exports = function(jsh){
     //var rslt = window.prompt(msg, dflt);
     //If cancel or close, rslt = null
     //if (onComplete) onComplete(rslt);
-    var xdobj = XExt.renderTemplate('.template_xpromptbox');
+    var xdobj = XExt.renderTemplate('script.template_xpromptbox');
     var promptBox = xdobj.selectOne();
-    jsh.xDialog.unshift(promptBox);
+
+    var xDialogObj = {element: promptBox, reuse: false, handlers: []};
+    jsh.xDialog.unshift(xDialogObj);
     xdobj.style.zIndex = jsh.xDialog.length;
     
     var oldactive = document.activeElement;
@@ -1990,19 +2011,32 @@ exports = module.exports = function(jsh){
     XDom.focus(xdobj.select('.xpromptfield'));
   };
 
-  //html - HTML or jQuery object
+  //html - HTML or Element
   XExt.CustomPrompt = function (sel, html, onInit, onAccept, onCancel, onClosed, options) {
-    options = _.extend({ backgroundClose: false, reuse: false, restoreFocus: true, onClosing: null, asyncInit: false }, options);
+    options = _.extend({ backgroundClose: false, restoreFocus: true, onClosing: null, asyncInit: false }, options);
     if(options.specialKeys === false) options.specialKeys = { enter: false, escape: false };
     else options.specialKeys = _.extend({ enter: true, escape: true }, options.specialKeys);
 
-    var container = document.createElement('div');
-    XDom.content.append(container, html);
-    var xdobj = XDom(XDom.getChildren(container)[0]);
-    var customPrompt = xdobj.selectOne();
-
+    var reuse = false;
+    var customPrompt = null;
+    //Classes - default_focus, button_ok, button_cancel
+    if(_.isString(html)){
+      customPrompt = XDom.renderOne(html);
+    }
+    else {
+      reuse = true;
+      if(XDom.select(sel).length){
+        customPrompt = XDom.selectOne(sel);
+      }
+      else {
+        customPrompt = (html && html.jQuery) ? html[0] : html; // TODO: while JQuery, html[0] returns the element
+        if(!customPrompt) customPrompt = document.createElement('div');
+      }
+    }
+    var xdobj = XDom(customPrompt);
+    var xDialogObj = {element: customPrompt, reuse: reuse, handlers: []};
     //ShowDialog
-    jsh.xDialog.unshift(customPrompt);
+    jsh.xDialog.unshift(xDialogObj);
     xdobj.style.zIndex = jsh.xDialog.length;
 
     var oldactive = document.activeElement;
@@ -2013,7 +2047,7 @@ exports = module.exports = function(jsh){
       XExt.dialogButtonFunc(customPrompt, oldactive, function () {
         if (onClosed) onClosed();
         if (_onClosed) _onClosed();
-        if(options.reuse) xdobj.style.display = false;
+        if(reuse) xdobj.style.display = false;
         else xdobj.remove();
       }, { onClosing: options.onClosing })();
     };
@@ -2033,7 +2067,7 @@ exports = module.exports = function(jsh){
     };
     var acceptfunc = function (_onClosed) {
       //Verify this is the topmost dialog
-      if ((jsh.xDialog.length > 0) && (jsh.xDialog[0] != customPrompt)) return;
+      if ((jsh.xDialog.length > 0) && (jsh.xDialog[0].element != customPrompt)) return;
       
       if (onAccept) return onAccept(function () { acceptfunc_aftervalidate(_onClosed); });
       else acceptfunc_aftervalidate(_onClosed);
@@ -2049,29 +2083,45 @@ exports = module.exports = function(jsh){
         }
       },
       function(){
-        XDom.on(xdobj.select('input.button_ok'), 'click', function(){ acceptfunc(); });
-        XDom.on(xdobj.select('input.button_cancel'), 'click', function(){ cancelfunc(); });
-      
-        xdobj.on('acceptDialog', function(){ acceptfunc(); });
-        xdobj.on('cancelDialog', function(){ cancelfunc(); });
+        var handler = null;
+        handler = function(){ acceptfunc(); };
+        XDom.off(xdobj.select('input.button_ok'), 'click', handler);
+        XDom.on(xdobj.select('input.button_ok'), 'click', handler);
+        if(reuse) xDialogObj.handlers.push({target: xdobj.select('input.button_ok'), eventType: 'click', handler: handler});
 
-        XDom.on(xdobj.select('input, textarea, select'), 'keydown', function (e) {
-          if (options.specialKeys.escape && (e.keyCode == 27)) { e.preventDefault(); e.stopImmediatePropagation(); cancelfunc(); }
-        });
-        XDom.on(xdobj.select('input:not([type="checkbox"]):not([type="button"])'), 'keydown', function (e) {
-          if (options.specialKeys.enter && (e.keyCode == 13)) { e.preventDefault(); e.stopImmediatePropagation(); acceptfunc(); }
-        });
+        handler = function(){ cancelfunc(); };
+        XDom.on(xdobj.select('input.button_cancel'), 'click', handler);
+        if(reuse) xDialogObj.handlers.push({target: xdobj.select('input.button_cancel'), eventType: 'click', handler: handler});
+        
+        handler = function(){ acceptfunc(); };
+        xdobj.on('acceptDialog', handler);
+        if(reuse) xDialogObj.handlers.push({target: xdobj, eventType: 'acceptDialog', handler: handler});
+
+        handler = function(){ cancelfunc(); };
+        xdobj.on('cancelDialog', handler);
+        if(reuse) xDialogObj.handlers.push({target: xdobj, eventType: 'cancelDialog', handler: handler});
+
+        handler = function (e) { if (options.specialKeys.escape && (e.keyCode == 27)) { e.preventDefault(); e.stopImmediatePropagation(); cancelfunc(); }};
+        XDom.on(xdobj.select('input, textarea, select'), 'keydown', handler);
+        if(reuse) xDialogObj.handlers.push({target: xdobj.select('input, textarea, select'), eventType: 'keydown', handler: handler});
+
+        handler = function (e) { if (options.specialKeys.enter && (e.keyCode == 13)) { e.preventDefault(); e.stopImmediatePropagation(); acceptfunc(); }};
+        XDom.on(xdobj.select('input:not([type="checkbox"]):not([type="button"])'), 'keydown', handler);
+        if(reuse) xDialogObj.handlers.push({target: xdobj.select('input:not([type="checkbox"]):not([type="button"])'), eventType: 'keydown', handler: handler});
+
         if(options.backgroundClose){
-          jsh.onDialogOverlayClick.unshift(function(e){
-            if(!(e.target.matches('.xdialogoverlay,.xdialogblock'))) return;
+          jsh.xdDialogBlock.on('mousedown', (function onBackgroundClick(e){
+            xDialogObj.handlers.push({target: jsh.xdDialogBlock, eventType: 'mousedown', handler: onBackgroundClick});
+            if(!(XDom.class.contains(e.target, 'xdialogoverlay') || XDom.class.contains(e.target,'xdialogblock'))) return;
             var mouseDownTime = new Date().getTime();
-            jsh.xdDialogBlock.on('mouseup', function(e){
+            jsh.xdDialogBlock.on('mouseup', (function mouseUpHandler(e){
+              XDom.off(jsh.xdDialogBlock, 'mouseup', mouseUpHandler);
               var mouseUpTime = new Date().getTime();
               if((mouseUpTime - mouseDownTime) > 5000) return;
-              if(!(e.target.matches('.xdialogoverlay,.xdialogblock'))) return;
-              if(jsh.xDialog.length && (jsh.xDialog[0]==customPrompt)){ e.preventDefault(); e.stopImmediatePropagation(); cancelfunc(); jsh.onDialogOverlayClick.shift(); }
-            }, {once: true});
-          });
+              if(!(XDom.class.contains(e.target, 'xdialogoverlay') || XDom.class.contains(e.target,'xdialogblock'))) return;
+              if(jsh.xDialog.length && (jsh.xDialog[0].element==customPrompt)){ e.preventDefault(); e.stopImmediatePropagation(); cancelfunc(); }
+            }));
+          }));
         }
         jsh.xdDialogBlock.selectOne().appendChild(customPrompt);
         xdobj.style.display = true;
@@ -2089,41 +2139,43 @@ exports = module.exports = function(jsh){
 
   XExt.AcceptDialog = function(){
     if(!jsh.xDialog.length) throw new Error('No dialog currently active');
-    XDom.emit(jsh.xDialog[0], 'acceptDialog');
+    XDom.emit(jsh.xDialog[0].element, 'acceptDialog');
   };
 
   XExt.CancelDialog = function(){
     if(!jsh.xDialog.length) throw new Error('No dialog currently active');
-    XDom.emit(jsh.xDialog[0], 'cancelDialog');
+    XDom.emit(jsh.xDialog[0].element, 'cancelDialog');
   };
 
   XExt.ZoomEdit = function (val, caption, options, onAccept, onCancel) {
     if(!options) options = {};
     if(!val) val = '';
     val = val.toString();
-    var xdobj = XExt.renderTemplate('.template_xtextzoombox');
+    var xdobj = XExt.renderTemplate('script.template_xtextzoombox');
     var textZoomBox = xdobj.selectOne();
-    jsh.xDialog.unshift(textZoomBox);
+
+    var xDialogObj = {element: textZoomBox, reuse: false, handlers: []};
+    jsh.xDialog.unshift(xDialogObj);
     xdobj.style.zIndex = jsh.xDialog.length;
     
     var oldactive = document.activeElement;
     XDom.blur(oldactive);
     XDom.content.replace(xdobj.select('.xtextzoommessage'), caption);
-    var TextZoomField = xdobj.select('.xtextzoomfield');
-    XDom.setValue(TextZoomField, val);
+    var textZoomField = xdobj.select('.xtextzoomfield');
+    XDom.setValue(textZoomField, val);
     
     
     if(options.readonly) {
-      XDom.setAttribute(TextZoomField, 'readonly', true); //TODO: setting readonly to anything results in readonly behavior
-      XDom.class.remove(TextZoomField, 'editable');
-      XDom.class.add(TextZoomField, 'uneditable');
+      XDom.setAttribute(textZoomField, 'readonly', 'readonly');
+      XDom.class.remove(textZoomField, 'editable');
+      XDom.class.add(textZoomField, 'uneditable');
     }
     else {
-      XDom.class.remove(TextZoomField, 'uneditable');
-      XDom.class.add(TextZoomField, 'editable');
+      XDom.class.remove(textZoomField, 'uneditable');
+      XDom.class.add(textZoomField, 'editable');
     }
     var cancelfunc = XExt.dialogButtonFunc(textZoomBox, oldactive, function () { if (onCancel) onCancel(); });
-    var acceptfunc = XExt.dialogButtonFunc(textZoomBox, oldactive, function () { if (onAccept) onAccept(XDom.getValue(TextZoomField)); });
+    var acceptfunc = XExt.dialogButtonFunc(textZoomBox, oldactive, function () { if (onAccept) onAccept(XDom.getValue(textZoomField)); });
     XDom.on(xdobj.select('input.button_ok'), 'click', acceptfunc);
     XDom.on(xdobj.select('input.button_cancel'), 'click', cancelfunc);
     XDom.on(xdobj.select('input'), 'keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
@@ -2131,32 +2183,35 @@ exports = module.exports = function(jsh){
     xdobj.style.display = true;
     jsh.xdDialogBlock.style.display = true;
     jsh.XWindowResize();
-    XDom.focus(TextZoomField);
+    XDom.focus(textZoomField);
   };
 
   XExt.ShowHints = function (lov, caption, options, onInsert, onCancel) {
     if(!options) options = {};
     if(!lov) lov = [];
-    var xdobj = XExt.renderTemplate('.template_xhintsbox');
+    var xdobj = XExt.renderTemplate('script.template_xhintsbox');
     var hintsBox = xdobj.selectOne();
-    jsh.xDialog.unshift(hintsBox);
+
+    var xDialogObj = {element: hintsBox, reuse: false, handlers: []};
+    jsh.xDialog.unshift(xDialogObj);
     xdobj.style.zIndex = jsh.xDialog.length;
 
     var oldactive = document.activeElement;
     XDom.blur(oldactive);
     XDom.content.replace(xdobj.select('.xhintsmessage'), caption);
 
-    var xdRowTemplate = XExt.renderTemplate('.xhints_rowtemplate');
-    XDom.content.clear(xdobj.select('.xhints_listing'));
+    var hintsListing = hintsBox.selectOne('.xhints_listing');
+    var tmplRow = XDom.innerHTML(jsh.xdDialogBlock.select('script.xhints_rowtemplate'));
+    
     if(_.isArray(lov)) _.each(lov, function(item){
-      XDom.setValue(xdRowTemplate.select('input'), item[jsh.uimap.code_val]);
-      XDom.content.replace(xdRowTemplate.select('span'), item[jsh.uimap.code_txt]);
-      if(options.readonly) XDom.remove(xdRowTemplate.select('input'));
-      XDom.content.append(xdobj.select('.xhints_listing'), xdRowTemplate.outerHTML);
+      var xdRow = XDom(XDom.render(tmplRow));
+      XDom.setValue(xdRow.select('input'), item[jsh.uimap.code_val]);
+      XDom.content.replace(xdRow.select('span'), item[jsh.uimap.code_txt]);
+      if(options.readonly) XDom.remove(xdRow.select('input'));
+      hintsListing.append(xdRow.selectOne());
     });
 
-    if(!options.readonly) XDom.style.display(xdobj.select('input.button_ok,input[type="checkbox"]'), true);
-    else XDom.style.display(xdobj.select('input.button_ok,input[type="checkbox"]'), false);
+    if(options.readonly) XDom.style.display(xdobj.select('input.button_ok,input[type="checkbox"]'), false);
 
     var getValues = function(){
       var rslt = [];
