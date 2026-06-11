@@ -2119,12 +2119,7 @@ exports = module.exports = function(jsh){
               var mouseUpTime = new Date().getTime();
               if((mouseUpTime - mouseDownTime) > 5000) return;
               if(!(XDom.class.contains(e.target, 'xdialogoverlay') || XDom.class.contains(e.target,'xdialogblock'))) return;
-              if(jsh.xDialog.length && (jsh.xDialog[0].element==customPrompt)){
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                cancelfunc();
-                XDom.off(jsh.xdDialogBlock, 'mousedown', onBackgroundClick);
-              }
+              if(jsh.xDialog.length && (jsh.xDialog[0].element==customPrompt)){ e.preventDefault(); e.stopImmediatePropagation(); cancelfunc(); }
             }));
           }));
         }
