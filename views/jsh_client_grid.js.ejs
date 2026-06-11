@@ -66,7 +66,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     var grid_template = '<%=(model.templates.grid||'.xgrid_'+model.class+'_template')%>';
     var grid_placeholder = jsh.XDom(jsh.xdroot, grid_template).data.target;
     if(!grid_placeholder) throw new Error('Grid render target is required for custom template.  Add "data-target" attribute to template script tag');
-    var scrollControl = (isInlinePopup ? jsh.XDom(jsh.xdroot, grid_placeholder).parent('.xpanel').select()[0] : window);
+    var scrollControl = (isInlinePopup ? jsh.XDom(jsh.xdroot, grid_placeholder).parent('.xpanel').selectOne() : window);
     xgrid = xcontroller.grid = new jsh.XGrid({
       modelid: modelid,
       TemplateID: grid_template,
@@ -331,7 +331,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
         if (!jsh.XDom.class.contains(this, 'static')){
           e.preventDefault();
           e.stopPropagation();
-          var field_name = jsh.XDom(jsh.xdroot, this).parent('th').data.field;
+          var field_name = jsh.XDom(this).parent('th').data.field;
           XExt.ShowContextMenu('.xgrid_column_header_context_<%= model.class%>', field_name);
         }
       });
@@ -591,7 +591,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     // TODO: onrowbind takes a jquery
     if(xgrid.OnRowBind) xgrid.OnRowBind($(xdRow.select()), newrow);
     xdControls.focus();
-    if(xdControls.length) xeditablegrid.CurrentCell = xdControls.select()[0];
+    if(xdControls.length) xeditablegrid.CurrentCell = xdControls.selectOne();
     else xeditablegrid.CurrentCell = document.activeElement;
     return rowid;
   }
@@ -993,8 +993,8 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       var columns = [];
       _.each(column_checkboxes, function(column_checkbox){
         // TODO: check this after merging with fixed dialogs
-        if(jsh.XDom.getAttribute(column_checkbox, 'checked')) {
-          columns.push( {name:jsh.XDom.getValue(column_checkbox)});
+        if(column_checkbox.checked) {
+          columns.push( {name:column_checkbox.value});
         }
       });
       xcontroller.SetDisplayLayout({

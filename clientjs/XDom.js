@@ -19,6 +19,11 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
 var _ = require('lodash');
 
+///////////////////////////////
+// Ideas for ".select()" alternative
+// .resolve(), .get(), .multi(), .single(), .element, .el  , ._el
+///////////////////////////////
+
 var XDom = function(target, options){ return new Selector(target, options); };
 exports = module.exports = XDom;
 
@@ -84,6 +89,10 @@ var Selector = function(){
     return selectWithin((_this.target + ' ' + (childSelector||'')).trim(), _this.base);
   };
 
+  _this.selectOne = function(childSelector){
+    return XDom.selectOne((_this.target + ' ' + (childSelector||'')).trim(), _this.base);
+  };
+
   _this.selector = function(childSelector){
     if(!childSelector) return _this;
     if(!_this.target) return new Selector(_this.base, childSelector);
@@ -142,6 +151,12 @@ var Selector = function(){
       if(prop == 'height') return XDom.style.height(_this, value);
       return XDom.setStyle(_this, prop, value);
     },
+  });
+  Object.defineProperty(this, 'innerHTML', {
+    get: function() { return XDom.innerHTML(this); },
+  });
+  Object.defineProperty(this, 'outerHTML', {
+    get: function() { return XDom.outerHTML(this); },
   });
   _this.calc = {
     width: XDom.calc.width.bind(XDom, this),
@@ -296,8 +311,16 @@ XDom.class = {
 XDom.render = function(html){
   var container = document.createElement('template');
   container.innerHTML = html;
-  // childNodes is a live NodeList, if we return it direclty, it will likely have surpriseing results as nodes are moved elsewhere.
+  // childNodes is a live NodeList, if we return it direclty, it will likely have surprising results as nodes are moved elsewhere.
   return Array.prototype.slice.call(container.content.childNodes);
+};
+
+XDom.renderOne = function(html){
+  var _el = XDom.render((html||'').trim());
+  for(var i=0;i<_el.length;i++){
+    if(_el[i].nodeType == Node.ELEMENT_NODE) return _el[i];
+  }
+  return document.createElement('div');
 };
 
 XDom.content = {
@@ -594,6 +617,9 @@ function execOnFirstElWithProp(prop, f){
     return undefined;
   };
 }
+
+XDom.innerHTML = execOnFirstElWithProp('innerHTML', function(el){ return el.innerHTML; });
+XDom.outerHTML = execOnFirstElWithProp('outerHTML', function(el){ return el.outerHTML; });
 
 XDom.calc = {
   widthToPadding: execOnFirstElWithProp('clientWidth', function(el){

@@ -225,7 +225,7 @@ exports = module.exports = function(jsh){
             return;
           }
         }
-        else ejssource = jsh.XDom(jsh.xdroot, _this.TemplateID).select()[0].innerHTML;
+        else ejssource = jsh.XDom(jsh.xdroot, _this.TemplateID).innerHTML;
         
         if (rowstart == 0) {
           if (_this.OnDestroyingRows) _this.OnDestroyingRows(jsh.XDom(jsh.xdroot, _this.PlaceholderID).children);
@@ -324,7 +324,7 @@ exports = module.exports = function(jsh){
     xd_th.class.remove('sortAsc');
     xd_th.class.remove('sortDesc');
     if(newdir == '^') { xd_thSort.class.add('sortAsc'); }
-    else{ xd_thSort.addClass('sortDesc'); }
+    else{ xd_thSort.class.add('sortDesc'); }
     this.Sort.unshift(newdir+col);
     this.Load();
     return false;
@@ -347,9 +347,9 @@ exports = module.exports = function(jsh){
         _this.lastDocumentHeight = curDocumentHeight;
         _this.scrolledPastBottom = false;
       }
-      var pastBottom = ((jsh.XDom(jsh.xdroot, window).calc.height() + window.scrollY) >= (curDocumentHeight));
+      var pastBottom = ((jsh.XDom.calc.height(window) + window.scrollY) >= (curDocumentHeight));
       if(!_this.scrolledPastBottom && pastBottom) {
-        callback(jsh.XDom(jsh.xdroot, window).calc.height() + window.scrollY);
+        callback(jsh.XDom.calc.height(window) + window.scrollY);
         _this.scrolledPastBottom = true;
       } else {
         if(!pastBottom) _this.scrolledPastBottom = false;
@@ -369,7 +369,7 @@ exports = module.exports = function(jsh){
     var _this = this;
     _this.scrollFunc = function () {
       var xdScrollControl = jsh.XDom(_this.ScrollControl);
-      var scrollElement = xdScrollControl.select()[0];
+      var scrollElement = xdScrollControl.selectOne();
       var pastBottom = ((xdScrollControl.height() + scrollElement.scrollTop()) >= scrollElement.scrollHeight);
       if (!_this.scrolledPastBottom && pastBottom) {
         callback(xdScrollControl.height() + scrollElement.scrollTop);

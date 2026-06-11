@@ -1034,11 +1034,11 @@ var mocha = require('mocha');
     });
 
     it('is visible', function(){
-      assert(XDom.isVisible(XDom('.visible').select()[0]), 'normal element is visible');
+      assert(XDom.isVisible(XDom('.visible').selectOne()), 'normal element is visible');
     });
 
     it('is not visible', function(){
-      assert(!XDom.isVisible(XDom('.hidden').select()[0]), 'off element is not visible');
+      assert(!XDom.isVisible(XDom('.hidden').selectOne()), 'off element is not visible');
     });
 
     after(function(){
