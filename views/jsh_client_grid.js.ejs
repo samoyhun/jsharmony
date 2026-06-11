@@ -331,7 +331,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
         if (!jsh.XDom.class.contains(this, 'static')){
           e.preventDefault();
           e.stopPropagation();
-          var field_name = jsh.XDom(jsh.xdroot, this).parent('th').data.field;
+          var field_name = jsh.XDom(this).parent('th').data.field;
           XExt.ShowContextMenu('.xgrid_column_header_context_<%= model.class%>', field_name);
         }
       });
@@ -993,8 +993,8 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       var columns = [];
       _.each(column_checkboxes, function(column_checkbox){
         // TODO: check this after merging with fixed dialogs
-        if(jsh.XDom.getAttribute(column_checkbox, 'checked')) {
-          columns.push( {name:jsh.XDom.getValue(column_checkbox)});
+        if(column_checkbox.checked) {
+          columns.push( {name:column_checkbox.value});
         }
       });
       xcontroller.SetDisplayLayout({
