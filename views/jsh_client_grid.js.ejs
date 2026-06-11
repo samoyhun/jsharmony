@@ -33,9 +33,6 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
   var xform = null;
   var gridCustomTemplate = <%=!!model.templates.grid%>;
 
-  // FIXME: temporary while names are in flux
-  jsh.selector = function(sel) {return jsh.XDom(document).selector(sel);}
-
   xcontroller.Init = function(callback){
     xsearch = xcontroller.search = new jsh.XForm({
       TemplateID: '.xsearch_template_'+xmodel.class,
@@ -124,14 +121,14 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       if (obj.jquery) jobj = obj;
       if (_.isArray(obj)) jobj = $(obj[0]);
       else jobj = $(obj);
-      if(!readonly) xeditablegrid.BindRow(jobj,datarow);
+      if(!readonly) xeditablegrid.BindRow(obj,datarow);
       xmodel.datamodel.prototype.BindLOV(xform,jobj);
       if(xmodel.onrowbind) xmodel.onrowbind(xmodel,jobj,datarow);
     };
     xgrid.OnDestroyingRows = function(xdObj){
       if(!xeditablegrid) return;
       xdObj.selector('tr[data-id]').select().forEach(function(tr){
-        // FIXME: model.onrowunbind specifies a jobj
+        // TODO: model.onrowunbind specifies a jobj
         var jobj = $(tr);
         if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,jobj,jobj.data('id'));
       });

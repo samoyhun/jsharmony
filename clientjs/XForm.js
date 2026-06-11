@@ -73,8 +73,8 @@ exports = module.exports = function(jsh){
       this.Data.OnRender.apply(this.Data, arguments);
     }
     else if(this.TemplateID){
-      var ejssource = jsh.$root(this.TemplateID).html();
-      jsh.$root(this.PlaceholderID).html(jsh.XExt.renderEJS(ejssource, undefined, {
+      var ejssource = jsh.XDom(jsh.xdroot, this.TemplateID).select()[0].innerHTML;
+      jsh.XDom(jsh.xdroot, this.PlaceholderID).content.replace(jsh.XExt.renderEJS(ejssource, undefined, {
         data:this.Data
       }));
     }
@@ -143,7 +143,7 @@ exports = module.exports = function(jsh){
       this.Data._orig = null;
     }
     if (this.xData) {
-      jsh.$root(this.xData.PlaceholderID).$find('.xform_ctrl.updated').removeClass('updated');
+      jsh.XDom(jsh.xdroot, this.xData.PlaceholderID).selector('.xform_ctrl.updated').class.remove('updated');
     }
     this.IsDirty = false;
   };
@@ -171,6 +171,7 @@ exports = module.exports = function(jsh){
     if(this.Index == (this.Count()-1)) return;
     this.NavTo(this.Count()-1);
   };
+  // TODO: SetIndex takes a jquery object, and puts into Data, which is directly accessed elsewhere.
   XForm.prototype.SetIndex = function (_index, saveold, jrow) {
     if (typeof saveold == 'undefined') saveold = true;
     if (_index > this.Count()) { jsh.XExt.Alert('Cannot navigate - Index greater than size of collection'); return false; }
@@ -466,8 +467,8 @@ exports = module.exports = function(jsh){
       execdata.push({
         method: dbtask.method,
         model: dbtask.model,
-        query: $.param(dbtask.query),
-        post: $.param(dbtask.post)
+        query: jsh.XExt.escapeQuery(dbtask.query),
+        post: jsh.XExt.escapeQuery(dbtask.post)
       });
     }
     var final_onComplete = function (rslt) {
@@ -481,7 +482,7 @@ exports = module.exports = function(jsh){
       'method': 'post',
       'model': '_transaction',
       'query': {},
-      'post': $.param({ data: JSON.stringify(execdata) }),
+      'post': jsh.XExt.escapeQuery({ data: JSON.stringify(execdata) }),
       'onComplete': final_onComplete
     };
     if (onFail) execparams.onFail = onFail;
