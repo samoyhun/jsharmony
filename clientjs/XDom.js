@@ -229,6 +229,7 @@ var Selector = function(){
   //.html('html string') => .content.replace('html string')
   //.outerWidth => .calc.widthToBorder
   //.outerHeight => .calc.heightToBorder
+  //$.param -> XExt.escapeQuery
 };
 XDom.Selector = Selector;
 

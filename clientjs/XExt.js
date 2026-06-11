@@ -611,6 +611,47 @@ exports = module.exports = function(jsh){
     if(typeof val == 'undefined') return '';
     return encodeURI(val);
   };
+
+  // encode a value like jQuery.param
+  XExt.escapeQuery = function(query) {
+    function pair(key, value) {
+      return encodeURIComponent(key.toString()) + '=' + encodeURIComponent(value ? value.toString() : '');
+    }
+    function arrayValue(array, prefix) {
+      return _.map(array, function(value, index) {
+        if (_.isArray(value)) {
+          return arrayValue(value, prefix+'['+index+']');
+        } else if (_.isObjectLike(value)) {
+          return objectValue(value, prefix+'['+index+']');
+        } else {
+          return pair(prefix+'[]', value);
+        }
+      }).join('&');
+    }
+    function objectValue(object, prefix) {
+      // can't use _.map because it treats an object with a length as an array
+      var result = [];
+      _.forIn(object, function(value, _key) {
+        var key;
+        if (prefix) {
+          key = prefix + '[' + _key + ']';
+        } else {
+          key = _key;
+        }
+        if (_.isArray(value)) {
+          result.push(arrayValue(value, key));
+        } else if (_.isObjectLike(value)) {
+          result.push(objectValue(value, key));
+        } else {
+          result.push(pair(key, value));
+        }
+      });
+      return result.join('&');
+    }
+
+    return objectValue(query, '');
+  };
+
   XExt.pad = function (val, padding, length) {
     var rslt = val.toString();
     while (rslt.length < length) rslt = padding + rslt;
