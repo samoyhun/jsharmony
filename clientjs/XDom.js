@@ -316,8 +316,10 @@ XDom.render = function(html){
 };
 
 XDom.renderOne = function(html){
-  var _el = XDom.render(html);
-  if(_el.length) return _el[1];
+  var _el = XDom.render((html||'').trim());
+  for(var i=0;i<_el.length;i++){
+    if(_el[i].nodeType == Node.ELEMENT_NODE) return _el[i];
+  }
   return document.createElement('div');
 };
 

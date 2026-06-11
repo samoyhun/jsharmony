@@ -116,12 +116,12 @@ else if(parent && (parent.topmost) && ('tabpos' in parent) && (parent.tabpos=='t
   </div>
 </script>
 <div class="xcontext_menu search_context_<%=model.class%>">
-  <a onclick="<%-js('jsh.XDom.style.display(\'.xcontext_menu\', false); xmodel.controller.SearchAdd(jsh.xContextMenuItemData); return false;')%>"><img src="<%-jsh._PUBLICURL%>images/icon_add.png" />Add Search Item</a>
-  <a onclick="<%-js('jsh.XDom.style.display(\'.xcontext_menu\', false); xmodel.controller.SearchRemove(jsh.xContextMenuItemData); return false;')%>"><img src="<%-jsh._PUBLICURL%>images/icon_remove.png" />Remove</a>
+  <a onclick="<%-js('jsh.XDom.style.display(jsh.xdroot.select(\'.xcontext_menu\'), false); xmodel.controller.SearchAdd(jsh.xContextMenuItemData); return false;')%>"><img src="<%-jsh._PUBLICURL%>images/icon_add.png" />Add Search Item</a>
+  <a onclick="<%-js('jsh.XDom.style.display(jsh.xdroot.select(\'.xcontext_menu\'), false); xmodel.controller.SearchRemove(jsh.xContextMenuItemData); return false;')%>"><img src="<%-jsh._PUBLICURL%>images/icon_remove.png" />Remove</a>
 </div>
 <div class="xcontext_menu xgrid_column_header_context_<%=model.class%>">
-  <a onclick="<%-js('jsh.XDom.style.display(\'.xcontext_menu\', false); xmodel.controller.HideColumn(jsh.xContextMenuItem); return false;')%>"><img src="<%-jsh._PUBLICURL%>images/icon_design2.png" />Hide this column</a>
-  <a onclick="<%-js('jsh.XDom.style.display(\'.xcontext_menu\', false); xmodel.controller.ManageColumns(); return false;')%>"><img src="<%-jsh._PUBLICURL%>images/icon_design.png" />Manage Columns</a>
+  <a onclick="<%-js('jsh.XDom.style.display(jsh.xdroot.select(\'.xcontext_menu\'), false); xmodel.controller.HideColumn(jsh.xContextMenuItem); return false;')%>"><img src="<%-jsh._PUBLICURL%>images/icon_design2.png" />Hide this column</a>
+  <a onclick="<%-js('jsh.XDom.style.display(jsh.xdroot.select(\'.xcontext_menu\'), false); xmodel.controller.ManageColumns(); return false;')%>"><img src="<%-jsh._PUBLICURL%>images/icon_design.png" />Manage Columns</a>
 </div>
 </div><!-- .xbodyhead -->
   <% if(!model.templates.grid){ %>
