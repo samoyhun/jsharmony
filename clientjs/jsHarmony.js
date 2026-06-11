@@ -571,7 +571,8 @@ jsHarmony.prototype.requireHTML5 = function(){
   $(document).ready(function() {
     if (!document.createElement('canvas').getContext) {
       var content = '\
-      <div class="browser_upgrade_msg" style="height: 120px; text-align: center; width: 450px;">\
+      <div class="browser_upgrade_msg Menu_InsertPopup xdialogbox xpromptbox" style="height: 130px; text-align: center; width: 450px;">\
+        <strong>Did you know that your browser is out of date?</strong>\
         <p>In order to use this system, you will need to upgrade your web browser to a modern version that supports HTML5.  Please click "Upgrade" to view supported browsers.</p>\
         <div>\
         <input style="padding:2px 6px;" type="button" value="Upgrade" onclick="window.location.href=\'http://www.browsehappy.com\';" />\
@@ -579,16 +580,7 @@ jsHarmony.prototype.requireHTML5 = function(){
         </div>\
       </div>\
       ';
-      $.colorbox({
-        html: content,
-        closeButton: false,
-        arrowKey: false,
-        preloading: false,
-        overlayClose: false,
-        escKey: false,
-        opacity: 0.5,
-        title: 'Did you know that your browser is out of date?'
-      });
+      _this.XExt.CustomPrompt('.Menu_InsertPopup', content);
     }
   });
 };

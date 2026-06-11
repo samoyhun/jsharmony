@@ -59,7 +59,7 @@ exports = module.exports = function(jsh){
       var obj = searchExpressions[i];
       var v_column = jsh.XDom(obj, 'select.xsearch_column').value;
       var v_value = jsh.XDom(obj, 'input.xsearch_value').value;
-      var v_join = ((i==0) ? undefined : jsh.XDOm(searchExpressions[i-1], 'select.xsearch_join').value);
+      var v_join = ((i==0) ? undefined : jsh.XDom(searchExpressions[i-1], 'select.xsearch_join').value);
       var v_comparison = jsh.XDom(obj, 'select.xsearch_comparison').value;
       if ((v_column==='ALL') || !v_comparison) v_comparison = 'contains';
       _this.Items.push(new SearchItem(v_column, v_value, v_join, v_comparison));

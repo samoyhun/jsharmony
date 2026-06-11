@@ -2364,13 +2364,47 @@ exports = module.exports = function(jsh){
           xsubform.css('overflow','auto');
         }
         jsh.xPopupStack.push(popup_options);
+
+        /**
+         * Colorbox => CustomPrompt         Done  ||  Not-Done
+         * title => NA                       xx   ||  
+         * href => sel                       xx   ||     
+         * inline => NA                           ||    xx
+         * closeButton => NA                      ||    xx
+         * arrowKey => NA                         ||    xx
+         * preloading => NA                       ||    xx
+         * overlayClose => backgroundClose        ||    xx
+         * fixed => Native                   xx   ||
+         * trapFocus => Native               xx   ||
+         * fadeOut => NA                          ||    xx
+         * onOpen =>                              ||    xx
+         * onComplete => onInit              xx   ||
+         * onClosed => onClosed              xx   ||
+         * escKey                                 ||    xx
+         * opacity                                ||    xx
+         * html                              xx   ||
+         */
         var onInit = popup_options.onComplete;
         var onClosed = popup_options.onClosed;
-        var template = XExt.getTemplate('.template_xpopup');
-        template.content.append(jsh.XDom.select(POPUP_CONTAINER)[0].innerHTML);
-        console.log(jsh.XDom.select(POPUP_CONTAINER)[0]);
-        console.log('this is template:', template.select()[0]);
-        var html = template.select()[0].outerHTML;
+        var template = XExt.renderTemplate('.template_xpopup');
+        template.content.append(jsh.XDom.selectOne(POPUP_CONTAINER).innerHTML);
+        
+        // Title
+        if(popup_options.title) XDom.content.prepend(template.select('.header'), '<strong>' + title + '</strong>');
+        // CloseButton
+        if(popup_options.closeButton) {
+          var xdHeader = XDom(template, '.header');
+          xdHeader.content.append('<a style="float: right"><img src="' +jsh._PUBLICURL+ 'images/icon_delete.png"></a>');
+          var handler = function(){ 
+            XExt.CancelDialog();
+            XDom.off(xdHeader.selectOne('a'), 'click', handler);
+          }
+          XDom.on(xdHeader.selectOne('a'), 'click', handler);
+        }
+                
+        console.log(jsh.XDom.selectOne(POPUP_CONTAINER));
+        console.log('this is template:', template.selectOne());
+        var html = template.selectOne().outerHTML;
         XExt.CustomPrompt(null, html, onInit, null, null, onClosed, {backgroundClose: true});
       });
   };
