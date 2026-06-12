@@ -201,6 +201,7 @@ var Selector = function(){
   _this.omit = function(f){
     return new Selector(XDom.omit(this, f));
   };
+  _this.isVisible = XDom.isVisible.bind(XDom, this);
   _this.insertBefore = XDom.insertBefore.bind(XDom, this);
   _this.remove = XDom.remove.bind(XDom, this);
   _this.focus = XDom.focus.bind(XDom, this);
@@ -467,8 +468,11 @@ XDom.blur = function(target){
   }
 };
 
-XDom.isVisible = function(el){
-  return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+XDom.isVisible = function(target){
+  var _el = XDom.resolve(target);
+  for(var i=0; i< _el.length; i++)
+    if(!(_el[i].offsetWidth || _el[i].offsetHeight || _el[i].getClientRects().length)) return false;
+  return true;
 };
 
 function nodeMap(target, f){
@@ -739,7 +743,7 @@ function parseStyleUnit(str) {
     var hexrgba = [str.substring(1,3),str.substring(3,5),str.substring(5,7)];
     hexrgba.push((str.length > 8) ? str.substring(7, 9) : 'FF');
     hexrgba = _.map(hexrgba, function(val){ return Number('0x'+val); });
-    hexrgba[3] /= hexrgba[3]/255;
+    hexrgba[3] = hexrgba[3]/255;
     return {val: hexrgba, unit: 'rgba'};
   }
   else{
@@ -836,7 +840,7 @@ XDom.animate.height = function(tgt, to, callback, duration){
   if(!callback) callback = function(){};
   var xdobj = XDom(tgt);
   var _el = xdobj.select();
-  if(_el.length != 1) return _.map(_el, function(el){ XDom.animate.height(el, to, callback, duration); });
+  if(_el.length != 1) {_.map(_el, function(el){ XDom.animate.height(el, to, callback, duration); }); return;}
   duration = duration || 500;
 
   var resetOverflow = false;
@@ -876,7 +880,7 @@ XDom.animate.opacity = function(tgt, to, callback, duration){
   if(!callback) callback = function(){};
   var xdobj = XDom(tgt);
   var _el = xdobj.select();
-  if(_el.length != 1) return _.map(_el, function(el){ XDom.animate.opacity(el, to, callback, duration); });
+  if(_el.length != 1) {_.map(_el, function(el){ XDom.animate.opacity(el, to, callback, duration); }); return;}
   duration = duration || 500;
   
   var isVisible = xdobj.isVisible();
