@@ -123,7 +123,9 @@ var Selector = function(){
   _this.on = XDom.on.bind(XDom, this);
   _this.off = XDom.off.bind(XDom, this);
   _this.emit = XDom.emit.bind(XDom, this);
-  _this.animate = function(props, duration, callback){ return XDom.animate(this, props, duration, callback); };
+  _this.animate = XDom.animate.bind(XDom, this);
+  _this.animate.height = XDom.animate.height.bind(XDom, this);
+  _this.animate.opacity = XDom.animate.opacity.bind(XDom, this);
   _this.stop = function(){ return XDom.stop(this); };
   Object.defineProperty(this, 'value', {
     get: function() { return XDom.getValue(this); },
