@@ -201,6 +201,7 @@ var Selector = function(){
   _this.omit = function(f){
     return new Selector(XDom.omit(this, f));
   };
+  _this.isVisible = XDom.isVisible.bind(XDom, this);
   _this.insertBefore = XDom.insertBefore.bind(XDom, this);
   _this.remove = XDom.remove.bind(XDom, this);
   _this.focus = XDom.focus.bind(XDom, this);
@@ -468,8 +469,11 @@ XDom.blur = function(target){
   }
 };
 
-XDom.isVisible = function(el){
-  return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+XDom.isVisible = function(target){
+  var _el = XDom.resolve(target);
+  for(var i=0; i< _el.length; i++)
+    if(_el[i].offsetWidth || _el[i].offsetHeight || _el[i].getClientRects().length) return true;
+  return false;
 };
 
 function nodeMap(target, f){
@@ -718,105 +722,48 @@ XDom.calc = {
 XDom.calc.width = XDom.calc.widthToContent;
 XDom.calc.height = XDom.calc.heightToContent;
 
-function parseStyleUnit(value) {
-  if (value == null) return null;
-  var vals, unit, arr;
-  if(value.replace(' ', '').indexOf('rgb')===0){
-    arr = value.replace(')', '').split('(');
-    vals = arr[1].split(/\s*,\s*/);
-    if(arr[0] === 'rgb') vals.push('1');
-    unit = 'rgba';
-  } else if(value.replace(' ', '').indexOf('#')===0){
-    if(value.length === 7){ // #RRGGBB
-      arr = value.replace('#', '').match(/.{1,2}/g);
-      arr.push('FF');
-    } else if(value.length === 9){ //#RRGGBBaa
-      arr = value.replace('#', '').match(/.{1,2}/g);
-    } else return;
-    vals = arr.map(function(hex){return '0x' + hex;});
-    vals[3] = Number(vals[3])/255;
-    unit = 'rgba';
+/**
+ * parseStyleUnit parses a style string and returns an obj with a value and a unit. Returns null if
+ * unable to properly extract a value or unit from style string.
+ * @param {String} str - A style string like '100px' or 'rgba(12, 53, 67, 0.5)' or '1' (opacity)
+ * @returns {Object}
+ */
+function parseStyleUnit(str) {
+  if (str == null) return null;
+  str = str.toString().trim();
+  if(str.indexOf('rgb')===0){     // rbg || rgba
+    var idxParamStart = str.indexOf('(');
+    var idxParamEnd = str.indexOf(')');
+    if((idxParamStart < 0) || (idxParamEnd < 0)) return null;
+    str = str.substring(idxParamStart+1, idxParamEnd);
+    if(!str) return null;
+    var rgba = _.map(str.split(','), function(val){ return Number(val.trim()); });
+    if(rgba.length == 3) rgba.push(1);
+    return {val: rgba, unit: 'rgba'};
+  } else if(str.indexOf('#')===0){
+    var hexrgba = [str.substring(1,3),str.substring(3,5),str.substring(5,7)];
+    hexrgba.push((str.length > 8) ? str.substring(7, 9) : 'FF');
+    hexrgba = _.map(hexrgba, function(val){ return Number('0x'+val); });
+    hexrgba[3] /= 255;
+    return {val: hexrgba, unit: 'rgba'};
   }
   else{
-    value = value.replace(' ', '');
-    arr = value.match(/(^-?\d+(?:\.\d+)?)([a-zA-Z%]+)?$/);
-    if(arr === null){
-      var testval = Number(value.replace(' ', ''));
-      if(isNaN(testval)) return null;
-      vals = [testval];
-      unit = null;
-    }
-    else{
-      vals = [arr[1]];
-      unit = arr[2];
-    }
+    var matches = str.match(/(^-?\d+(?:\.\d+)?)([a-zA-Z%]+)?$/);
+    if(!matches) return null;
+    return {val: [Number(matches[1])], unit: matches[2] || ''};
   }
-  vals = vals.map(Number);
-  return {val: vals, unit: unit};
-}
-
-function add(vec1, vec2){
-  if( !Array.isArray(vec1) || !Array.isArray(vec2)) return;
-  if(vec1.length !== vec2.length) return;
-  return vec1.map(function(num, i){
-    return num + vec2[i];
-  });
-}
-
-function sub(vec1, vec2){
-  if( !Array.isArray(vec1) || !Array.isArray(vec2)) return;
-  if(vec1.length !== vec2.length) return;
-  return vec1.map(function(num, i){
-    return num - vec2[i];
-  });
-}
-
-function simple_mult(vec, scalar){
-  if(!Array.isArray(vec)) return;
-  if(isNaN(scalar)) return;
-  return vec.map(function(num, i){
-    return num * Number(scalar);
-  });
-}
-
-function simple_div(vec, scalar){
-  if(!Array.isArray(vec)) return;
-  if(isNaN(scalar) === 0) return;
-  return vec.map(function(num, i){
-    return num / Number(scalar);
-  });
 }
 
 function step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete) {
   var duration = endTime - startTime;
   var inProgress = ((curTime < endTime) && (duration > 0));
   var xdom_animatestopidx = Number(el.dataset.xdom_animatestopidx);
-  if(elAnimateIdx <= xdom_animatestopidx){
-    return onComplete(true);
-  }
+  if(elAnimateIdx <= xdom_animatestopidx) return onComplete(true);
   else {
     _.each(elProps, function(value, key) {
-      var from = value.from;
-      var to = value.to;
-      var unit = value.unit || '';
-      var progressVec = [];
-      if(inProgress && (from != null)) {
-        progressVec = add(from, simple_div(simple_mult(sub(to, from), (curTime - startTime)), (duration)));
-        if(progressVec.length === 1){
-          el.style[key] = (progressVec[0]).toString() + unit;
-        }
-        else{ // I no like
-          el.style[key] = ('rgba(' + progressVec[0] + ', ' + progressVec[1] + ', ' + progressVec[2] + ', ' + progressVec[3] + ')').toString();
-        }
-      }
-      else {
-        if(to.length === 1){
-          el.style[key] = (to[0]).toString() + unit;
-        }
-        else{ // I no like
-          el.style[key] = ('rgba(' + to[0] + ', ' + to[1] + ', ' + to[2] + ', ' + to[3] + ')').toString();
-        }
-      }
+      var progressVec = inProgress ? value.from.map(function(fromX, idx){ return fromX + (value.to[idx] - fromX) * ((curTime-startTime)/duration); }) : value.to;
+      if(value.unit == 'rgba') el.style[key] = 'rgba(' + progressVec[0] + ', ' + progressVec[1] + ', ' + progressVec[2] + ', ' + progressVec[3] + ')';
+      else el.style[key] = progressVec[0] + value.unit;
     });
     if(inProgress){
       requestAnimationFrame(function(curTime){
@@ -824,7 +771,7 @@ function step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete
       });
     }
     else {
-      onComplete(false);//if an element reaches this point then it would have "completed" naturally
+      onComplete(false); //if an element reaches this point then it would have "completed" naturally
     }
   }
 }
@@ -848,6 +795,7 @@ XDom.animate = function(target, props, duration, callback) {
     var elAnimateIdx = parseInt(el.dataset.xdom_animateidx || 0) + 1;
     el.dataset.xdom_animateidx = elAnimateIdx;
     var elProps = {};
+    var containsProps = false;
     for(var key in props){
       var rawEnd = props[key];
       if((rawEnd === null) || (typeof rawEnd == 'undefined') || (rawEnd === '')) continue;
@@ -855,35 +803,100 @@ XDom.animate = function(target, props, duration, callback) {
       var rawStart = window.getComputedStyle(el)[key];
       var start = parseStyleUnit(rawStart);
       var end = parseStyleUnit(rawEnd);
-      //if start.unit != end.unit what should we do?
-      if(!start || !end) continue;
+      if((!start || !end) || (start.unit != end.unit)) continue; // leave prop out of elProps at unit mismatch (or missing values)
       elProps[key] = {from: start.val, to: end.val, unit: end.unit};
+      containsProps = true;
     }
-    if(elProps !== {}){
-      if(duration > 0){
-        var startTime = document.timeline.currentTime;
-        var endTime = startTime + duration;
-        requestAnimationFrame(function(curTime){
-          step(curTime, el, elProps, startTime, endTime, elAnimateIdx, function(aborted){
-            completeCnt++;
-            if(!aborted) hasSuccess = true;
-            if(hasSuccess && (completeCnt === _el.length)) callback();
-          });
+    if(duration <= 0 && containsProps){
+      _.each(elProps, function(valueObj, key) {
+        var to = valueObj.to;
+        if(valueObj.unit === 'rgba') el.style[key] = 'rgba(' + to[0] + ', ' + to[1] + ', ' + to[2] + ', ' + to[3] + ')';
+        else el.style[key] = to[0] + valueObj.unit;
+      });
+    }
+    else if(containsProps) {
+      var startTime = document.timeline.currentTime;
+      var endTime = startTime + duration;
+      requestAnimationFrame(function(curTime){
+        step(curTime, el, elProps, startTime, endTime, elAnimateIdx, function(aborted){
+          completeCnt++;
+          if(!aborted) hasSuccess = true;
+          if(hasSuccess && (completeCnt === _el.length)) callback();
         });
-      }
-      else {
-        _.each(elProps, function(value, key) {
-          var to = value.to;
-          var unit = value.unit || '';
-          if(to.length === 1){
-            el.style[key] = (to[0]).toString() + unit;
-          }
-          else{ // I no like
-            el.style[key] = ('rgba(' + to[0] + ', ' + to[1] + ', ' + to[2] + ', ' + to[3] + ')').toString();
-          }
-        });
-      }
+      });
     }
   });
   if(duration <= 0) callback();
+};
+
+/**
+ * Animate the height of one or more elements
+ * @param {overloaded} tgt    - this can be a XDom obj, element, selector string, or array of elements of which to be animated
+ * @param {overloaded} to     - a boolean or number (true: extend to scrollheight, false: retract to height 0, null/undefined: toggle(true/false))
+ * @param {function} callback - callback called after animation is complete
+ * @param {Number} duration   - durration of animation in ms
+ * @returns undefined
+ */
+XDom.animate.height = function(tgt, to, callback, duration){
+  if(!callback) callback = function(){};
+  var xdobj = XDom(tgt);
+  var _el = xdobj.select();
+  if(_el.length != 1) {_.map(_el, function(el){ XDom.animate.height(el, to, callback, duration); }); return; }
+  duration = duration || 500;
+
+  var resetOverflow = false;
+  var isVisible = xdobj.isVisible();
+  if(to === null || to === undefined) to = !isVisible;
+
+  if(to) {
+    if(!isVisible){
+      resetOverflow = xdobj.style.overflow || true;
+      xdobj.style.overflow = 'hidden';
+      xdobj.style.display = true;
+    }
+    if(to === true) to = _el[0].scrollHeight;
+  }
+  else {
+    to = 0;
+    resetOverflow = xdobj.style.overflow || true;
+    xdobj.style.overflow = 'hidden';
+  }
+
+  xdobj.animate({height: to+'px'}, duration, function(){
+    if(resetOverflow) xdobj.style.overflow = (resetOverflow === true) ? '' : resetOverflow;
+    if(!to) xdobj.style.display = false;
+    callback();
+  });
+};
+
+/**
+ * Animate the opacity of one or more elements
+ * @param {overloaded} tgt    - this can be a XDom obj, element, selector string, or array of elements of which to be animated
+ * @param {overloaded} to     - a boolean or number (true: opacity=1, false: opacity=0, null/undefined: toggle)
+ * @param {function} callback - callback called after animation is complete
+ * @param {Number} duration   - durration of animation in ms
+ * @returns undefined
+ */
+XDom.animate.opacity = function(tgt, to, callback, duration){
+  if(!callback) callback = function(){};
+  var xdobj = XDom(tgt);
+  var _el = xdobj.select();
+  if(_el.length != 1) {_.map(_el, function(el){ XDom.animate.opacity(el, to, callback, duration); }); return; }
+  duration = duration || 500;
+  
+  var isVisible = xdobj.isVisible();
+  if(to === null || to === undefined) to = !isVisible;
+
+  if(to) {
+    if(!isVisible) xdobj.style.display = true;
+    if(to === true) to = 1;
+  }
+  else {
+    to = 0;
+  }
+
+  xdobj.animate({opacity: to}, duration, function(){
+    if(!to) xdobj.style.display = false;
+    callback();
+  });
 };
