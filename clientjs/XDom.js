@@ -853,10 +853,11 @@ XDom.animate = function(target, props, duration, callback) {
   });
   if(duration <= 0) callback();
 };
+
 /**
  * Animate the height of one or more elements
- * @param {any} tgt           - this can be a selector string, element, or array of elements of which to be animated
- * @param {any} to            - a boolean or number (true: extend to scrollheight, false: retract to height 0, null/undefined: toggle(true/false))
+ * @param {overloaded} tgt    - this can be a XDom obj, element, selector string, or array of elements of which to be animated
+ * @param {overloaded} to     - a boolean or number (true: extend to scrollheight, false: retract to height 0, null/undefined: toggle(true/false))
  * @param {function} callback - callback called after animation is complete
  * @param {Number} duration   - durration of animation in ms
  * @returns undefined
@@ -864,44 +865,67 @@ XDom.animate = function(target, props, duration, callback) {
 XDom.animate.height = function(tgt, to, callback, duration){
   if(!callback) callback = function(){};
   duration = duration || 500;
-  XDom.setStyle(tgt, 'overflow', 'hidden'); // first set overflow to hidden
-  function extend(height) {
+  XDom.setStyle(tgt, 'overflow', 'hidden');
+  var wasCalled = false;
+  if(to === true) { // to === true (extend height: scrollHeight)
     XDom.style.display(tgt, true);
-    var _el = XDom.resolve(tgt);
-    var wasCalled = false;
-    for(var i=0;i<_el.length;i++){ //get the scrollheight of our target(s)
-      //animate to the scroll height. On complete set overflow to auto (up for debate). Procced with callback.
-      if(height || height === 0) XDom.animate(_el[i], {height: height + 'px'}, duration, function(){
+    XDom.select(tgt).forEach(function(el){
+      XDom.animate(el, {height: el.scrollHeight+'px'}, duration, function(){
+        XDom.setStyle(el, 'overflow', 'auto');
         if(wasCalled) return;
         wasCalled = true;
-        XDom.setStyle(_el[i], 'overflow', 'auto');
         callback();
       });
-      else XDom.animate(_el[i], {height: _el[i].scrollHeight + 'px'}, duration, function(){
-        if(wasCalled) return;
-        wasCalled = true;
-        XDom.setStyle(_el[i], 'overflow', 'auto');
-        callback();
-      });
-    }
+    });
+    return;
   }
-  function retract() {
-    //animate to height 0. On complete hide the target, set overflow to auto (up for debate). Procced with callback.
-    XDom.animate(tgt, {height: 0 + 'px'}, duration, function(){ XDom.style.display(tgt, false); XDom.setStyle(tgt, 'overflow', 'auto'); callback();});
+  if(to === null || to === undefined) { // toggle height: 0 or scrollHeight (based it on visibility)
+    XDom.select(tgt).forEach(function(el){
+      if(XDom.isVisible(el)) {
+        XDom.animate(el, {height: 0+'px'}, duration, function(){ // height: 0
+          XDom.setStyle(el, 'overflow', 'auto');
+          XDom.style.display(el, false);
+          if(wasCalled) return;
+          wasCalled = true;
+          callback();
+        });
+      }
+      else {
+        XDom.style.display(el, true);
+        XDom.animate(el, {height: el.scrollHeight+'px'}, duration, function(){ // height: scrollHeight
+          XDom.setStyle(el, 'overflow', 'auto');
+          if(wasCalled) return;
+          wasCalled = true;
+          callback();
+        });
+      }
+    });
+    return;
   }
-  if(to === true) return extend();
-  if(to === null || to === undefined) {
-    var xdTarget = XDom(tgt);
-    if(xdTarget.filter(XDom.isVisible).length == xdTarget.length) return retract(); // if all targets are visible: retract
-    else return extend(); // if at least one of the targets is hidden: extend
+  if(!to) { // on false(0 inclusive) retract to height 0
+    XDom.animate(tgt, {height: 0+'px'}, duration, function(){
+      XDom.setStyle(tgt, 'overflow', 'auto');
+      XDom.style.display(tgt, false);
+      if(wasCalled) return;
+      wasCalled = true;
+      callback();
+    });
+    return;
   }
-  if(!to) return retract();  // includes 0, but works the same way as numeric zero (also allows for expected results on our toggle "null")
-  return extend(to);
+  // set height to numeric height in px
+  XDom.style.display(tgt, true);
+  XDom.animate(tgt, {height: to+'px'}, duration, function(){
+    XDom.setStyle(tgt, 'overflow', 'auto');
+    if(wasCalled) return;
+    wasCalled = true;
+    callback();
+  });
+  return;
 };
 /**
  * Animate the opacity of one or more elements
- * @param {any} tgt           - this can be a selector string, element, or array of elements of which to be animated
- * @param {any} to            - a boolean or number (true: opacity=1, false: opacity=0, null/undefined: toggle (true/false))
+ * @param {overloaded} tgt    - this can be a XDom obj, element, selector string, or array of elements of which to be animated
+ * @param {overloaded} to     - a boolean or number (true: opacity=1, false: opacity=0, null/undefined: toggle)
  * @param {function} callback - callback called after animation is complete
  * @param {Number} duration   - durration of animation in ms
  * @returns undefined
@@ -915,15 +939,17 @@ XDom.animate.opacity = function(tgt, to, callback, duration){
     return xdTarget.animate({opacity: 1}, duration, callback);
   }
   if(to === null || to === undefined) {
-    if(xdTarget.filter(XDom.isVisible).length == xdTarget.length) {
-      return xdTarget.animate({opacity: 0}, duration, function(){xdTarget.style.display= false; callback(); }); // if all targets are visible: fadeOut
-    }
-    else{
-      xdTarget.style.display = true;
-      return xdTarget.animate({opacity: 1}, duration, callback); // if at least one of the targets is hidden: reveal
-    }
+    var wasCalled = false;
+    xdTarget.select().forEach(function(el){
+      if(XDom.isVisible(el)) XDom.animate(el, {opacity: 0}, duration, function(){ XDom.style.display(el, false); if(wasCalled) return; wasCalled = true; callback(); });
+      else {
+        XDom.style.display(el, true);
+        XDom.animate(el, {opacity: 1}, duration, function(){ if(wasCalled) return; wasCalled = true; callback(); });
+      }
+    });
+    return;
   }
-  if(!to) return xdTarget.animate({opacity: 0}, duration, function(){xdTarget.style.display = false; callback(); }); // includes 0, but works the same way as numeric zero
+  if(!to) return xdTarget.animate({opacity: 0}, duration, function(){ xdTarget.style.display = false; callback(); }); // includes 0, but works the same way as numeric zero
   xdTarget.style.display = true;
   return xdTarget.animate({opacity: to}, duration, callback);
 };
