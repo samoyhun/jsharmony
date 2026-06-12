@@ -716,61 +716,37 @@ XDom.calc = {
 };
 XDom.calc.width = XDom.calc.widthToContent;
 XDom.calc.height = XDom.calc.heightToContent;
+
 /**
  * parseStyleUnit parses a style string and returns an obj with a value and a unit. Returns null if
  * unable to properly extract a value or unit from style string.
- * @param {String} value - A style string like '100px' or 'rgba(12, 53, 67, 0.5)' or '1' (opacity)
+ * @param {String} str - A style string like '100px' or 'rgba(12, 53, 67, 0.5)' or '1' (opacity)
  * @returns {Object}
  */
-function parseStyleUnit(value) {
-  if (value == null) return null;
-  var vals = [];
-  var tempArray = [];
-  var unit = null;
-  value = value.replaceAll(' ', '');
-  if(value.indexOf('rgb')===0){     // rbg || rgba
-    tempArray = value.replace(')', '').split('(');
-    vals = tempArray[1].split(',');
-    if(tempArray[0] === 'rgb') vals.push('1');  // normalize to rgba
-    unit = 'rgba';
-  } else if(value.indexOf('#')===0){
-    value = value.replace('#', '');
-    vals = value.match(/.{1,2}/g);
-    if(value.length === 6) vals.push('FF');     // normalize to rgba
-    vals = vals.map(function(hex){return '0x' + hex;});
-    vals[3] = Number(vals[3])/255;  // alpha ratio
-    unit = 'rgba';
+function parseStyleUnit(str) {
+  if (str == null) return null;
+  str = str.toString().trim();
+  if(str.indexOf('rgb')===0){     // rbg || rgba
+    var idxParamStart = str.indexOf('(');
+    var idxParamEnd = str.indexOf(')');
+    if((idxParamStart < 0) || (idxParamEnd < 0)) return null;
+    str = str.substring(idxParamStart+1, idxParamEnd);
+    if(!str) return null;
+    var rgba = _.map(str.split(','), function(val){ return Number(val.trim()); });
+    if(rgba.length == 3) rgba.push(1);
+    return {val: rgba, unit: 'rgba'};
+  } else if(str.indexOf('#')===0){
+    var hexrgba = [str.substring(1,3),str.substring(3,5),str.substring(5,7)];
+    hexrgba.push((str.length > 8) ? str.substring(7, 9) : 'FF');
+    hexrgba = _.map(hexrgba, function(val){ return Number('0x'+val); });
+    hexrgba[3] /= hexrgba[3]/255;
+    return {val: hexrgba, unit: 'rgba'};
   }
   else{
-    tempArray = value.match(/(^-?\d+(?:\.\d+)?)([a-zA-Z%]+)?$/);
-    if(tempArray === null){         // if there is no match, make a last attempt for a result
-      var testval = Number(value);
-      if(isNaN(testval)) return null;
-      vals = [testval];
-      unit = null;
-    }
-    else{
-      vals = [tempArray[1]];
-      unit = tempArray[2];
-    }
+    var matches = str.match(/(^-?\d+(?:\.\d+)?)([a-zA-Z%]+)?$/);
+    if(!matches) return null;
+    return {val: [Number(matches[1])], unit: matches[2] || ''};
   }
-  vals = vals.map(Number);
-  return {val: vals, unit: unit};
-}
-
-/**
- * vectorOpp returns a progress vector of style values
- * @param {Array} from        - original starting style array of element(s)
- * @param {Array} to          - desired final style array of elements(s)
- * @param {Number} derivative  - rate of change
- * @returns {Array}
- */
-function vectorOpp(from, to, derivative){
-  var progressVector = [];
-  progressVector = to.map(function(num, idx) { return num - from[idx]; });              // to - from
-  progressVector = progressVector.map(function(num) { return num * derivative; });      // (to - from) * (curtime-starttime)/duration
-  progressVector = progressVector.map(function(num, idx) { return num + from[idx]; });  // ((to - from) * (curtime-starttime)/duration) + from
-  return progressVector;
 }
 
 function step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete) {
@@ -780,14 +756,9 @@ function step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete
   if(elAnimateIdx <= xdom_animatestopidx) return onComplete(true);
   else {
     _.each(elProps, function(value, key) {
-      var from = value.from;
-      var to = value.to;
-      var unit = value.unit || '';
-      var progressVec = [];
-      if(inProgress) progressVec = vectorOpp(from, to, ((curTime-startTime)/duration));
-      else progressVec = to;
-      if(unit == 'rgba') el.style[key] = 'rgba(' + progressVec[0] + ', ' + progressVec[1] + ', ' + progressVec[2] + ', ' + progressVec[3] + ')';
-      else el.style[key] = progressVec[0] + unit;
+      var progressVec = inProgress ? value.from.map(function(fromX, idx){ return fromX + (value.to[idx] - fromX) * ((curTime-startTime)/duration); }) : value.to;
+      if(value.unit == 'rgba') el.style[key] = 'rgba(' + progressVec[0] + ', ' + progressVec[1] + ', ' + progressVec[2] + ', ' + progressVec[3] + ')';
+      else el.style[key] = progressVec[0] + value.unit;
     });
     if(inProgress){
       requestAnimationFrame(function(curTime){
@@ -834,9 +805,8 @@ XDom.animate = function(target, props, duration, callback) {
     if(duration <= 0 && containsProps){
       _.each(elProps, function(valueObj, key) {
         var to = valueObj.to;
-        var unit = valueObj.unit || '';
-        if(unit === 'rgba') el.style[key] = 'rgba(' + to[0] + ', ' + to[1] + ', ' + to[2] + ', ' + to[3] + ')';
-        else el.style[key] = to[0] + unit;
+        if(valueObj.unit === 'rgba') el.style[key] = 'rgba(' + to[0] + ', ' + to[1] + ', ' + to[2] + ', ' + to[3] + ')';
+        else el.style[key] = to[0] + valueObj.unit;
       });
     }
     else if(containsProps) {
@@ -864,64 +834,36 @@ XDom.animate = function(target, props, duration, callback) {
  */
 XDom.animate.height = function(tgt, to, callback, duration){
   if(!callback) callback = function(){};
+  var xdobj = XDom(tgt);
+  var _el = xdobj.select();
+  if(_el.length != 1) return _.map(_el, function(el){ XDom.animate.height(el, to, callback, duration); });
   duration = duration || 500;
-  XDom.setStyle(tgt, 'overflow', 'hidden');
-  var wasCalled = false;
-  if(to === true) { // to === true (extend height: scrollHeight)
-    XDom.style.display(tgt, true);
-    XDom.select(tgt).forEach(function(el){
-      XDom.animate(el, {height: el.scrollHeight+'px'}, duration, function(){
-        XDom.setStyle(el, 'overflow', 'auto');
-        if(wasCalled) return;
-        wasCalled = true;
-        callback();
-      });
-    });
-    return;
+
+  var resetOverflow = false;
+  var isVisible = xdobj.isVisible();
+  if(to === null || to === undefined) to = !isVisible;
+
+  if(to) {
+    if(!isVisible){
+      resetOverflow = xdobj.style.overflow || true;
+      xdobj.style.overflow = 'hidden';
+      xdobj.style.display = true;
+    }
+    if(to === true) to = _el[0].scrollHeight;
   }
-  if(to === null || to === undefined) { // toggle height: 0 or scrollHeight (based it on visibility)
-    XDom.select(tgt).forEach(function(el){
-      if(XDom.isVisible(el)) {
-        XDom.animate(el, {height: 0+'px'}, duration, function(){ // height: 0
-          XDom.setStyle(el, 'overflow', 'auto');
-          XDom.style.display(el, false);
-          if(wasCalled) return;
-          wasCalled = true;
-          callback();
-        });
-      }
-      else {
-        XDom.style.display(el, true);
-        XDom.animate(el, {height: el.scrollHeight+'px'}, duration, function(){ // height: scrollHeight
-          XDom.setStyle(el, 'overflow', 'auto');
-          if(wasCalled) return;
-          wasCalled = true;
-          callback();
-        });
-      }
-    });
-    return;
+  else {
+    to = 0;
+    resetOverflow = xdobj.style.overflow || true;
+    xdobj.style.overflow = 'hidden';
   }
-  if(!to) { // on false(0 inclusive) retract to height 0
-    XDom.animate(tgt, {height: 0+'px'}, duration, function(){
-      XDom.setStyle(tgt, 'overflow', 'auto');
-      XDom.style.display(tgt, false);
-      if(wasCalled) return;
-      wasCalled = true;
-      callback();
-    });
-    return;
-  }
-  // set height to numeric height in px
-  XDom.style.display(tgt, true);
-  XDom.animate(tgt, {height: to+'px'}, duration, function(){
-    XDom.setStyle(tgt, 'overflow', 'auto');
-    if(wasCalled) return;
-    wasCalled = true;
+
+  xdobj.animate({height: to+'px'}, duration, function(){
+    if(resetOverflow) xdobj.style.overflow = (resetOverflow === true) ? '' : resetOverflow;
+    if(!to) xdobj.style.display = false;
     callback();
   });
-  return;
 };
+
 /**
  * Animate the opacity of one or more elements
  * @param {overloaded} tgt    - this can be a XDom obj, element, selector string, or array of elements of which to be animated
@@ -932,24 +874,24 @@ XDom.animate.height = function(tgt, to, callback, duration){
  */
 XDom.animate.opacity = function(tgt, to, callback, duration){
   if(!callback) callback = function(){};
+  var xdobj = XDom(tgt);
+  var _el = xdobj.select();
+  if(_el.length != 1) return _.map(_el, function(el){ XDom.animate.opacity(el, to, callback, duration); });
   duration = duration || 500;
-  var xdTarget = XDom(tgt);
-  if(to === true){
-    xdTarget.style.display = true;
-    return xdTarget.animate({opacity: 1}, duration, callback);
+  
+  var isVisible = xdobj.isVisible();
+  if(to === null || to === undefined) to = !isVisible;
+
+  if(to) {
+    if(!isVisible) xdobj.style.display = true;
+    if(to === true) to = 1;
   }
-  if(to === null || to === undefined) {
-    var wasCalled = false;
-    xdTarget.select().forEach(function(el){
-      if(XDom.isVisible(el)) XDom.animate(el, {opacity: 0}, duration, function(){ XDom.style.display(el, false); if(wasCalled) return; wasCalled = true; callback(); });
-      else {
-        XDom.style.display(el, true);
-        XDom.animate(el, {opacity: 1}, duration, function(){ if(wasCalled) return; wasCalled = true; callback(); });
-      }
-    });
-    return;
+  else {
+    to = 0;
   }
-  if(!to) return xdTarget.animate({opacity: 0}, duration, function(){ xdTarget.style.display = false; callback(); }); // includes 0, but works the same way as numeric zero
-  xdTarget.style.display = true;
-  return xdTarget.animate({opacity: to}, duration, callback);
+
+  xdobj.animate({opacity: to}, duration, function(){
+    if(!to) xdobj.style.display = false;
+    callback();
+  });
 };
