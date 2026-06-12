@@ -461,15 +461,14 @@ exports = module.exports = function(jsh){
     this.qExecute(this.PrepExecute('get',this.url,this.Data,{},onComplete,onFail));
   };
   XForm.prototype.ExecuteTrans = function (DBTasks, onComplete, onFail) {
-    // TODO: $.param serialization
     var execdata = [];
     for (var i = 0; i < DBTasks.length; i++) {
       var dbtask = DBTasks[i];
       execdata.push({
         method: dbtask.method,
         model: dbtask.model,
-        query: $.param(dbtask.query),
-        post: $.param(dbtask.post)
+        query: jsh.XExt.escapeQuery(dbtask.query),
+        post: jsh.XExt.escapeQuery(dbtask.post)
       });
     }
     var final_onComplete = function (rslt) {
@@ -483,7 +482,7 @@ exports = module.exports = function(jsh){
       'method': 'post',
       'model': '_transaction',
       'query': {},
-      'post': $.param({ data: JSON.stringify(execdata) }),
+      'post': jsh.XExt.escapeQuery({ data: JSON.stringify(execdata) }),
       'onComplete': final_onComplete
     };
     if (onFail) execparams.onFail = onFail;
