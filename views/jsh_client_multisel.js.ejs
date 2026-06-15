@@ -76,33 +76,38 @@ if(lovfield == '') throw new Error('Multisel requires one LOV.');
       jsh.xLoader.StartLoading(xgrid);
       var _query = '';
       if(!_.isEmpty(execparams)) _query = '?'+jsh.XExt.escapeQuery(execparams);
-      jsh.$.ajax({
-        type:"GET",
-        cache: false,
-        url:jsh._BASEURL+'_d/'+xgrid.modelid+'/'+_query,
-        dataType: 'json',
-        success:function(data){
-          if((data instanceof Object) && ('_error' in data)){
-            if(jsh.DefaultErrorHandler(data['_error'].Number,data['_error'].Message)) { }
-            else if(data._error.Number == -9){ jsh.XExt.Alert(data._error.Message); }
-            else { jsh.XExt.Alert('Error #'+data._error.Number+': '+data._error.Message); }
-          }
-          else{
-            var ejssource = jsh.XDom(jsh.xdroot, xgrid.TemplateID).select()[0].innerHTML;
-            ejssource = ejssource.replace(/<#/g,'<'+'%').replace(/#>/g,'%'+'>')
-            if('_title' in data) xgrid.title = data._title;
-            var ejsrslt = jsh.XExt.renderEJS(ejssource, modelid, {
-              datatable:data[xgrid.modelid]
-            });
-            jsh.XDom(jsh.xdroot, xgrid.PlaceholderID).content.replace(ejsrslt);
-
-            //Attach events
-            jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class).on('keyup', function(){ if(!jsh.XDom.class.contains(this, 'editable')) return; xcontroller.OnControlUpdate(this); });
-            jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.checkbox').on('change', function(){ if(!jsh.XDom.class.contains(this, 'editable')) return; xcontroller.OnControlUpdate(this); });
-          }
-          jsh.xLoader.StopLoading(xgrid);
-          if(onComplete) onComplete();
+      fetch(jsh._BASEURL+'_d/'+xgrid.modelid+'/'+_query, {
+        cache: 'no-store',
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).then(function(response){
+        if (!response.ok) {
+          throw new Error('HTTP error! Status: '+response.status);
         }
+
+        return response.json();
+      }).then(function(data){
+        if((data instanceof Object) && ('_error' in data)){
+          if(jsh.DefaultErrorHandler(data['_error'].Number,data['_error'].Message)) { }
+          else if(data._error.Number == -9){ jsh.XExt.Alert(data._error.Message); }
+          else { jsh.XExt.Alert('Error #'+data._error.Number+': '+data._error.Message); }
+        }
+        else{
+          var ejssource = jsh.XDom(jsh.xdroot, xgrid.TemplateID).select()[0].innerHTML;
+          ejssource = ejssource.replace(/<#/g,'<'+'%').replace(/#>/g,'%'+'>')
+          if('_title' in data) xgrid.title = data._title;
+          var ejsrslt = jsh.XExt.renderEJS(ejssource, modelid, {
+            datatable:data[xgrid.modelid]
+          });
+          jsh.XDom(jsh.xdroot, xgrid.PlaceholderID).content.replace(ejsrslt);
+
+          //Attach events
+          jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class).on('keyup', function(){ if(!jsh.XDom.class.contains(this, 'editable')) return; xcontroller.OnControlUpdate(this); });
+          jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.checkbox').on('change', function(){ if(!jsh.XDom.class.contains(this, 'editable')) return; xcontroller.OnControlUpdate(this); });
+        }
+        jsh.xLoader.StopLoading(xgrid);
+        if(onComplete) onComplete();
       });
     };
 
