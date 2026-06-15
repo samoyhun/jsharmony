@@ -146,7 +146,6 @@ var jsHarmony = function(options){
   this.xDialogLoader = null;
   this.xDebugConsole = null;
   this.xDialog = [];
-  this.xPopupStack = [];
   this.xfileuploadLoader = null;
   this.appStartTime = Date.now();
   this.pageStartTime = Date.now();
@@ -543,7 +542,8 @@ jsHarmony.prototype.InitFileUpload = function () {
   this.xfileuploadLoader = new Object();
   this.root.append(
     '<div style="display:none;">\
-      <div class="xfileuploader colorbox_inline" align="center" style="height:80px;"><div style="position:relative;">\
+      <div class="xdialogbox xfileuploader colorbox_inline" align="center" style="height:100px;"><div style="position:relative;">\
+        <strong class="title"></strong\
         <form class="xfileuploader_form" enctype="multipart/form-data" method="post" target="'+this.getInstance()+'_xfileproxy">\
           <input type="hidden" name="MAX_FILE_SIZE" value="'+this.Config.max_filesize+'" />\
           <input type="hidden" name="prevtoken" class="xfileuploader_prevtoken" value="" />\
@@ -556,7 +556,7 @@ jsHarmony.prototype.InitFileUpload = function () {
               <td></td>\
               <td style="padding-top:10px;">\
                 <a class="linkbutton" style="padding-right:15px;" href="#" onClick="'+this.getInstance()+'.XPage.FileUploadSubmit();return false;"><img src="'+this._PUBLICURL+'images/icon_ok.png" alt="Upload" title="Upload" />Upload</a>\
-                <a class="linkbutton" href="javascript:'+this.getInstance()+'.$.colorbox.close()"><img src="'+this._PUBLICURL+'images/icon_cancel.png" alt="Cancel" title="Cancel" />Cancel</a></td>\
+                <a class="linkbutton" href="javascript:'+this.getInstance()+'.XExt.CancelDialog()"><img src="'+this._PUBLICURL+'images/icon_cancel.png" alt="Cancel" title="Cancel" />Cancel</a></td>\
             </tr>\
           </table>\
         </form>\
@@ -580,7 +580,7 @@ jsHarmony.prototype.requireHTML5 = function(){
         </div>\
       </div>\
       ';
-      _this.XExt.CustomPrompt('.Menu_InsertPopup', content);
+      _this.XExt.CustomPrompt(null, content);
     }
   });
 };

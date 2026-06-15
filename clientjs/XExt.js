@@ -2145,7 +2145,7 @@ exports = module.exports = function(jsh){
       },
       function(){
         bindDialogHandler(xdobj.select('input.button_ok'), 'click', function(){ acceptfunc(); });
-
+        bindDialogHandler(xdobj.select('a.close'), 'click', function(){ cancelfunc(); });
         bindDialogHandler(xdobj.select('input.button_cancel'), 'click', function(){ cancelfunc(); });
         bindDialogHandler(xdobj, 'acceptDialog', function(){ acceptfunc(); });
         bindDialogHandler(xdobj, 'cancelDialog', function(){ cancelfunc(); });
@@ -2318,7 +2318,7 @@ exports = module.exports = function(jsh){
     var parentobj = options.parentobj;
     var obj = options.obj;
 
-    var parentmodelid = $(obj).data('model');
+    var parentmodelid = XDom.getData(obj, 'model');
     var parentmodelclass = parentmodelid;
     var parentfield = null;
     var parentmodel = null;
@@ -2339,7 +2339,7 @@ exports = module.exports = function(jsh){
     if(parentmodelclass) POPUP_CONTAINER += '.xelem' + parentmodelclass;
     if(options.container) POPUP_CONTAINER = options.container;
 
-    if (!parentobj) parentobj = jsh.$root(POPUP_CONTAINER);
+    if (!parentobj) parentobj = XDom(jsh.xdroot, POPUP_CONTAINER);
     var numOpens = 0;
     var xmodel = jsh.XModels[modelid];
 
@@ -2347,118 +2347,58 @@ exports = module.exports = function(jsh){
     XExt.execif(parentfield && parentfield.controlparams && parentfield.controlparams.onpopup,
       function (f) { parentfield.controlparams.onpopup(modelid, parentmodelid, fieldname, f); },
       function () {
-        var code_val = $(obj).data('code_val');
+        var code_val = XDom.getData(obj, 'code_val');
         if (code_val) popupData[modelid].code_val = code_val;
         var xgrid = xmodel.controller.grid;
         var xform = xmodel.controller.form;
         if(xgrid){
           xgrid.RowCount = 0;
           if (xgrid.Prop) xgrid.Prop.Enabled = true;
-          jsh.$root(xgrid.PlaceholderID).html('');
+          XDom.content.replace(jsh.xdroot.select(xgrid.PlaceholderID), '');
         }
         if(xform && xform.Prop){ xform.Prop.Enabled = true; }
         var orig_jsh_ignorefocusHandler = jsh.ignorefocusHandler;
         jsh.ignorefocusHandler = true;
-        var popup_options = {};
-        popup_options = {
-          modelid: modelid,
-          href: POPUP_CONTAINER,
-          inline: true, closeButton: true, arrowKey: false, preloading: false, overlayClose: true, fixed: true,
-          title: title,
-          trapFocus: false,
-          fadeOut:0,
-          onOpen: function () {
-          //When nested popups are called, onOpen is not called
-          },
-          onComplete: function () {
-            if (options.OnPopupOpen) if(options.OnPopupOpen(popupData[modelid])===false) return;
-            numOpens++;
-            if(xgrid && (numOpens==1)) xgrid.Select();
-            if (jsh.$root(POPUP_CONTAINER + ' .xsearch_value').first().is(':visible')){
-              jsh.$root(POPUP_CONTAINER + ' .xsearch_value').first().focus();
-            }
-            else if (jsh.$root(POPUP_CONTAINER).$find('td a').length) jsh.$root(POPUP_CONTAINER).$find('td a').first().focus();
-          //else jsh.$root(POPUP_CONTAINER).$find('input,select,textarea').first().focus();
-          },
-          onClosed: function () {
-            var found_popup = false;
-            for(var i=jsh.xPopupStack.length-1;i>=0;i--){
-              if(jsh.xPopupStack[i].modelid==modelid){ jsh.xPopupStack.splice(i,1); found_popup = true; break; }
-            }
-            if(!found_popup) {
-              alert('ERROR - Invalid Popup Stack');
-              console.log(modelid); // eslint-disable-line no-console
-              console.log(jsh.xPopupStack); // eslint-disable-line no-console
-            }
-
-            if(jsh.xPopupStack.length) $.colorbox(jsh.xPopupStack[jsh.xPopupStack.length-1]);
-
-            if (parentobj && (typeof popupData[modelid].result !== 'undefined')) {
-              if(parentmodel && parentfield && parentfield.name) parentmodel.set(parentfield.name, popupData[modelid].result, null);
-              else parentobj.val(popupData[modelid].result);
-              if (popupData[modelid].resultrow && parentfield && parentfield.controlparams && parentfield.controlparams.popup_copy_results) {
-                for (var fname in parentfield.controlparams.popup_copy_results) {
-                  parentmodel.set(fname, popupData[modelid].resultrow[parentfield.controlparams.popup_copy_results[fname]], null);
-                }
-              }
-              if (options.OnControlUpdate) options.OnControlUpdate(parentobj[0], popupData[modelid]);
-            }
-            if (options.OnPopupClosed) options.OnPopupClosed(popupData[modelid]);
-            if (parentobj) parentobj.focus();
-            jsh.ignorefocusHandler = orig_jsh_ignorefocusHandler;
-            if(xgrid && xgrid.Prop){ xgrid.Prop.Enabled = false; }
-            if(xform && xform.Prop){ xform.Prop.Enabled = false; }
-          },
-        };
-        var xsubform = $(popup_options.href).filter('.xsubform');
-        if(xsubform.length){
-          xsubform.css('max-height',($(window).height()-100)+'px');
-          xsubform.css('display','block');
-          xsubform.css('overflow','auto');
-        }
-        jsh.xPopupStack.push(popup_options);
-
-        /**
-         * Colorbox => CustomPrompt         Done  ||  Not-Done
-         * title => NA                       xx   ||  
-         * href => sel                       xx   ||     
-         * inline => NA                           ||    xx
-         * closeButton => NA                      ||    xx
-         * arrowKey => NA                         ||    xx
-         * preloading => NA                       ||    xx
-         * overlayClose => backgroundClose        ||    xx
-         * fixed => Native                   xx   ||
-         * trapFocus => Native               xx   ||
-         * fadeOut => NA                          ||    xx
-         * onOpen =>                              ||    xx
-         * onComplete => onInit              xx   ||
-         * onClosed => onClosed              xx   ||
-         * escKey                                 ||    xx
-         * opacity                                ||    xx
-         * html                              xx   ||
-         */
-        var onInit = popup_options.onComplete;
-        var onClosed = popup_options.onClosed;
-        var template = XExt.renderTemplate('.template_xpopup');
-        template.content.append(jsh.XDom.selectOne(POPUP_CONTAINER).innerHTML);
-        
-        // Title
-        if(popup_options.title) XDom.content.prepend(template.select('.header'), '<strong>' + title + '</strong>');
-        // CloseButton
-        if(popup_options.closeButton) {
-          var xdHeader = XDom(template, '.header');
-          xdHeader.content.append('<a style="float: right"><img src="' +jsh._PUBLICURL+ 'images/icon_delete.png"></a>');
-          var handler = function(){ 
-            XExt.CancelDialog();
-            XDom.off(xdHeader.selectOne('a'), 'click', handler);
+        var onInit = function () {
+          if (options.OnPopupOpen) if(options.OnPopupOpen(popupData[modelid])===false) return;
+          numOpens++;
+          if(xgrid && (numOpens==1)) xgrid.Select();
+          if (XDom.isVisible(jsh.xdroot.selectOne(POPUP_CONTAINER + ' .xsearch_value'))){
+            XDom.focus(jsh.xdroot.selectOne(POPUP_CONTAINER + ' .xsearch_value'));
           }
-          XDom.on(xdHeader.selectOne('a'), 'click', handler);
+          else if (XDom(jsh.xdroot, POPUP_CONTAINER).select('td a').length) XDom.focus(XDom(jsh.xdroot, POPUP_CONTAINER).selectOne('td a'));
+        //else jsh.$root(POPUP_CONTAINER).$find('input,select,textarea').first().focus();
+        };
+        var onClosed = function () {
+          if (parentobj && (typeof popupData[modelid].result !== 'undefined')) {
+            if(parentmodel && parentfield && parentfield.name) parentmodel.set(parentfield.name, popupData[modelid].result, null);
+            else parentobj.setValue(popupData[modelid].result);
+            if (popupData[modelid].resultrow && parentfield && parentfield.controlparams && parentfield.controlparams.popup_copy_results) {
+              for (var fname in parentfield.controlparams.popup_copy_results) {
+                parentmodel.set(fname, popupData[modelid].resultrow[parentfield.controlparams.popup_copy_results[fname]], null);
+              }
+            }
+            if (options.OnControlUpdate) options.OnControlUpdate(parentobj.selectOne(), popupData[modelid]);
+          }
+          if (options.OnPopupClosed) options.OnPopupClosed(popupData[modelid]);
+          if (parentobj) parentobj.focus();
+          jsh.ignorefocusHandler = orig_jsh_ignorefocusHandler;
+          if(xgrid && xgrid.Prop){ xgrid.Prop.Enabled = false; }
+          if(xform && xform.Prop){ xform.Prop.Enabled = false; }
+        };
+        var xsubform = XDom(POPUP_CONTAINER).filter(function(el){return XDom.class.contains(el, 'xsubform');});
+        if(xsubform.length){
+          xsubform.style.maxHeight = (XDom(window).calc.height()-100)+'px';
+          xsubform.style.display = 'block';
+          xsubform.style.overflow = 'auto';
         }
-                
-        console.log(jsh.XDom.selectOne(POPUP_CONTAINER));
-        console.log('this is template:', template.selectOne());
-        var html = template.selectOne().outerHTML;
-        XExt.CustomPrompt(null, html, onInit, null, null, onClosed, {backgroundClose: true});
+        var element = XDom.selectOne(POPUP_CONTAINER);
+        if(!XDom.class.contains(element, 'xdialogbox')) {
+          XDom.class.add(element, 'xdialogbox');
+          XDom.content.prepend(element, XExt.renderTemplate('.template_xpopup').outerHTML);
+          if(title) XDom(element, '.popup_header').content.prepend('<strong>'+ title + '</strong>');
+        }
+        XExt.CustomPrompt(null, element, onInit, null, null, onClosed, {backgroundClose: true});
       });
   };
 
@@ -2475,7 +2415,7 @@ exports = module.exports = function(jsh){
     popupData[modelid].result = rslt;
     popupData[modelid].rowid = rowid;
     popupData[modelid].resultrow = xmodel.controller.form.DataSet[rowid];
-    $.colorbox.close();
+    XExt.AcceptDialog();
   };
 
   XExt.popupClear = function (modelid, obj) {
@@ -2486,7 +2426,7 @@ exports = module.exports = function(jsh){
     popupData[modelid].result = rslt;
     popupData[modelid].rowid = -1;
     popupData[modelid].resultrow = new xmodel.controller.form.DataType();
-    $.colorbox.close();
+    XExt.AcceptDialog();
   };
 
   XExt.AlertFocus = function (ctrl, msg) {
