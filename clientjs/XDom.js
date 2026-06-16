@@ -412,9 +412,10 @@ XDom.off = function(target, eventType, handler, eventOptions){
   });
 };
 
-XDom.emit = function(target, event){
+XDom.emit = function(target, event, data){
   if (typeof(event) == 'string') {
-    event = new Event(event);
+    if(data) event = new CustomEvent(event, {detail: data}); // TODO: Discuss Usage
+    else event = new Event(event);
   }
   _.each(XDom.resolve(target), function(el){
     if (el && el.dispatchEvent) {

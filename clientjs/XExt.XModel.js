@@ -228,7 +228,7 @@ exports = module.exports = function(jsh){
       }
     }
     else if (('control' in field) && (field.control == 'tree')) {
-      jsh.XExt.TreeSelectNode(jctrl, val, { triggerChange: false });
+      jsh.XExt.TreeSelectNode(jctrl[0], val, { triggerChange: false });
     }
     else if(('control' in field) && (field.control == 'button')){ /* Do nothing */ }
     else if (('control' in field) && (field.control == 'checkbox')) {

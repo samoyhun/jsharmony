@@ -1176,17 +1176,21 @@ exports = module.exports = function(jsh){
     this.LazyRender = false;
   }
 
-  XExt.TreeRender = function (jctrl, LOV, field) {
+  XExt.TreeRender = function (xdctrl, LOV, field) {
+    //TODO: remove below
+    if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
+    //TODO: remove above
+     var ctrl = xdctrl.selectOne();
     //Create Cache of Opened Nodes
-    var firstRender = !jctrl.children().length;
-    var expanded_nodes = XExt.TreeGetExpandedNodes(jctrl);
-    var selected_nodes = XExt.TreeGetSelectedNodes(jctrl);
+    var firstRender = !xdctrl.children.select().length;
+    var expanded_nodes = XExt.TreeGetExpandedNodes(ctrl);
+    var selected_nodes = XExt.TreeGetSelectedNodes(ctrl);
 
     var tree = [];
     var nodes = {};
     var sortednodes = [];
     
-    jctrl.empty();
+    xdctrl.content.clear();
     if (LOV.length == 0) return;
     
     //Create Tree
@@ -1199,8 +1203,8 @@ exports = module.exports = function(jsh){
     //Disable item_dropdown if context menu is empty
     if(controlparams.item_dropdown){
       if(field && field.name){
-        var jcontextmenu = jsh.$root('._item_context_menu_' + field.name);
-        if(!jcontextmenu.length || !jcontextmenu.children().length) controlparams.item_dropdown = false;
+        var xdContextmenu = XDom(jsh.xdroot, '._item_context_menu_' + field.name);
+        if(!xdContextmenu.length || !xdContextmenu.children().length) controlparams.item_dropdown = false;
       }
     }
 
@@ -1230,32 +1234,35 @@ exports = module.exports = function(jsh){
     
     var body = '';
     for (var k = 0; k < tree.length; k++) {
-      body += XExt.TreeRenderNode(jctrl, tree[k], controlparams);
+      body += XExt.TreeRenderNode(ctrl, tree[k], controlparams);
     }
-    var treeid = jctrl.data('treeid');
+    var treeid = xdctrl.data.treeid;
     if(!treeid){
       treeid = 1;
-      while(jsh.$root('[data-treeid='+treeid+']').length) treeid++;
-      jctrl.data('treeid', treeid);
+      while(jsh.xdroot.select('[data-treeid="'+treeid+'"]').length) treeid++;
+      xdctrl.data.treeid = treeid;
     }
-    jctrl.html(body);
+    xdctrl.content.replace(body);
 
     function renderLazy(){
-      var jthis = $(this);
+      var xdthis = XDom(this);
       //Get node id
-      var nodeid = jthis.data('id');
+      var nodeid = xdthis.data.id;
       //Find node by node id
       var node = nodes[nodeid];
       if(!node) return;
       //Render that node
       var childrenHtml = '';
-      _.each(node.Children, function(child){ childrenHtml += XExt.TreeRenderNode(jctrl, child, controlparams); });
-      jthis.removeClass('tree_render_lazy').off('tree_render_lazy');
-      jthis.next('.children').append(childrenHtml);
-      jthis.next('.children').$find('.tree_render_lazy').on('tree_render_lazy', renderLazy);
+      _.each(node.Children, function(child){ childrenHtml += XExt.TreeRenderNode(ctrl, child, controlparams); });
+      xdthis.class.remove('tree_render_lazy')
+      xdthis.off('tree_render_lazy'); // TODO: Fix off handlers
+      xdthis.nextSibling('.children').content.append(childrenHtml);
+      XDom.on(xdthis.nextSibling('.children').select('.tree_render_lazy'), 'tree_render_lazy', renderLazy);
     }
-    jctrl.$find('.tree_render_lazy').on('tree_render_lazy', renderLazy);
-    jctrl.off('tree_path').on('tree_path', function(e, treePathInfo){
+    XDom.on(xdctrl.select('.tree_render_lazy'), 'tree_render_lazy', renderLazy);
+    xdctrl.off('tree_path'); // TODO: Fix off handlers
+    xdctrl.on('tree_path', function(e){
+      treePathInfo = e.detail;
       if(treePathInfo){
         for(var nodeID in nodes){
           var node = nodes[nodeID];
@@ -1274,80 +1281,94 @@ exports = module.exports = function(jsh){
     });
 
     if(firstRender){
-      if (controlparams.expand_all) XExt.TreeExpandAll(jctrl);
-      else if (controlparams.expand_to_selected) XExt.TreeExpandToSelected(jctrl);
+      if (controlparams.expand_all) XExt.TreeExpandAll(xdctrl);
+      else if (controlparams.expand_to_selected) XExt.TreeExpandToSelected(ctrl);
     }
-    if(controlparams.ondrop) XExt.TreeEnableDrop(jctrl, controlparams.ondrop, controlparams.drag_anchor_settings);
-    if(controlparams.onmove) XExt.TreeEnableDrag(jctrl, controlparams.onmove, controlparams.drag_anchor_settings);
+    if(controlparams.ondrop) XExt.TreeEnableDrop(xdctrl, controlparams.ondrop, controlparams.drag_anchor_settings);
+    if(controlparams.onmove) XExt.TreeEnableDrag(xdctrl, controlparams.onmove, controlparams.drag_anchor_settings);
   };
 
   //ondrop(dropval, anchor, e)
-  XExt.TreeEnableDrop = function (jctrl, ondrop, drag_anchor_settings) {
-    var jtreeitems = jctrl.$find('a.tree_item');
-    _.each(jtreeitems, function(obj){
-      var jobj = $(obj);
+  XExt.TreeEnableDrop = function (xdctrl, ondrop, drag_anchor_settings) {
+    var _treeitems = xdctrl.select('a.tree_item');
+    _.each(_treeitems, function(obj){
+      var xdobj = XDom(obj);
       var dragCounter = 0;
-      jobj.on('dragenter', function(e){
+      xdobj.on('dragenter', function(e){
         dragCounter++;
-        if(!jobj.hasClass('xdragtarget')) jobj.addClass('xdragtarget');
+        if(!xdobj.class.contains('xdragtarget')) xdobj.class.add('xdragtarget');
         e.preventDefault();
         e.stopPropagation();
       });
-      jobj.on('dragleave', function(e){
+      xdobj.on('dragleave', function(e){
         dragCounter--;
         if(dragCounter <= 0){
           dragCounter = 0;
-          jobj.removeClass('xdragtarget').removeClass('xdragtop').removeClass('xdragbottom').removeClass('xdragfull').removeClass('xdragleft').removeClass('xdragright');
+          xdobj.class.remove('xdragtarget');
+          xdobj.class.remove('xdragtop');
+          xdobj.class.remove('xdragbottom');
+          xdobj.class.remove('xdragfull');
+          xdobj.class.remove('xdragleft');
+          xdobj.class.remove('xdragright');
         }
         e.preventDefault();
         e.stopPropagation();
       });
-      jobj.on('dragover', function(e){
+      xdobj.on('dragover', function(e){
         var targetAnchor = XExt.getObjectAnchors(this, jsh.mouseX, jsh.mouseY, drag_anchor_settings);
   
-        jobj.removeClass('xdragtop').removeClass('xdragbottom').removeClass('xdragfull').removeClass('xdragleft').removeClass('xdragright');
-        if(targetAnchor[0]=='left') jobj.addClass('xdragleft');
-        else if(targetAnchor[0]=='right') jobj.addClass('xdragright');
+        xdobj.class.remove('xdragtop');
+        xdobj.class.remove('xdragbottom');
+        xdobj.class.remove('xdragfull');
+        xdobj.class.remove('xdragleft');
+        xdobj.class.remove('xdragright');
+        if(targetAnchor[0]=='left') xdobj.class.add('xdragleft');
+        else if(targetAnchor[0]=='right') xdobj.class.add('xdragright');
   
-        if(targetAnchor[1]=='top') jobj.addClass('xdragtop');
-        else if(targetAnchor[1]=='bottom') jobj.addClass('xdragbottom');
-        else if(targetAnchor[1]=='full') jobj.addClass('xdragfull');
+        if(targetAnchor[1]=='top') xdobj.class.add('xdragtop');
+        else if(targetAnchor[1]=='bottom') xdobj.class.add('xdragbottom');
+        else if(targetAnchor[1]=='full') xdobj.class.add('xdragfull');
   
         e.preventDefault();
         e.stopPropagation();
       });
-      jobj.on('drop', function(e){
+      xdobj.on('drop', function(e){
         dragCounter = 0;
-        jobj.removeClass('xdragtarget').removeClass('xdragtop').removeClass('xdragbottom').removeClass('xdragfull').removeClass('xdragleft').removeClass('xdragright');
+        xdobj.class.remove('xdragtarget');
+        xdobj.class.remove('xdragtop');
+        xdobj.class.remove('xdragbottom');
+        xdobj.class.remove('xdragfull');
+        xdobj.class.remove('xdragleft');
+        xdobj.class.remove('xdragright');
         e.preventDefault();
         e.stopPropagation();
   
-        var targetObjVal = jobj.data('value');
+        var targetObjVal = xdobj.data.value;
         var targetAnchor = XExt.getObjectAnchors(this, jsh.mouseX, jsh.mouseY, drag_anchor_settings);
         if(ondrop) ondrop(targetObjVal, targetAnchor, e);
       });
     });
-    jctrl.on('drop dragenter dragleave dragover', function(e){
+    xdctrl.on('drop dragenter dragleave dragover', function(e){
       e.preventDefault();
       e.stopPropagation();
     });
   };
 
   //onmove(dragval, dropval, anchor, e)
-  XExt.TreeEnableDrag = function (jctrl, onmove, drag_anchor_settings) {
+  XExt.TreeEnableDrag = function (xdctrl, onmove, drag_anchor_settings) {
     var mouseDownTimer = null;
     var hoverBorderTimer = null;
     //Set up drop points
-    jctrl.$find('a.tree_item').addClass('xdrop');
+    XDom.class.add(xdctrl.select('a.tree_item'), 'xdrop');
     //Check if the target can be used as a drop point
     function mouseCanDrop(target){
       return true;
     }
     //Start drag operation
-    jctrl.$find('a.tree_item').mousedown(function(e){
+    XDom.on(xdctrl.select('a.tree_item'), 'mousedown', function(e){
       if (e.which == 1) {//left mouse button
         var obj = this;
-        if(XExt.isMouseWithin($(obj).parent().$find('.glyph')[0])) return;
+        if(XExt.isMouseWithin(XDom(obj).parent().selectOne('.glyph'))) return;
         if(jsh.xContextMenuVisible) return;
         XExt.CancelBubble(e);
         if(mouseDownTimer) window.clearTimeout(mouseDownTimer);
@@ -1356,24 +1377,30 @@ exports = module.exports = function(jsh){
         }, 250);
       }
     });
-    jctrl.$find('a.tree_item').mouseup(function(e){
+    XDom.on(xdctrl.select('a.tree_item'), 'mouseup', function(e){
       if(mouseDownTimer) window.clearTimeout(mouseDownTimer);
       if(hoverBorderTimer) window.clearTimeout(hoverBorderTimer);
       mouseDownTimer = null;
       hoverBorderTimer = null;
     });
     //While dragging, update styles on drop points
-    var treeid = jctrl.data('treeid');
-    jsh.off('.jsh_tree_'+treeid);
+    var treeid = xdctrl.data.treeid;
+    jsh.off('.jsh_tree_'+treeid); // TODO: Fix off handlers
     var hoverBorderStart = 0;
     jsh.on('jsh_mouseDrag.jsh_tree_'+treeid,function(event, mouseDragObj, targetObj, origEvent){
-      jctrl.$find('.xdragtarget').removeClass('xdragtarget').removeClass('xdragtop').removeClass('xdragbottom').removeClass('xdragfull').removeClass('xdragleft').removeClass('xdragright');
+      var dragTarget = xdctrl.select('.xdragtarget')
+      XDom.class.remove(dragTarget, 'xdragtarget');
+      XDom.class.remove(dragTarget, 'xdragtop');
+      XDom.class.remove(dragTarget, 'xdragbottom');
+      XDom.class.remove(dragTarget, 'xdragfull');
+      XDom.class.remove(dragTarget, 'xdragleft');
+      XDom.class.remove(dragTarget, 'xdragright');
       //Check if mouse is hovering over tree border
-      var joff = jctrl.offset();
-      var w = jctrl.outerWidth();
-      var h = jctrl.outerHeight();
-      if ((jsh.mouseX >= joff.left) && (jsh.mouseX <= (joff.left + w))) {
-        if ((jsh.mouseY >= joff.top) && (jsh.mouseY <= (joff.top + 15))){
+      var offset = {top: xdctrl.calc.top(), left: xdctrl.calc.left() }; 
+      var w = xdctrl.calc.widthToBorder();
+      var h = xdctrl.calc.heightToBorder();
+      if ((jsh.mouseX >= offset.left) && (jsh.mouseX <= (offset.left + w))) {
+        if ((jsh.mouseY >= offset.top) && (jsh.mouseY <= (offset.top + 15))){
           //Hovering over top
           if(!hoverBorderTimer){
             hoverBorderStart = 0;
@@ -1381,12 +1408,12 @@ exports = module.exports = function(jsh){
               var nowTime = new Date().getTime();
               if(!hoverBorderStart) hoverBorderStart = nowTime;
               if((nowTime-hoverBorderStart)>300){
-                jctrl.scrollTop(Math.max(jctrl.scrollTop() - 15, 0));
+                xdctrl.selectOne().scrollTop = (Math.max(xdctrl.selectOne().scrollTop - 15, 0));
               }
             }, 100);
           }
         }
-        else if((jsh.mouseY <= (joff.top + h)) && (jsh.mouseY >= (joff.top + h - 15))){
+        else if((jsh.mouseY <= (offset.top + h)) && (jsh.mouseY >= (offset.top + h - 15))){
           //Hovering over bottom
           if(!hoverBorderTimer){
             hoverBorderStart = 0;
@@ -1394,7 +1421,7 @@ exports = module.exports = function(jsh){
               var nowTime = new Date().getTime();
               if(!hoverBorderStart) hoverBorderStart = nowTime;
               if((nowTime-hoverBorderStart)>300){
-                jctrl.scrollTop(jctrl.scrollTop() + 15);
+                xdctrl.selectOne().scrollTop = (xdctrl.selectOne().scrollTop + 15);
               }
             }, 100);
           }
@@ -1411,29 +1438,30 @@ exports = module.exports = function(jsh){
 
 
       if(!targetObj) return;
-      if($(targetObj).data('id')==$(mouseDragObj).data('id')) return;
-      jsh.$root('.xdrag').css('visibility','visible');
+      var xdTargetObj = XDom(targetObj); 
+      if(xdTargetObj.data.id==XDom.getData(mouseDragObj, 'id')) return;
+      XDom.setStyle(jsh.xdroot.select('.xdrag'), 'visibility','visible');
 
       var targetAnchor = XExt.getObjectAnchors(targetObj, jsh.mouseX, jsh.mouseY, drag_anchor_settings);
-      $(targetObj).addClass('xdragtarget');
+      xdTargetObj.class.add('xdragtarget');
 
-      if(targetAnchor[0]=='left') $(targetObj).addClass('xdragleft');
-      else if(targetAnchor[0]=='right') $(targetObj).addClass('xdragright');
+      if(targetAnchor[0]=='left') xdTargetObj.class.add('xdragleft');
+      else if(targetAnchor[0]=='right') xdTargetObj.class.add('xdragright');
 
-      if(targetAnchor[1]=='top') $(targetObj).addClass('xdragtop');
-      else if(targetAnchor[1]=='bottom') $(targetObj).addClass('xdragbottom');
-      else if(targetAnchor[1]=='full') $(targetObj).addClass('xdragfull');
+      if(targetAnchor[1]=='top') xdTargetObj.class.add('xdragtop');
+      else if(targetAnchor[1]=='bottom') xdTargetObj.class.add('xdragbottom');
+      else if(targetAnchor[1]=='full') xdTargetObj.class.add('xdragfull');
     });
     //On Drop
     jsh.on('jsh_mouseDragEnd.jsh_tree_'+treeid,function(event, mouseDragObj, targetObj, origEvent){
-      jctrl.$find('.xdragtarget').removeClass('xdragtarget');
+      XDom.class.remove(xdctrl.select('.xdragtarget'), 'xdragtarget');
       if(!targetObj) return;
-      if($(targetObj).data('id')==$(mouseDragObj).data('id')) return;
-      var targetObjId = $(targetObj).data('id');
+      if(XDom.getData(targetObj, 'id')==XDom.getData(mouseDragObj, 'id')) return;
+      var targetObjId = XDom.getData(targetObj, 'id');
       if(targetObjId==mouseDragObj) return;
 
-      var mouseDragObjVal = $(mouseDragObj).data('value');
-      var targetObjVal = $(targetObj).data('value');
+      var mouseDragObjVal = XDom.getData(mouseDragObj, 'value');
+      var targetObjVal = XDom.getData(targetObj, 'value');
       
       var targetAnchor = XExt.getObjectAnchors(targetObj, jsh.mouseX, jsh.mouseY, drag_anchor_settings);
 
@@ -1459,7 +1487,7 @@ exports = module.exports = function(jsh){
       return rslt;
     };
     var rslt = jsh.ejs.render('\
-      <a href="#" class="tree_item tree_item_<%=n.ID%> <%=(n.Children.length && (n.LazyRender&&!n.Expanded)?"tree_render_lazy":"")%> <%=(n.Children.length==0?"nochildren":"")%> <%=(n.Expanded?"expanded":"")%> <%=(n.Selected?"selected":"")%>" data-id="<%=n.ID%>" data-value="<%=n.Value%>" onclick=\'<%-instance%>.XExt.TreeSelectNode(this,<%-JSON.stringify(n.Value)%>,{ source: "click" }); return false;\' oncontextmenu=\'return <%-instance%>.XExt.TreeItemContextMenu(this,<%-JSON.stringify(n.ID)%>);\'><div class="glyph" href="#" onclick=\'<%-instance%>.XExt.CancelBubble(arguments[0]); <%-instance%>.XExt.TreeToggleNode(<%-instance%>.$(this).closest(".xform_ctrl.tree"),<%-JSON.stringify(n.ID)%>); return false;\'><%-(n.Expanded?"&#x25e2;":"&#x25b7;")%></div><% if(n.Icon){ %><img class="icon" src="<%-jsh._PUBLICURL%>images/icon_<%=n.Icon%>.png" /><% } %><span>'+item_dropdown_html+'<%-getNodeContent()%></span></a>\
+      <a href="#" class="tree_item tree_item_<%=n.ID%> <%=(n.Children.length && (n.LazyRender&&!n.Expanded)?"tree_render_lazy":"")%> <%=(n.Children.length==0?"nochildren":"")%> <%=(n.Expanded?"expanded":"")%> <%=(n.Selected?"selected":"")%>" data-id="<%=n.ID%>" data-value="<%=n.Value%>" onclick=\'<%-instance%>.XExt.TreeSelectNode(this,<%-JSON.stringify(n.Value)%>,{ source: "click" }); return false;\' oncontextmenu=\'return <%-instance%>.XExt.TreeItemContextMenu(this,<%-JSON.stringify(n.ID)%>);\'><div class="glyph" href="#" onclick=\'<%-instance%>.XExt.CancelBubble(arguments[0]); <%-instance%>.XExt.TreeToggleNode(<%-instance%>.XDom(this).parent(".xform_ctrl.tree"),<%-JSON.stringify(n.ID)%>); return false;\'><%-(n.Expanded?"&#x25e2;":"&#x25b7;")%></div><% if(n.Icon){ %><img class="icon" src="<%-jsh._PUBLICURL%>images/icon_<%=n.Icon%>.png" /><% } %><span>'+item_dropdown_html+'<%-getNodeContent()%></span></a>\
       <div class="children <%=(n.Expanded?"expanded":"")%> tree_item_<%=n.ID%>" data-id="<%=n.ID%>" data-value="<%=n.Value%>"><%-children%></div>',
     { n: n, children: children, jsh: jsh, instance: jsh.getInstance(), getNodeContent: getNodeContent }
     );
@@ -1506,38 +1534,38 @@ exports = module.exports = function(jsh){
   };
 
   XExt.TreeItemContextMenu = function (ctrl, n, contextMenuOptions) {
-    var jctrl = $(ctrl);
-    var jtree = jctrl.closest('.xform_ctrl.tree');
+    var xdctrl = XDom(ctrl);
+    var xdtree = xdctrl.parent('.xform_ctrl.tree');
     var fieldname = XExt.getFieldNameFromObject(ctrl);
     var menuid = '._item_context_menu_' + fieldname;
-    if(jtree.data('oncontextmenu')) {
-      var f = (new Function('n', jtree.data('oncontextmenu')));
+    if(xdtree.data.oncontextmenu) {
+      var f = (new Function('n', xdtree.getData('oncontextmenu')));
       var frslt = f.call(ctrl, n);
       if((frslt === false) || (frslt===true)) return frslt;
     }
-    if (jsh.$root(menuid).length) {
+    if (jsh.xdroot.select(menuid).length) {
       if(contextMenuOptions && contextMenuOptions.hideIfOpen){
-        if(jsh.$root(menuid).is(':visible')){
+        if(jsh.xdroot.select(menuid).filter(XDom.isVisible)){
           XExt.HideContextMenu();
           return false;
         }
       }
-      XExt.ShowContextMenu(menuid, $(ctrl).data('value'), { id:n }, contextMenuOptions);
+      XExt.ShowContextMenu(menuid, xdctrl.data.value, { id:n }, contextMenuOptions);
       return false;
     }
     return true;
   };
 
   XExt.TreeDoubleClickNode = function (ctrl, n) {
-    var jctrl = $(ctrl);
-    var jtree = jctrl.closest('.xform_ctrl.tree');
-    if(jtree.data('ondoubleclick')) { var rslt = (new Function('n', jtree.data('ondoubleclick'))); rslt.call(ctrl, n); }
+    var xdctrl = XDom(ctrl);
+    var xdtree = xdctrl.parent('.xform_ctrl.tree');
+    if(xdtree.data.ondoubleclick) { var rslt = (new Function('n', xdtree.data.ondoubleclick)); rslt.call(ctrl, n); }
   };
 
   XExt.TreeGetSelectedNodes = function (ctrl) {
     var rslt = [];
-    $(ctrl).$find('.tree_item.selected').each(function () {
-      var val = $(this).data('value');
+    XDom(ctrl, '.tree_item.selected').select().forEach(function(el) {
+      var val = XDom.getData(el, 'value');
       if (val) rslt.push(val.toString());
     });
     return rslt;
@@ -1545,8 +1573,8 @@ exports = module.exports = function(jsh){
 
   XExt.TreeGetExpandedNodes = function (ctrl) {
     var rslt = [];
-    $(ctrl).$find('.tree_item.expanded').each(function () {
-      var val = $(this).data('value');
+    XDom(ctrl, '.tree_item.expanded').select().forEach(function(el) {
+      var val = XDom.getData(el, 'value');
       if (val) rslt.push(val.toString());
     });
     return rslt;
@@ -1556,28 +1584,28 @@ exports = module.exports = function(jsh){
     if(!options) options = { triggerChange: true, source: '' };
     if(!('triggerChange' in options)) options.triggerChange = true;
 
-    var jctrl = $(ctrl);
+    var xdctrl = XDom(ctrl);
 
     if(options.source=='click'){
       var curClick = (new Date()).getTime();
       var startX = jsh.mouseX;
       var startY = jsh.mouseY;
-      var lastClick = parseInt(jctrl.data('lastclick')||0);
-      jctrl.data('lastclick', curClick.toString());
+      var lastClick = parseInt(xdctrl.data.lastclick||0);
+      xdctrl.data.lastclick = curClick.toString();
 
       if((curClick-lastClick)<=XExt.DOUBLECLICK_TIMEOUT){
-        XExt.TreeDoubleClickNode(ctrl, jctrl.data('id'));
-        jctrl.data('lastclick', '');
+        XExt.TreeDoubleClickNode(ctrl, xdctrl.data.id);
+        xdctrl.data.lastclick = '';
       }
       else {
         XExt.handleOnce(jsh.xLoader.onMouseDown, function(e){
           var loaderClick = (new Date()).getTime();
-          if(jctrl.data('lastclick') && ((loaderClick-curClick)<=XExt.DOUBLECLICK_TIMEOUT)){
+          if(xdctrl.data.lastclick && ((loaderClick-curClick)<=XExt.DOUBLECLICK_TIMEOUT)){
             var diffX = Math.abs(jsh.mouseX - startX);
             var diffY = Math.abs(jsh.mouseY - startY);
             if((diffX <= 8) && (diffY <= 8)){
-              XExt.TreeDoubleClickNode(ctrl, jctrl.data('id'));
-              jctrl.data('lastclick', '');
+              XExt.TreeDoubleClickNode(ctrl, xdctrl.data.id);
+              xdctrl.data.lastclick = '';
             }
           }
         });
@@ -1589,30 +1617,30 @@ exports = module.exports = function(jsh){
     var field = undefined;
     if (xform && fieldname) field = xform.Data.Fields[fieldname];
     
-    var jtree = jctrl.closest('.xform_ctrl.tree');
-    if (jtree.hasClass('uneditable')) return;
+    var xdtree = xdctrl.parent('.xform_ctrl.tree');
+    if (xdtree.class.contains('uneditable')) return;
 
     //Deselect previously selected value
-    jtree.$find('.selected').removeClass('selected');
+    XDom.class.remove(xdtree.select('.selected'), 'selected');
 
     var nodeid = undefined;
     if(nodevalue){
       //Get nodeid from nodevalue
-      var findNode = function(){ jtree.$find('.tree_item').each(function(){ if($(this).data('value')==nodevalue) nodeid = $(this).data('id'); }); };
+      var findNode = function(){ xdtree.select('.tree_item').forEach(function(el){ if(XDom.getData(el, 'value')==nodevalue) nodeid = XDom.getData(el, 'id'); }); };
       findNode();
 
       if(typeof nodeid == 'undefined'){
         //Lazy evaluation
         var treePathInfo = { value: nodevalue };
-        jtree.trigger('tree_path', [ treePathInfo ]);
+        xdtree.emit('tree_path', treePathInfo);
         _.each(treePathInfo.path, function(node){
-          var jtreenode = jtree.$find('.tree_item_'+node.ID);
-          if(jtreenode.hasClass('tree_render_lazy')) jtreenode.trigger('tree_render_lazy');
+          var xdtreenode = xdtree.select('.tree_item_'+node.ID);
+          if(XDom.class.contains(xdtreenode, 'tree_render_lazy')) XDom.emit(xdtreenode, 'tree_render_lazy');
         });
         findNode();
         if(typeof nodeid == 'undefined') return;
       }
-      jtree.$find('.tree_item.tree_item_' + nodeid).addClass('selected');
+      XDom.class.add(xdtree.select('.tree_item.tree_item_' + nodeid), 'selected');
       if (field && field.controlparams) {
         if (field.controlparams.expand_to_selected) XExt.TreeExpandToSelected(ctrl);
       }
@@ -1622,59 +1650,58 @@ exports = module.exports = function(jsh){
     if (field && jsh.init_complete) {
       if(xform && xform.Data && options.triggerChange) xform.Data.OnControlUpdate(ctrl);
     }
-    if((typeof nodeid !== 'undefined') && jtree.data('onselected')) { var rslt = (new Function('nodeid', jtree.data('onselected'))); rslt.call(ctrl, nodeid); }
+    if((typeof nodeid !== 'undefined') && xdtree.data.onselected) { var rslt = (new Function('nodeid', xdtree.data.onselected)); rslt.call(ctrl, nodeid); }
   };
 
-  XExt.TreeToggleNode = function (jctrl, nodeid) {
-    jctrl = jctrl.closest('.xform_ctrl.tree');
-    if (jctrl.$find('.children.tree_item_' + nodeid).hasClass('expanded'))
-      XExt.TreeCollapseNode(jctrl, nodeid);
+  XExt.TreeToggleNode = function (xdctrl, nodeid) {
+    xdctrl = xdctrl.parent('.xform_ctrl.tree');
+    if (XDom.class.contains(xdctrl.select('.children.tree_item_' + nodeid), 'expanded'))
+      XExt.TreeCollapseNode(xdctrl, nodeid);
     else
-      XExt.TreeExpandNode(jctrl, nodeid);
+      XExt.TreeExpandNode(xdctrl, nodeid);
   };
 
-  XExt.TreeCollapseNode = function (jctrl, nodeid) {
-    jctrl = jctrl.closest('.xform_ctrl.tree');
-    jctrl.$find('.tree_item_' + nodeid).removeClass('expanded');
-    jctrl.$find('.tree_item.tree_item_' + nodeid + ' > .glyph').html('&#x25b7;');
+  XExt.TreeCollapseNode = function (xdctrl, nodeid) {
+    xdctrl = xdctrl.parent('.xform_ctrl.tree');
+    XDom.class.remove(xdctrl.select('.tree_item_' + nodeid), 'expanded');
+    XDom.content.replace(xdctrl.select('.tree_item.tree_item_' + nodeid + ' > .glyph'), '&#x25b7;');
   };
 
-  XExt.TreeExpandNode = function (jctrl, nodeid) {
-    jctrl = jctrl.closest('.xform_ctrl.tree');
-    var jtreenode = jctrl.$find('.tree_item_' + nodeid);
-    if(jtreenode.hasClass('tree_render_lazy')) jtreenode.trigger('tree_render_lazy');
-    jtreenode.addClass('expanded');
-    jctrl.$find('.tree_item.tree_item_' + nodeid + ' > .glyph').html('&#x25e2;');
+  XExt.TreeExpandNode = function (xdctrl, nodeid) {
+    xdctrl = xdctrl.parent('.xform_ctrl.tree');
+    var xdTreenode = XDom(xdctrl, '.tree_item_' + nodeid);
+    if(xdTreenode.class.contains('tree_render_lazy')) xdTreenode.emit('tree_render_lazy');
+    xdTreenode.class.add('expanded');
+    XDom.content.replace(xdctrl.select('.tree_item.tree_item_' + nodeid + ' > .glyph'), '&#x25e2;');
   };
 
   XExt.TreeExpandToSelected = function (ctrl) {
-    var toptree = $(ctrl).closest('.xform_ctrl.tree');
+    var toptree = XDom(ctrl).parent('.xform_ctrl.tree');
     var rslt = [];
-    toptree.$find('.tree_item.selected').each(function () {
-      var jctrl = $(this);
-      var jparent = jctrl.parent();
-      while (jparent.length && !jparent.is(toptree)) {
-        XExt.TreeExpandNode(toptree, jparent.data('id'));
-        jparent = jparent.parent();
+    toptree.select('.tree_item.selected').forEach(function(el) {
+      var xdParent = XDom(el).parent();
+      while (xdParent.length && (xdParent.selectOne() != toptree.selectOne())) {
+        XExt.TreeExpandNode(toptree, xdParent.data.id);
+        xdParent = xdParent.parent();
       }
     });
     return rslt;
   };
-  XExt.TreeExpandAll = function (ctrl) {
-    var jctrl = $(ctrl).closest('.xform_ctrl.tree');
-    if(!jctrl.$find('.tree_render_lazy').length){
-      jctrl.$find('.tree_item').addClass('expanded');
-      jctrl.$find('.children').addClass('expanded');
-      jctrl.$find('.glyph').html('&#x25e2;');
+  XExt.TreeExpandAll = function (xdctrl) {
+    var xdctrl = xdctrl.parent('.xform_ctrl.tree');
+    if(!xdctrl.select('.tree_render_lazy').length){
+      XDom.class.add(xdctrl.select('.tree_item'), 'expanded');
+      XDom.class.add(xdctrl.select('.children'), 'expanded');
+      XDom.content.replace(xdctrl.select('.glyph'), '&#x25e2;');
     }
     else{
-      var unexpanded = jctrl.$find('.tree_item').not('.expanded');
+      var unexpanded = XDom.omit(xdctrl.select('.tree_item'), function(el){return XDom.class.contains(el, 'expanded')});
       var i = 0;
       while(unexpanded.length){
         i++;
         if(i>1000)break;
-        unexpanded.each(function(){ XExt.TreeExpandNode(jctrl, this.getAttribute('data-id')); });
-        unexpanded = jctrl.$find('.tree_item').not('.expanded');
+        unexpanded.forEach(function(el){ XExt.TreeExpandNode(xdctrl, XDom.getAttribute(el, 'data-id')); });
+        unexpanded = XDom.omit(xdctrl.select('.tree_item'), function(el){return XDom.class.contains(el, 'expanded')});
       }
     }
   };
