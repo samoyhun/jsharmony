@@ -19998,8 +19998,8 @@ var mocha = require('mocha');
     });
 
     it('resolve DOM elem query - input', function() {
-      assertEqual(XDom.resolve('input').length, 1, 'Resolved one DOM elem');
-      assert(XDom.resolve('input')[0] instanceof HTMLInputElement, 'Resolved DOM elem');
+      assertEqual(XDom.resolve('#iteminput').length, 1, 'Resolved one DOM elem');
+      assert(XDom.resolve('#iteminput')[0] instanceof HTMLInputElement, 'Resolved DOM elem');
     });
 
     it('resolve DOM elem - input', function() {
