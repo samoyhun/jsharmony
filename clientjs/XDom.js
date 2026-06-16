@@ -854,6 +854,7 @@ XDom.animate.height = function(tgt, to, callback, duration){
     if(!isVisible){
       resetOverflow = xdobj.style.overflow || true;
       xdobj.style.overflow = 'hidden';
+      xdobj.style.height = 0;
       xdobj.style.display = true;
     }
     if(to === true) to = _el[0].scrollHeight;
@@ -890,7 +891,10 @@ XDom.animate.opacity = function(tgt, to, callback, duration){
   if(to === null || to === undefined) to = !isVisible;
 
   if(to) {
-    if(!isVisible) xdobj.style.display = true;
+    if(!isVisible){
+      xdobj.style.opacity = 0;
+      xdobj.style.display = true;
+    }
     if(to === true) to = 1;
   }
   else {

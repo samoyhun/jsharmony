@@ -477,41 +477,40 @@ jsHarmony.prototype.XWindowResize = function (source) {
   };
 };
 jsHarmony.prototype.XDialogResize = function (source, params) {
-  if(this.xdDialogBlock){
-    this.xdDialogBlock.style.width = params.pw + 'px';
-    this.xdDialogBlock.style.height = params.ph + 'px';
-  }
-
   var xdDebugInfo = XDom(this.xdroot, '.xdebuginfo.jsHarmonyElement_'+this._instanceClass);
   xdDebugInfo.style.top = params.stop + 'px';
   xdDebugInfo.style.left = params.sleft + 'px';
   xdDebugInfo.style.width = params.ww + 'px';
 
-  _.each(this.xdDialogBlock.select('.xdialogbox'), function (obj) {
-    var xdobj = XDom(obj);
-    if (!XDom.isVisible(obj)) return;
-    if (document.activeElement && document.activeElement.matches('input,select,textarea') && XDom(document.activeElement).parent().select().length) {
-      if (source == 'scroll') return;
-    }
-    var dw = xdobj.calc.widthToBorder();
-    var dh = xdobj.calc.heightToBorder();
-    /*if (wh != ph) {
-      if (source == 'scroll') return;
-    }*/
-    var dleft = (params.ww / 2 - dw / 2);
-    if (dleft < 0) dleft = 0;
-    var dtop = (params.wh / 2 - dh / 2);
-    if (dtop < 0) dtop = 0;
-    //dleft += sleft;
-    //dtop += stop;
-    var dwpad = xdobj.calc.widthToPadding();
-    var dborderwidth = parseInt(dw - dwpad) || 0;
-    var dpadwidth = parseInt(dwpad - xdobj.calc.widthToContent()) || 0;
+  if(this.xdDialogBlock){
+    this.xdDialogBlock.style.width = params.pw + 'px';
+    this.xdDialogBlock.style.height = params.ph + 'px';
+    _.each(this.xdDialogBlock.select('.xdialogbox'), function (obj) {
+      var xdobj = XDom(obj);
+      if (!XDom.isVisible(obj)) return;
+      if (document.activeElement && document.activeElement.matches('input,select,textarea') && XDom(document.activeElement).parent().select().length) {
+        if (source == 'scroll') return;
+      }
+      var dw = xdobj.calc.widthToBorder();
+      var dh = xdobj.calc.heightToBorder();
+      /*if (wh != ph) {
+        if (source == 'scroll') return;
+      }*/
+      var dleft = (params.ww / 2 - dw / 2);
+      if (dleft < 0) dleft = 0;
+      var dtop = (params.wh / 2 - dh / 2);
+      if (dtop < 0) dtop = 0;
+      //dleft += sleft;
+      //dtop += stop;
+      var dwpad = xdobj.calc.widthToPadding();
+      var dborderwidth = parseInt(dw - dwpad) || 0;
+      var dpadwidth = parseInt(dwpad - xdobj.calc.widthToContent()) || 0;
 
-    xdobj.style.left = dleft + 'px';
-    xdobj.style.top = dtop + 'px';
-    xdobj.style.maxwidth = (params.docw - dborderwidth - dpadwidth) + 'px';
-  });
+      xdobj.style.left = dleft + 'px';
+      xdobj.style.top = dtop + 'px';
+      xdobj.style.maxwidth = (params.docw - dborderwidth - dpadwidth) + 'px';
+    });
+  }
 };
 
 jsHarmony.prototype.addFocusHandler = function (dialogContainer, handler) {
