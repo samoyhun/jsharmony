@@ -457,6 +457,7 @@ var mocha = require('mocha');
     before(function(){
       document.querySelector('#workspace').innerHTML = [
         '<div id="item1"></div>',
+        '<input type="checkbox" id="checkbox1"/>',
       ].join('');
     });
 
@@ -500,6 +501,11 @@ var mocha = require('mocha');
       XDom('#item1').emit('click');
       assert(handlerCalled, 'emit triggered handler');
       XDom('#item1').off('click', handler);
+    });
+
+    it('input responding to click event', function() {
+      XDom.emit('#checkbox1', 'click');
+      assertEqual(XDom('#checkbox1').select()[0].checked, true, 'emit triggered input');
     });
 
     after(function(){
@@ -662,6 +668,7 @@ var mocha = require('mocha');
       document.querySelector('#workspace').innerHTML = [
         '<div id="item1"></div>',
         '<div id="item2"></div>',
+        '<div id="item3"></div>',
       ].join('');
     });
 
@@ -670,7 +677,15 @@ var mocha = require('mocha');
     });
 
     it('next when last', function(){
-      assert(XDom('#item2').nextSibling().length == 0, 'nothing is next');
+      assert(XDom('#item3').nextSibling().length == 0, 'nothing is next');
+    });
+
+    it('next with filter', function(){
+      assert(XDom('#item1').nextSibling('#item3').attr.id === 'item3', 'found next');
+    });
+
+    it('next with filter - not found', function(){
+      assert(XDom('#item1').nextSibling('.not.found').length == 0, 'nothing is found');
     });
 
     it('previous', function(){
@@ -679,6 +694,14 @@ var mocha = require('mocha');
 
     it('previous when first', function(){
       assert(XDom('#item1').previousSibling().length == 0, 'nothing is previous');
+    });
+
+    it('prevoius with filter', function(){
+      assert(XDom('#item3').previousSibling('#item1').attr.id === 'item1', 'found previous');
+    });
+
+    it('previous with filter - not found', function(){
+      assert(XDom('#item3').nextSibling('.not.found').length == 0, 'nothing is found');
     });
 
     after(function(){
