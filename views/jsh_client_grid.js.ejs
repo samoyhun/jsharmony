@@ -801,14 +801,10 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     }
     if(xsearch.Data.Items.length == 0){
       xcontroller.SearchAddDefault();
-      jsh.XDom(jsh.xdroot, '.xsearch_'+xmodel.class).animate({height: 'auto'}, timeout,function(){ selectFirstSearchInput(); });
-      // TODO: remove and test when the animation system is working
-      jsh.$root('.xsearch_'+xmodel.class).slideDown(timeout,function(){ selectFirstSearchInput(); });
+      jsh.XDom(jsh.xdroot, '.xsearch_'+xmodel.class).animate.height(true, function(){ selectFirstSearchInput(); }, timeout);
     }
     else {
-      jsh.XDom(jsh.xdroot, '.xsearch_'+xmodel.class).animate({height: 'auto'}, timeout,function(){ selectFirstSearchInput(); });
-      // TODO: remove and test when the animation system is working
-      jsh.$root('.xsearch_'+xmodel.class).slideDown(timeout,function(){ selectFirstSearchInput(); });
+      jsh.XDom(jsh.xdroot, '.xsearch_'+xmodel.class).animate.height(true, function(){ selectFirstSearchInput(); }, timeout);
     }
   }
 
@@ -823,9 +819,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     }
     else{
       if(jsh.XDom(jsh.xdroot, '.xsearch_'+xmodel.class).filter(jsh.XDom.isVisible).length){
-        jsh.XDom(jsh.xdroot, '.xsearch_'+xmodel.class).animate({height: '0px'}, 400);
-        // TODO: remove and test when animation system is working
-        jsh.$root('.xsearch_'+xmodel.class).slideUp();
+        jsh.XDom(jsh.xdroot, '.xsearch_'+xmodel.class).animate.height(false, null, 400);
       }
       else xcontroller.SearchExpand(400);
     }
@@ -989,7 +983,6 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       var column_checkboxes = jsh.XDom(sel + ' .display_layout_columns input').select();
       var columns = [];
       _.each(column_checkboxes, function(column_checkbox){
-        // TODO: check this after merging with fixed dialogs
         if(column_checkbox.checked) {
           columns.push( {name:column_checkbox.value});
         }
