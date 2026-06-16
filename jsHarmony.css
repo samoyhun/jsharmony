@@ -448,12 +448,6 @@ BODY
   padding-left:5px;
   padding-right:5px;
 }
-<%-rootcss%> .colorbox_inline {
-	background-color:white;
-	width:400px;
-	padding-top:15px;
-	padding-bottom:15px;
-}
 <%-rootcss%> .xform_ctrl.tree {
   display:inline-block;
   border:1px solid #aaa;

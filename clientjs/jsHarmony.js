@@ -25,7 +25,6 @@ var $ = require('./jquery-1.11.2');
 $.fn.$find = function(){ return $.fn.find.apply(this, arguments); };
 var jQuery = $;
 require('../public/jquery-ui/js/jquery-ui-1.10.3.custom-aspa.min.js')(jQuery);
-require('../public/js/jquery.colorbox-min.js')(jQuery);
 require('../public/js/jquery.csv.min.js')(jQuery);
 var _ = require('lodash');
 var ejs = require('ejs');
@@ -542,7 +541,7 @@ jsHarmony.prototype.InitFileUpload = function () {
   this.xfileuploadLoader = new Object();
   this.root.append(
     '<div style="display:none;">\
-      <div class="xdialogbox xfileuploader colorbox_inline" align="center" style="height:100px;"><div style="position:relative;">\
+      <div class="xdialogbox xfileuploader" align="center" style="height:100px;"><div style="position:relative;">\
         <strong class="title"></strong\
         <form class="xfileuploader_form" enctype="multipart/form-data" method="post" target="'+this.getInstance()+'_xfileproxy">\
           <input type="hidden" name="MAX_FILE_SIZE" value="'+this.Config.max_filesize+'" />\

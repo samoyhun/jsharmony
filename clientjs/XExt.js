@@ -2145,7 +2145,7 @@ exports = module.exports = function(jsh){
       },
       function(){
         bindDialogHandler(xdobj.select('input.button_ok'), 'click', function(){ acceptfunc(); });
-        bindDialogHandler(xdobj.select('a.close'), 'click', function(){ cancelfunc(); });
+        bindDialogHandler(xdobj.select('a.closePopup'), 'click', function(){ cancelfunc(); });
         bindDialogHandler(xdobj.select('input.button_cancel'), 'click', function(){ cancelfunc(); });
         bindDialogHandler(xdobj, 'acceptDialog', function(){ acceptfunc(); });
         bindDialogHandler(xdobj, 'cancelDialog', function(){ cancelfunc(); });
