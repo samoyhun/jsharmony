@@ -185,11 +185,11 @@ var Selector = function(){
   _this.parent = function(parentSelector){
     return new Selector(XDom.parent(this, parentSelector));
   };
-  _this.nextSibling = function(){
-    return new Selector(XDom.nextSibling(this));
+  _this.nextSibling = function(siblingSelector){
+    return new Selector(XDom.nextSibling(this, siblingSelector));
   };
-  _this.previousSibling = function(){
-    return new Selector(XDom.previousSibling(this));
+  _this.previousSibling = function(siblingSelector){
+    return new Selector(XDom.previousSibling(this, siblingSelector));
   };
   _this.first = function(){
     return new Selector(XDom.first(this) || []);
@@ -239,8 +239,8 @@ var Selector = function(){
   //not => .omit
   //first => .select[0]
   //filter => .select.filter
-  //slideUp => .animate({ height: '0px' })
-  //slideDown => .animate({ height: 'auto' })
+  //slideUp => .animate.height(false)
+  //slideDown => .animate.height(true)
   //fadeTo => .animate({ opacity: 0 })
   //.is(:visible) => .isVisible
   //.empty => .content.clear()
@@ -414,7 +414,12 @@ XDom.off = function(target, eventType, handler, eventOptions){
 
 XDom.emit = function(target, event){
   if (typeof(event) == 'string') {
-    event = new Event(event);
+    // it seems only a MouseEvent will trigger a checkbox to change value
+    if (['click', 'dblclick', 'mouseup', 'mousedown'].indexOf(event) != -1) {
+      event = new MouseEvent(event);
+    } else {
+      event = new Event(event);
+    }
   }
   _.each(XDom.resolve(target), function(el){
     if (el && el.dispatchEvent) {
@@ -483,8 +488,17 @@ function nodeMap(target, f){
   return _.uniq(_.compact(_.flatMap(_el, f)));
 }
 
-function propertyMap(target, property){
-  return nodeMap(target, function(el) {return el && el[property];});
+function siblingMap(target, siblingSelector, property){
+  return nodeMap(target, function(el) {
+    if (siblingSelector) {
+      do {
+        el = el[property];
+      } while (el && !el.matches(siblingSelector));
+      return el;
+    } else {
+      return el && el[property];
+    }
+  });
 }
 
 XDom.parent = function(target, parentSelector){
@@ -494,12 +508,12 @@ XDom.parent = function(target, parentSelector){
   );
 };
 
-XDom.nextSibling = function(target){
-  return propertyMap(target, 'nextSibling');
+XDom.nextSibling = function(target, siblingSelector){
+  return siblingMap(target, siblingSelector, 'nextSibling');
 };
 
-XDom.previousSibling = function(target){
-  return propertyMap(target, 'previousSibling');
+XDom.previousSibling = function(target, siblingSelector){
+  return siblingMap(target, siblingSelector, 'previousSibling');
 };
 
 XDom.first = function(target){
@@ -854,6 +868,7 @@ XDom.animate.height = function(tgt, to, callback, duration){
     if(!isVisible){
       resetOverflow = xdobj.style.overflow || true;
       xdobj.style.overflow = 'hidden';
+      xdobj.style.height = 0;
       xdobj.style.display = true;
     }
     if(to === true) to = _el[0].scrollHeight;
@@ -890,7 +905,10 @@ XDom.animate.opacity = function(tgt, to, callback, duration){
   if(to === null || to === undefined) to = !isVisible;
 
   if(to) {
-    if(!isVisible) xdobj.style.display = true;
+    if(!isVisible){
+      xdobj.style.opacity = 0;
+      xdobj.style.display = true;
+    }
     if(to === true) to = 1;
   }
   else {
