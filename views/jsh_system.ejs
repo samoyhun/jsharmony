@@ -4,24 +4,9 @@
 <script type="text/x-jsharmony-template" class="template_xconfirmbox"><div class="xdialogbox xconfirmbox"><div class="xconfirmmessage"></div><div align="center"><input type="button" value="OK" class="button_ok" style="margin-right:15px;" /> <input type="button" value="No" class="button_no" style="margin-right:15px;" /> <input type="button" value="Cancel" class="button_cancel" /></div></div></script>
 <script type="text/x-jsharmony-template" class="template_xpromptbox"><div class="xdialogbox xpromptbox"><div class="xpromptmessage"></div><div align="right"><input class="xpromptfield" type="text"><br/><input type="button" value="OK" class="button_ok" style="margin-right:15px;" /> <input type="button" value="Cancel" class="button_cancel" /></div></div></script>
 <script type="text/x-jsharmony-template" class="template_xtextzoombox"><div class="xdialogbox xtextzoombox"><div class="xtextzoommessage"></div><div align="right"><textarea autocomplete="off" class="xtextzoomfield"></textarea><input type="button" value="OK" class="button_ok" style="margin-right:15px;" /> <input type="button" value="Cancel" class="button_cancel" /></div></div></script>
-<script type="text/x-jsharmony-template" class="template_xhintsbox">
-  <div class="xdialogbox xhintsbox">
-    <div class="xhintsmessage"></div>
-    <div align="right">
-      <div class="xhints_listing"></div>
-      <input type="button" value="Insert" class="button_ok" style="margin-right:15px;" />
-      <input type="button" value="Cancel" class="button_cancel" />
-    </div>
-  </div>
-</script>
-<script type="text/x-ejs-template" class="xhints_rowtemplate">
-  <div class="xhints_row">
-    <label>
-    <input type="checkbox">
-    <span></span>
-    </label>
-  </div>
-</script>
+<script type="text/x-jsharmony-template" class="template_xhintsbox"><div class="xdialogbox xhintsbox"><div class="xhintsmessage"></div><div align="right"><div class="xhints_listing"></div><input type="button" value="Insert" class="button_ok" style="margin-right:15px;" /><input type="button" value="Cancel" class="button_cancel" /></div></div></script>
+<script type="text/x-ejs-template" class="xhints_rowtemplate"><div class="xhints_row"><label><input type="checkbox"><span></span></label></div></script>
+<script type="text/x-jsharmony-template" class="template_xcustomprompt_header"><div class="xcustomprompt_header" style="display:flex;justify-content:center;"><div class="xcustomprompt_titlebar style="text-align:center;"></div><a class="xcustomprompt_titlebar_close" style="position:absolute;right:17px;display:none;"><img src="<%=jsh._PUBLICURL%>images/icon_delete.png" alt="Close" title="Close"></a></div></script>
 </div>
 <div class="xdebuginfo jsHarmonyElement jsHarmonyElement_<%=jsh._instanceClass%> <%=jsh._dialogBaseClass%>" style="display:none;"></div>
 <div class="xdebugconsole jsHarmonyElement jsHarmonyElement_<%=jsh._instanceClass%> <%=jsh._dialogBaseClass%>" style="display:none;">

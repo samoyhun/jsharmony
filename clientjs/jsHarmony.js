@@ -25,7 +25,6 @@ var $ = require('./jquery-1.11.2');
 $.fn.$find = function(){ return $.fn.find.apply(this, arguments); };
 var jQuery = $;
 require('../public/jquery-ui/js/jquery-ui-1.10.3.custom-aspa.min.js')(jQuery);
-require('../public/js/jquery.colorbox-min.js')(jQuery);
 require('../public/js/jquery.csv.min.js')(jQuery);
 var _ = require('lodash');
 var ejs = require('ejs');
@@ -147,7 +146,6 @@ var jsHarmony = function(options){
   this.xDialogLoader = null;
   this.xDebugConsole = null;
   this.xDialog = [];
-  this.xPopupStack = [];
   this.xfileuploadLoader = null;
   this.appStartTime = Date.now();
   this.pageStartTime = Date.now();
@@ -543,7 +541,7 @@ jsHarmony.prototype.InitFileUpload = function () {
   this.xfileuploadLoader = new Object();
   this.root.append(
     '<div style="display:none;">\
-      <div class="xfileuploader colorbox_inline" align="center" style="height:80px;"><div style="position:relative;">\
+      <div class="xdialogbox xfileuploader" align="center" style="height:100px;"><div style="position:relative;">\
         <form class="xfileuploader_form" enctype="multipart/form-data" method="post" target="'+this.getInstance()+'_xfileproxy">\
           <input type="hidden" name="MAX_FILE_SIZE" value="'+this.Config.max_filesize+'" />\
           <input type="hidden" name="prevtoken" class="xfileuploader_prevtoken" value="" />\
@@ -556,7 +554,7 @@ jsHarmony.prototype.InitFileUpload = function () {
               <td></td>\
               <td style="padding-top:10px;">\
                 <a class="linkbutton" style="padding-right:15px;" href="#" onClick="'+this.getInstance()+'.XPage.FileUploadSubmit();return false;"><img src="'+this._PUBLICURL+'images/icon_ok.png" alt="Upload" title="Upload" />Upload</a>\
-                <a class="linkbutton" href="javascript:'+this.getInstance()+'.$.colorbox.close()"><img src="'+this._PUBLICURL+'images/icon_cancel.png" alt="Cancel" title="Cancel" />Cancel</a></td>\
+                <a class="linkbutton" href="javascript:'+this.getInstance()+'.XExt.CancelDialog()"><img src="'+this._PUBLICURL+'images/icon_cancel.png" alt="Cancel" title="Cancel" />Cancel</a></td>\
             </tr>\
           </table>\
         </form>\
@@ -571,7 +569,7 @@ jsHarmony.prototype.requireHTML5 = function(){
   $(document).ready(function() {
     if (!document.createElement('canvas').getContext) {
       var content = '\
-      <div class="browser_upgrade_msg" style="height: 120px; text-align: center; width: 450px;">\
+      <div class="browser_upgrade_msg Menu_InsertPopup xdialogbox xpromptbox" style="height: 130px; text-align: center; width: 450px;">\
         <p>In order to use this system, you will need to upgrade your web browser to a modern version that supports HTML5.  Please click "Upgrade" to view supported browsers.</p>\
         <div>\
         <input style="padding:2px 6px;" type="button" value="Upgrade" onclick="window.location.href=\'http://www.browsehappy.com\';" />\
@@ -579,16 +577,7 @@ jsHarmony.prototype.requireHTML5 = function(){
         </div>\
       </div>\
       ';
-      $.colorbox({
-        html: content,
-        closeButton: false,
-        arrowKey: false,
-        preloading: false,
-        overlayClose: false,
-        escKey: false,
-        opacity: 0.5,
-        title: 'Did you know that your browser is out of date?'
-      });
+      _this.XExt.CustomPrompt(null, content, null, null, null, null, {title: "Did you know that your browser is out of date?"});
     }
   });
 };

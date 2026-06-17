@@ -200,8 +200,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
           }
         },
       ], function(err){
-        // TODO: colorbox
-        $.colorbox.resize();
+        jsh.XWindowResize();
         _this.RowCount += data[_this.modelid].length;
         if(cb) return cb();
       });
@@ -919,7 +918,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     if(txt == '(') txt = '';
     else txt += ')';
     if(txt){
-      jsh.XDom(jsh.xdroot, '.xtitlecaption'+xmodel.class).style.display = true;
+      jsh.XDom(jsh.xdroot, '.xtitlecaption'+xmodel.class).style.display = 'inline-block';
     }
     else {
       jsh.XDom(jsh.xdroot, '.xtitlecaption'+xmodel.class).style.display = false;
