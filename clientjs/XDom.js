@@ -764,7 +764,7 @@ function parseStyleUnit(str) {
     return {val: hexrgba, unit: 'rgba'};
   }
   else{
-    var matches = str.match(/(^-?\d+(?:\.\d+)?)([a-zA-Z%]+)?$/);
+    var matches = str.match(/^([+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)\s*(.*)$/);
     if(!matches) return null;
     return {val: [Number(matches[1])], unit: matches[2] || ''};
   }
