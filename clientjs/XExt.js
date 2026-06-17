@@ -1254,14 +1254,13 @@ exports = module.exports = function(jsh){
       //Render that node
       var childrenHtml = '';
       _.each(node.Children, function(child){ childrenHtml += XExt.TreeRenderNode(ctrl, child, controlparams); });
-      xdthis.class.remove('tree_render_lazy')
-      xdthis.off('tree_render_lazy'); // TODO: Fix off handlers
+      xdthis.class.remove('tree_render_lazy');
+      xdthis.off('tree_render_lazy', renderLazy);
       xdthis.nextSibling('.children').content.append(childrenHtml);
       XDom.on(xdthis.nextSibling('.children').select('.tree_render_lazy'), 'tree_render_lazy', renderLazy);
     }
-    XDom.on(xdctrl.select('.tree_render_lazy'), 'tree_render_lazy', renderLazy);
-    xdctrl.off('tree_path'); // TODO: Fix off handlers
-    xdctrl.on('tree_path', function(e){
+    XExt.ReplaceEventHandler(xdctrl.select('.tree_render_lazy'), 'tree_render_lazy', renderLazy);
+    XExt.ReplaceEventHandler(xdctrl, 'tree_path', function(e){
       treePathInfo = e.detail;
       if(treePathInfo){
         for(var nodeID in nodes){
@@ -1385,9 +1384,9 @@ exports = module.exports = function(jsh){
     });
     //While dragging, update styles on drop points
     var treeid = xdctrl.data.treeid;
-    jsh.off('.jsh_tree_'+treeid); // TODO: Fix off handlers
+    jsh.off('.jsh_tree_'+treeid); // TODO: Fix handlers
     var hoverBorderStart = 0;
-    jsh.on('jsh_mouseDrag.jsh_tree_'+treeid,function(event, mouseDragObj, targetObj, origEvent){
+    jsh.on('jsh_mouseDrag.jsh_tree_'+treeid,function(event, mouseDragObj, targetObj, origEvent){  // TODO: Fix handlers
       var dragTarget = xdctrl.select('.xdragtarget')
       XDom.class.remove(dragTarget, 'xdragtarget');
       XDom.class.remove(dragTarget, 'xdragtop');
@@ -1709,6 +1708,22 @@ exports = module.exports = function(jsh){
   /*********************
    * GENERAL FUNCTIONS *
    *********************/
+
+  XExt.ReplaceEventHandler = function (target, eventType, handler, eventOptions){
+    if(!target || !XDom(target).length) return;
+    // Idea is to remove identical event, then apply a new one
+    for(var i=0; i<jsh.OnReplaceEvent.length; i++){ // TODO A WeakMap may turn this from O(n) => O(1)
+      if(jsh.OnReplaceEvent[i].eventType == eventType){
+        XDom.off(target, eventType, jsh.OnReplaceEvent[i].handler, jsh.OnReplaceEvent[i].eventOptions);
+        jsh.OnReplaceEvent.splice(i, 1);
+        i--;
+      }
+    }
+    if(!handler) return; // enables removal without replacement
+    XDom.on(target, eventType, handler, eventOptions);
+    var handlerObj = {target: target, eventType: eventType, handler: handler, eventOptions: eventOptions};
+    jsh.OnReplaceEvent.push(handlerObj);
+  };
 
   XExt.getMaxLength = function (field) {
     var rslt = -1;

@@ -71,6 +71,7 @@ var jsHarmony = function(options){
     _this.trigger('jsh_message', data);
   };
 
+  this.OnReplaceEvent = [];
   this.onInit = null; //function(){};
 
   //Options
