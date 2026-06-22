@@ -97,90 +97,107 @@ exports = module.exports = function(jsh){
     if (lov_matches > 0) ctrl.val(prevval);
   };
 
-  XExt.TagBox_Refresh = function(jctrl, jbaseinputctrl){
-    jctrl.$find('span').remove();
-    XExt.TagBox_AddTags(jctrl, jbaseinputctrl, jbaseinputctrl.val().split(','));
+  XExt.TagBox_Refresh = function(xdctrl, xdbaseinputctrl){
+    //TODO: Remove jQuery when all calls of TagBox_Refresh nolonger pass jQuery
+    if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
+    if(xdbaseinputctrl && xdbaseinputctrl.jquery) xdbaseinputctrl = XDom(xdbaseinputctrl[0])
+    //TODO: Remove jQuery when all calls of TagBox_Refresh nolonger pass jQuery
+    XDom.remove(xdctrl.select('span'));
+    XExt.TagBox_AddTags(xdctrl, xdbaseinputctrl, xdbaseinputctrl.value.split(','));
   };
 
-  XExt.TagBox_Save = function(jctrl, jbaseinputctrl){
+  XExt.TagBox_Save = function(xdctrl, xdbaseinputctrl){
+    //TODO: Remove jQuery when all calls of TagBox_Refresh nolonger pass jQuery
+    if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
+    if(xdbaseinputctrl && xdbaseinputctrl.jquery) xdbaseinputctrl = XDom(xdbaseinputctrl[0])
+    //TODO: Remove jQuery when all calls of TagBox_Refresh nolonger pass jQuery
     var tags = [];
-    jctrl.children('span').each(function(){
-      tags.push($(this).data('val'));
+    xdctrl.children.select().forEach(function(el){
+      if(el.tagName == 'SPAN') tags.push(XDom.getData(el, 'val'));
     });
-    var prevval = jbaseinputctrl.val();
-    jbaseinputctrl.val(tags.join(', '));
-    if(jbaseinputctrl.val()!=prevval) jbaseinputctrl.trigger('input');
+    var prevval = xdbaseinputctrl.value;
+    xdbaseinputctrl.value = tags.join(', ');
+    if(xdbaseinputctrl.value!=prevval) xdbaseinputctrl.emit('input');
   };
 
-  XExt.TagBox_Focus = function(jctrl, onFocus){
-    jctrl.on('click_remove', function(tmp_e, e){
+  XExt.TagBox_Focus = function(xdctrl, onFocus){
+    xdctrl.on('click_remove', function(e){
+      onFocus.call(this, e.detail);
+    });
+    XDom.on(xdctrl.select('.xtag_input'), 'focus', function(e){
       onFocus.call(this, e);
     });
-    jctrl.$find('.xtag_input').on('focus', function(e){
-      onFocus.call(this, e);
-    });
-    jctrl.on('click', function(e){
+    xdctrl.on('click', function(e){
       onFocus.call(this, e);
     });
   };
 
-  XExt.TagBox_AddTags = function(jctrl, jbaseinputctrl, new_tags){
+  XExt.TagBox_AddTags = function(xdctrl, xdbaseinputctrl, new_tags){
+    //TODO: Remove jQuery when all calls of TagBox_AddTags nolonger pass jQuery
+    if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
+    if(xdbaseinputctrl && xdbaseinputctrl.jquery) xdbaseinputctrl = XDom(xdbaseinputctrl[0])
+    //TODO: Remove jQuery when all calls of TagBox_AddTags nolonger pass jQuery
 
     var addTag = function(val){
       val = val.trim();
       if(!val.length) return;
-      var jnew = $('<span class="notextselect">'+XExt.escapeHTML(val)+'	&#8203;<div class="xtag_remove xtag_focusable">✕</div></span>');
-      jnew.data('val', val);
-      jctrl.$find('.xtag_input').before(jnew);
 
-      jnew.$find('.xtag_remove').on('click', function(e){
-        if(jctrl.hasClass('uneditable')) return;
-        jctrl.trigger('click_remove', [e]);
-        if(e.isPropagationStopped()||e.isImmediatePropagationStopped()) return;
-        jctrl.$find('.xtag_input').blur();
-        $(this).closest('span').remove();
-        XExt.TagBox_Save(jctrl, jbaseinputctrl);
+      var xdnew = XDom(XDom.renderOne('<span class="notextselect">'+XExt.escapeHTML(val)+'	&#8203;<div class="xtag_remove xtag_focusable">✕</div></span>'));
+      xdnew.data.val = val;
+      XDom.insertBefore(xdctrl, xdnew.selectOne(), xdctrl.selectOne('.xtag_input'));
+
+      XDom.on(xdnew.select('.xtag_remove'), 'click', function(e){
+        if(xdctrl.class.contains('uneditable')) return;
+        xdctrl.emit('click_remove', e);
+        // if(e.isPropagationStopped()||e.isImmediatePropagationStopped()) return; // TODO: Replace isPropagationStopped isImmediatePropagationStopped
+        XDom.blur(xdctrl.select('.xtag_input'));
+        XDom(this).parent('span').remove();
+        XExt.TagBox_Save(xdctrl, xdbaseinputctrl);
       });
     };
 
     _.each(new_tags, function(tag){ addTag(tag); });
-    XExt.TagBox_Save(jctrl, jbaseinputctrl);
+    XExt.TagBox_Save(xdctrl, xdbaseinputctrl);
   };
 
-  XExt.TagBox_Render = function(jctrl, jbaseinputctrl){
-    jbaseinputctrl.hide();
-    jctrl.empty();
-    jctrl.off('click');
+  XExt.TagBox_Render = function(xdctrl, xdbaseinputctrl){
+    //TODO: Remove jQuery when all calls of TagBox_Render nolonger pass jQuery
+    if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
+    if(xdbaseinputctrl && xdbaseinputctrl.jquery) xdbaseinputctrl = XDom(xdbaseinputctrl[0])
+    //TODO: Remove jQuery when all calls of TagBox_Render nolonger pass jQuery
+    xdbaseinputctrl.style.display = false;
+    xdctrl.content.clear();
 
-    jctrl.css('display','inline-block');
-    jctrl.addClass('xtag_focusable');
-    jctrl.append('<input class="xtag_input inactive xtag_focusable" size="1" />');
+    xdctrl.style.display = 'inline-block';
+    xdctrl.class.add('xtag_focusable');
+    xdctrl.content.append('<input class="xtag_input inactive xtag_focusable" size="1" />');
 
-    var jinput = jctrl.$find('.xtag_input');
+    var xdinput = XDom(xdctrl, '.xtag_input');
 
-    jctrl.on('click', function(){
-      if(jinput.hasClass('inactive')){
-        jinput.val('');
-        jinput[0].parentNode.insertBefore(jinput[0], null);
-        jinput.focus();
+    XExt.ReplaceEventHandler(xdctrl, 'click', function(){
+      if(xdinput.class.contains('inactive')){
+        xdinput.value = '';
+        xdinput.selectOne().parentNode.insertBefore(xdinput.selectOne(), null);
+        xdinput.focus();
       }
     });
 
-    if(jbaseinputctrl.data('id')) jinput.data('id', jbaseinputctrl.data('id'));
+    if(xdbaseinputctrl.data.id) xdinput.data.id = xdbaseinputctrl.data.id;
 
-    jinput.on('input keyup', function(e){
-      var val = $(this).val();
-      if(val.indexOf(',')>=0){ $(this).val(''); XExt.TagBox_AddTags(jctrl, jbaseinputctrl, val.split(',')); }
-      $(this).attr('size',Math.round(($(this).val()||' ').toString().length/.87));
+    xdinput.on('input keyup', function(e){
+      var xdthis = XDom(this);
+      var val = xdthis.value;
+      if(val.indexOf(',')>=0){ xdthis.value = ''; XExt.TagBox_AddTags(xdctrl, xdbaseinputctrl, val.split(',')); }
+      xdthis.attr.size = Math.round((xdthis.value||' ').toString().length/.87);
     });
 
     var isMovingInput = false;
 
-    jinput.on('keydown', function(e){
-      if(jctrl.hasClass('uneditable')) return;
+    xdinput.on('keydown', function(e){
+      if(xdctrl.class.contains('uneditable')) return;
 
       var obj = this;
-      var jobj = $(obj);
+      var xdobj = XDom(obj);
       var handled = false;
       isMovingInput = false;
 
@@ -189,37 +206,37 @@ exports = module.exports = function(jsh){
       if(sel) cursorpos = sel.start;
 
       if(e.which==39){ //Right
-        if(jobj.next().length && (cursorpos==jobj.val().length)){
+        if(xdobj.nextSibling().length && (cursorpos==xdobj.value.length)){
           handled = true;
           var objnextnext = null;
-          if(jobj.next().next().length) objnextnext = jobj.next().next()[0];
+          if(xdobj.nextSibling().nextSibling().length) objnextnext = xdobj.nextSibling().nextSibling().selectOne();
           isMovingInput = true;
-          jobj[0].parentNode.insertBefore(jobj[0], objnextnext);
-          jobj.focus();
+          xdobj.selectOne().parentNode.insertBefore(xdobj.selectOne(), objnextnext);
+          xdobj.focus();
           isMovingInput = false;
         }
       }
       else if(e.which==37){ //Left
-        if(jobj.prev().length && (cursorpos==0)){
+        if(xdobj.previousSibling().length && (cursorpos==0)){
           handled = true;
-          var objprev = jobj.prev()[0];
+          var objprev = xdobj.previousSibling().selectOne();
           isMovingInput = true;
-          jobj[0].parentNode.insertBefore(jobj[0], objprev);
-          jobj.focus();
+          xdobj.selectOne().parentNode.insertBefore(xdobj.selectOne(), objprev);
+          xdobj.focus();
           isMovingInput = false;
         }
       }
       else if(e.which==8){ //Backspace
-        if(jobj.prev().length && (cursorpos==0)){
+        if(xdobj.previousSibling().length && (cursorpos==0)){
           handled = true;
-          jobj.prev().remove();
-          XExt.TagBox_Save(jctrl, jbaseinputctrl);
+          xdobj.previousSibling().remove();
+          XExt.TagBox_Save(xdctrl, xdbaseinputctrl);
         }
       }
       else if(e.which==13){ //Backspace
-        var val = $(this).val();
-        $(this).val('');
-        XExt.TagBox_AddTags(jctrl, jbaseinputctrl, [val]);
+        var val = XDom.getValue(this);
+        XDom.setValue(this, '');
+        XExt.TagBox_AddTags(xdctrl, xdbaseinputctrl, [val]);
       }
       if(handled){
         e.preventDefault();
@@ -228,18 +245,18 @@ exports = module.exports = function(jsh){
       }
     });
 
-    jinput.on('focus', function(){
-      $(this).removeClass('inactive');
+    xdinput.on('focus', function(){
+      XDom.class.remove(this, 'inactive');
     });
 
-    jinput.on('focusout', function(){
+    xdinput.on('focusout', function(){
       if(isMovingInput) return;
-      if(!jctrl.hasClass('uneditable')){
-        var val = $(this).val();
-        $(this).val('');
-        XExt.TagBox_AddTags(jctrl, jbaseinputctrl, [val]);
+      if(!xdctrl.class.contains('uneditable')){
+        var val = XDom.getValue(this);
+        XDom.setValue(this, '');
+        XExt.TagBox_AddTags(xdctrl, xdbaseinputctrl, [val]);
       }
-      $(this).addClass('inactive');
+      XDom.class.add(this, 'inactive');
     });
   };
 
@@ -1538,7 +1555,7 @@ exports = module.exports = function(jsh){
     var fieldname = XExt.getFieldNameFromObject(ctrl);
     var menuid = '._item_context_menu_' + fieldname;
     if(xdtree.data.oncontextmenu) {
-      var f = (new Function('n', xdtree.getData('oncontextmenu')));
+      var f = (new Function('n', xdtree.data.oncontextmenu));
       var frslt = f.call(ctrl, n);
       if((frslt === false) || (frslt===true)) return frslt;
     }
@@ -1687,6 +1704,9 @@ exports = module.exports = function(jsh){
     return rslt;
   };
   XExt.TreeExpandAll = function (xdctrl) {
+    //TODO: remove below jQuery jquery $
+    if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
+    //TODO: remove above
     var xdctrl = xdctrl.parent('.xform_ctrl.tree');
     if(!xdctrl.select('.tree_render_lazy').length){
       XDom.class.add(xdctrl.select('.tree_item'), 'expanded');
@@ -1709,9 +1729,16 @@ exports = module.exports = function(jsh){
    * GENERAL FUNCTIONS *
    *********************/
 
+  /**
+   * Used when an element(s) eventType requires a new callback handler, deletes the old handler and replaces it with the new 
+   * @param {XDom}      target        - XDom seletor, element array or element
+   * @param {String}    eventType     - Name of the event / event type
+   * @param {Function}  handler       - replacement function
+   * @param {Obj}       eventOptions  - replacement event options
+   */
   XExt.ReplaceEventHandler = function (target, eventType, handler, eventOptions){
     if(!target || !XDom(target).length) return;
-    // Idea is to remove identical event, then apply a new one
+    // Idea is to remove identical event, to apply a new one
     for(var i=0; i<jsh.OnReplaceEvent.length; i++){ // TODO A WeakMap may turn this from O(n) => O(1)
       if(jsh.OnReplaceEvent[i].eventType == eventType){
         XDom.off(target, eventType, jsh.OnReplaceEvent[i].handler, jsh.OnReplaceEvent[i].eventOptions);
@@ -1719,7 +1746,7 @@ exports = module.exports = function(jsh){
         i--;
       }
     }
-    if(!handler) return; // enables removal without replacement
+    if(!handler) return; // enables removal without a need for replacement
     XDom.on(target, eventType, handler, eventOptions);
     var handlerObj = {target: target, eventType: eventType, handler: handler, eventOptions: eventOptions};
     jsh.OnReplaceEvent.push(handlerObj);

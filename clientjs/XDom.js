@@ -414,7 +414,7 @@ XDom.off = function(target, eventType, handler, eventOptions){
 
 XDom.emit = function(target, event, data){
   if (typeof(event) == 'string') {
-    if(data) event = new CustomEvent(event, {detail: data}); // TODO: Discuss Usage
+    if(data) event = new CustomEvent(event, {detail: data}); // TODO: Discuss CustomEvent Usage
     // it seems only a MouseEvent will trigger a checkbox to change value
     else if (['click', 'dblclick', 'mouseup', 'mousedown'].indexOf(event) != -1) {
       event = new MouseEvent(event);
