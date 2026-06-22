@@ -2173,7 +2173,7 @@ exports = module.exports = function(jsh){
 
         if(xdobj.select('.xcustomprompt_header').length) XDom.remove(xdobj.select('.xcustomprompt_header'));
         var xdHeader = XExt.renderTemplate('script.template_xcustomprompt_header');
-        if(options.title) XDom.content.prepend(xdHeader.select('.xcustomprompt_titlebar'), '<strong>' + options.title + '</strong>');
+        if(options.title) XDom.content.replaceText(xdHeader.select('.xcustomprompt_titlebar'), options.title);
         xdobj.content.prepend(xdHeader.outerHTML);
         if(options.btnClose){
           XDom.style.display(xdobj.select('.xcustomprompt_titlebar_close'), true);

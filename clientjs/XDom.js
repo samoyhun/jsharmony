@@ -157,6 +157,9 @@ var Selector = function(){
   Object.defineProperty(this, 'innerHTML', {
     get: function() { return XDom.innerHTML(this); },
   });
+  Object.defineProperty(this, 'innerText', {
+    get: function() { return XDom.innerText(this); },
+  });
   Object.defineProperty(this, 'outerHTML', {
     get: function() { return XDom.outerHTML(this); },
   });
@@ -315,9 +318,17 @@ XDom.class = {
 XDom.render = function(html){
   var container = document.createElement('template');
   container.innerHTML = html;
-  // childNodes is a live NodeList, if we return it direclty, it will likely have surprising results as nodes are moved elsewhere.
+  // childNodes is a live NodeList, if we return it directly, it will likely have surprising results as nodes are moved elsewhere.
   return Array.prototype.slice.call(container.content.childNodes);
 };
+
+XDom.renderText = function(txt){
+  var container = document.createElement('template');
+  container.innerText = txt;
+  // childNodes is a live NodeList, if we return it directly, it will likely have surprising results as nodes are moved elsewhere.
+  return Array.prototype.slice.call(container.childNodes);
+  
+}
 
 XDom.renderOne = function(html){
   var _el = XDom.render((html||'').trim());
@@ -341,6 +352,11 @@ XDom.content = {
   replace: function(target, val){
     _.each(XDom.resolve(target), function(el){
       if(el && el.replaceChildren) el.replaceChildren.apply(el, XDom.render(val));
+    });
+  },
+  replaceText: function(target, val){
+    _.each(XDom.resolve(target), function(el){
+      if(el && el.replaceChildren) el.replaceChildren.apply(el, XDom.renderText(val));
     });
   },
   clear: function(target){
@@ -639,6 +655,7 @@ function execOnFirstElWithProp(prop, f){
   };
 }
 
+XDom.innerText = execOnFirstElWithProp('innerText', function(el){ return el.innerText; });
 XDom.innerHTML = execOnFirstElWithProp('innerHTML', function(el){ return el.innerHTML; });
 XDom.outerHTML = execOnFirstElWithProp('outerHTML', function(el){ return el.outerHTML; });
 

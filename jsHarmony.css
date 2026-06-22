@@ -1058,6 +1058,11 @@ DIALOG BOXES
   -moz-border-radius: 5px;
   overflow:auto;
   max-height: calc(100vh - 66px);
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+<%-jshElementSelector%>.xdialogblock .xdialogbox-withHeader {
+  padding-top:40px;
 }
 <%-jshElementSelector%>.xdialogblock .xloadingcontainer,
 <%-jshElementSelector%>.xdialogblock .xalertbox,
@@ -1115,16 +1120,28 @@ DIALOG BOXES
 <%-jshElementSelector%> .xcustomprompt_header {
   display:flex;
   justify-content:center;
+  position: relative;
+  top: 5px;
+  position: absolute;
+  left: 0;
+  height: 25px;
+  background-color: #fff;
+  width: 100%;
 }
-<%-jshElementSelector%> .xcustomprompt_header .xcustomprompt_titlebar {
+<%-jshElementSelector%> .xcustomprompt_titlebar {
   text-align:center;
+  color: #555;
+  font-weight: bold;
+  font-size: 1.1em;
 }
-<%-jshElementSelector%> .xcustomprompt_header .xcustomprompt_titlebar_close {
+<%-jshElementSelector%> .xcustomprompt_titlebar_close {
   position:absolute;
-  right:20px;
+  top:-3px;
+  right:1px;
   display:none;
+  color: #555;
 }
-<%-jshElementSelector%> .xcustomprompt_header .xcustomprompt_titlebar_close:hover  {
+<%-jshElementSelector%> .xcustomprompt_titlebar_close:hover  {
   cursor:pointer;
 }
 <%-rootcss%> .xalertmessage,
