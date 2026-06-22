@@ -1112,6 +1112,21 @@ DIALOG BOXES
 	min-height:60px;
 	text-align:left;
 }
+<%-jshElementSelector%> .xcustomprompt_header {
+  display:flex;
+  justify-content:center;
+}
+<%-jshElementSelector%> .xcustomprompt_header .xcustomprompt_titlebar {
+  text-align:center;
+}
+<%-jshElementSelector%> .xcustomprompt_header .xcustomprompt_titlebar_close {
+  position:absolute;
+  right:20px;
+  display:none;
+}
+<%-jshElementSelector%> .xcustomprompt_header .xcustomprompt_titlebar_close:hover  {
+  cursor:pointer;
+}
 <%-rootcss%> .xalertmessage,
 <%-rootcss%> .xconfirmmessage,
 <%-rootcss%> .xpromptmessage {
