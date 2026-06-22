@@ -343,7 +343,8 @@ exports = module.exports = function(jsh){
   };
 
   XEditableGrid.prototype.BindRow = function (obj, datarow) {
-    if (obj.jquery) obj = obj.get(0);
+    console.log('bindrow', obj);
+    if (obj.jquery) obj = obj.filter(function() {return jsh.XDom.isElement(this);}).get(0);
     var _this = this;
     var modelid = _this.modelid;
     var xmodel = (modelid? jsh.XModels[modelid] : null);
