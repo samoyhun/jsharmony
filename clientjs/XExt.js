@@ -2067,8 +2067,10 @@ exports = module.exports = function(jsh){
       customPrompt = html;
       if(html && html.jquery) customPrompt = html[0];// TODO: For JQuery, html[0] returns the element
       if(!customPrompt) customPrompt = document.createElement('div');
+      var objDialog = XDom.parent(customPrompt, '.xdialog');
+      if(!objDialog.length) objDialog = [customPrompt];
       for(var i=0;i<jsh.xDialog.length;i++){
-        if(jsh.xDialog[i].obj == customPrompt){
+        if(jsh.xDialog[i].obj == objDialog[0]){
           if(jsh.xDialog[i].onDestroy) jsh.xDialog[i].onDestroy({ recycle: true });
           jsh.xDialog.splice(i, 1);
           i--;
@@ -2146,6 +2148,7 @@ exports = module.exports = function(jsh){
       function(){
         bindDialogHandler(xdobj.select('input.button_ok'), 'click', function(){ acceptfunc(); });
         bindDialogHandler(xdobj.select('input.button_cancel'), 'click', function(){ cancelfunc(); });
+        bindDialogHandler(xdobj.select('a.xpopup_header_close'), 'click', function(){ cancelfunc(); });
         bindDialogHandler(xdobj, 'acceptDialog', function(){ acceptfunc(); });
         bindDialogHandler(xdobj, 'cancelDialog', function(){ cancelfunc(); });
         bindDialogHandler(xdobj.select('input, textarea, select'), 'keydown', function (e) {
@@ -2170,16 +2173,6 @@ exports = module.exports = function(jsh){
           });
         }
         jsh.xdDialogBlock.selectOne().appendChild(customPrompt);
-
-        if(xdobj.select('.xcustomprompt_header').length) XDom.remove(xdobj.select('.xcustomprompt_header'));
-        var xdHeader = XExt.renderTemplate('script.template_xcustomprompt_header');
-        if(options.title) XDom.content.replaceText(xdHeader.select('.xcustomprompt_titlebar'), options.title);
-        xdobj.content.prepend(xdHeader.outerHTML);
-        if(options.btnClose){
-          XDom.style.display(xdobj.select('.xcustomprompt_titlebar_close'), true);
-          bindDialogHandler(xdobj.select('a.xcustomprompt_titlebar_close'), 'click', function(){ cancelfunc(); });
-        } 
-
         xdobj.style.display = true;
         jsh.xdDialogBlock.style.display = true;
         if(jsh.XPage && jsh.XPage.LayoutOneColumn) jsh.XPage.LayoutOneColumn(customPrompt, { reset: true });
@@ -2401,9 +2394,15 @@ exports = module.exports = function(jsh){
           xsubform.style.display = 'block';
           xsubform.style.overflow = 'auto';
         }
-        var element = XDom.selectOne(POPUP_CONTAINER);
-        if(!XDom.class.contains(element, 'xdialogbox')) XDom.class.add(element, 'xdialogbox');
-        XExt.CustomPrompt(null, element, onInit, null, null, onClosed, {backgroundClose: true, title: title, btnClose: true});
+
+        var xdPopupTemp = XExt.renderTemplate('script.template_popup');
+        var popup = xdPopupTemp.selectOne();
+
+        XDom.content.replaceText(xdPopupTemp.select('.xpopup_header_title'), title);
+        xdPopupTemp.selectOne('.xpopup_content').appendChild(XDom.selectOne(POPUP_CONTAINER));
+
+
+        XExt.CustomPrompt(null, popup, onInit, null, null, onClosed, {backgroundClose: true});
       });
   };
 

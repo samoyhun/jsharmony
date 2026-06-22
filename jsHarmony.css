@@ -1117,32 +1117,34 @@ DIALOG BOXES
 	min-height:60px;
 	text-align:left;
 }
-<%-jshElementSelector%> .xcustomprompt_header {
-  display:flex;
-  justify-content:center;
-  position: relative;
-  top: 5px;
-  position: absolute;
-  left: 0;
-  height: 25px;
-  background-color: #fff;
-  width: 100%;
+<%-jshElementSelector%> .xpopup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
-<%-jshElementSelector%> .xcustomprompt_titlebar {
-  text-align:center;
+<%-jshElementSelector%> .xpopup_header {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  background-color: #fff;
+}
+<%-jshElementSelector%> .xpopup_header_title {
+  text-align: center;
   color: #555;
   font-weight: bold;
   font-size: 1.1em;
+  width:100%;
 }
-<%-jshElementSelector%> .xcustomprompt_titlebar_close {
-  position:absolute;
-  top:-3px;
-  right:1px;
-  display:none;
+<%-jshElementSelector%> .xpopup_header_close {
+  margin-left:auto;
   color: #555;
 }
-<%-jshElementSelector%> .xcustomprompt_titlebar_close:hover  {
+<%-jshElementSelector%> .xpopup_header_close:hover  {
   cursor:pointer;
+}
+<%-jshElementSelector%> .xpopup_content {
+  max-height: calc(100vh - 150px);
+  overflow: auto;
 }
 <%-rootcss%> .xalertmessage,
 <%-rootcss%> .xconfirmmessage,

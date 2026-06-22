@@ -569,6 +569,7 @@ jsHarmony.prototype.requireHTML5 = function(){
     if (!document.createElement('canvas').getContext) {
       var content = '\
       <div class="browser_upgrade_msg xdialogbox" style="height: 130px; text-align: center; width: 450px;">\
+        <strong>Did you know that your browser is out of date?<strong>\
         <p>In order to use this system, you will need to upgrade your web browser to a modern version that supports HTML5.  Please click "Upgrade" to view supported browsers.</p>\
         <div>\
         <input style="padding:2px 6px;" type="button" value="Upgrade" onclick="window.location.href=\'http://www.browsehappy.com\';" />\
@@ -576,7 +577,7 @@ jsHarmony.prototype.requireHTML5 = function(){
         </div>\
       </div>\
       ';
-      _this.XExt.CustomPrompt(null, content, null, null, null, null, {title: "Did you know that your browser is out of date?"});
+      _this.XExt.CustomPrompt(null, content);
     }
   });
 };
