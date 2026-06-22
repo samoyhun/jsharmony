@@ -2145,7 +2145,6 @@ exports = module.exports = function(jsh){
       },
       function(){
         bindDialogHandler(xdobj.select('input.button_ok'), 'click', function(){ acceptfunc(); });
-        bindDialogHandler(xdobj.select('a.close'), 'click', function(){ cancelfunc(); });
         bindDialogHandler(xdobj.select('input.button_cancel'), 'click', function(){ cancelfunc(); });
         bindDialogHandler(xdobj, 'acceptDialog', function(){ acceptfunc(); });
         bindDialogHandler(xdobj, 'cancelDialog', function(){ cancelfunc(); });
@@ -2171,6 +2170,16 @@ exports = module.exports = function(jsh){
           });
         }
         jsh.xdDialogBlock.selectOne().appendChild(customPrompt);
+
+        if(xdobj.select('.xcustomprompt_header').length) XDom.remove(xdobj.select('.xcustomprompt_header'));
+        var xdHeader = XExt.renderTemplate('script.template_xcustomprompt_header');
+        if(options.title) XDom.content.prepend(xdHeader.select('.xcustomprompt_titlebar'), '<strong>' + options.title + '</strong>');
+        xdobj.content.prepend(xdHeader.outerHTML);
+        if(options.btnClose){
+          XDom.style.display(xdobj.select('.xcustomprompt_titlebar_close'), true);
+          bindDialogHandler(xdobj.select('a.xcustomprompt_titlebar_close'), 'click', function(){ cancelfunc(); });
+        } 
+
         xdobj.style.display = true;
         jsh.xdDialogBlock.style.display = true;
         if(jsh.XPage && jsh.XPage.LayoutOneColumn) jsh.XPage.LayoutOneColumn(customPrompt, { reset: true });
@@ -2393,12 +2402,8 @@ exports = module.exports = function(jsh){
           xsubform.style.overflow = 'auto';
         }
         var element = XDom.selectOne(POPUP_CONTAINER);
-        if(!XDom.class.contains(element, 'xdialogbox')) {
-          XDom.class.add(element, 'xdialogbox');
-          XDom.content.prepend(element, XExt.renderTemplate('.template_xpopup').outerHTML);
-          if(title) XDom(element, '.popup_header').content.prepend('<strong>'+ title + '</strong>');
-        }
-        XExt.CustomPrompt(null, element, onInit, null, null, onClosed, {backgroundClose: true});
+        if(!XDom.class.contains(element, 'xdialogbox')) XDom.class.add(element, 'xdialogbox');
+        XExt.CustomPrompt(null, element, onInit, null, null, onClosed, {backgroundClose: true, title: title, btnClose: true});
       });
   };
 
