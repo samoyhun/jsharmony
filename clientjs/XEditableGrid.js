@@ -343,8 +343,10 @@ exports = module.exports = function(jsh){
   };
 
   XEditableGrid.prototype.BindRow = function (obj, datarow) {
-    console.log('bindrow', obj);
-    if (obj.jquery) obj = obj.filter(function() {return jsh.XDom.isElement(this);}).get(0);
+    if (obj.jquery) {
+      console.warn('Depreciated: XEditableGrid.BindRow received a query object. Please pass a dom element.');
+      obj = obj.filter(function() {return jsh.XDom.isElement(this);}).get(0);
+    }
     var _this = this;
     var modelid = _this.modelid;
     var xmodel = (modelid? jsh.XModels[modelid] : null);
