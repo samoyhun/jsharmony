@@ -90,11 +90,14 @@ Many callbacks and other interface methods formally took jquery wrapped sets. Th
 
 `XForm.Data._jrow` has become `XForm.Data._row`, and is a plain element.
 
-#### model.onrow(un)bind specifies a jobj argument TBD
+#### datamodel BindLOV (optional second argument)
+
+```xmodel.datamodel.prototype.BindLOV(xform,*obj*);```
+
+#### XModel.RenderField (second argument and return value) TBD XModel
 #### ongetvalue (forth parameter) TBD XModel callback in defined in tutorials etc.
   - jctrl
-#### datamodel BindLOV (second argument) TBD XModel
-#### XModel.RenderField (second argument and return value) TBD XModel
+#### model.onrow(un)bind specifies a jobj argument TBD
 #### XExt.Render(Parent)LOV (second argument)
 #### XExt.TreeRender (first argument)
 #### XExt.TagBox_Render (both arguments)

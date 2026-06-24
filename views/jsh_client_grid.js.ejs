@@ -122,10 +122,9 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       }
       if (_.isArray(obj)) obj = _.filter(obj, jsh.XDom.isElement)[0];
       if(!readonly) xeditablegrid.BindRow(obj,datarow);
-      // TODO: BindLOV takes a jquery
-      xmodel.datamodel.prototype.BindLOV(xform,$(obj));
+      xmodel.datamodel.prototype.BindLOV(xform,obj);
       // TODO: model.onrowbind takes a jquery
-      if(xmodel.onrowbind) xmodel.onrowbind(xmodel,$(jobj),datarow);
+      if(xmodel.onrowbind) xmodel.onrowbind(xmodel,$(obj),datarow);
     };
     xgrid.OnDestroyingRows = function(xdObj){
       if(!xeditablegrid) return;

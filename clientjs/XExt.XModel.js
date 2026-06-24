@@ -597,7 +597,11 @@ exports = module.exports = function(jsh){
   XExtXModel.BindLOV = function (modelid) {
     modelid = jsh.XExt.resolveModelID(modelid);
     return function (xform, parentobj) {
-      if (!parentobj) parentobj = jsh.root;
+      if (parentobj && parentobj.jquery) {
+        console.warn('Depreciated: XModel.BindLOV received a jquery object. Please pass a dom element.');
+        parentobj = parentobj.filter(function() {return jsh.XDom.isElement(this);}).get(0);
+      }
+      if (!parentobj) parentobj = jsh.xdroot.selectOne();
       var xmodel = jsh.XModels[modelid];
       if(!xmodel) return;
       var isGrid = (xmodel.layout == 'grid');
@@ -613,14 +617,15 @@ exports = module.exports = function(jsh){
           for (var i = 0; i < lovparents.length; i++) {
             var curselector = (isGrid?'.':'.') + lovparents[i] + '.xelem' + xmodel.class;
             lovparents_selector += ((i > 0)?',':'') + curselector;
-            lovparents_val += 'parentvals.push(parentobj.find("' + curselector + '").val()); ';
+            lovparents_val += 'parentvals.push(jsh.XDom(parentobj, "' + curselector + '").value); ';
           }
-          parentobj.$find(lovparents_selector).change(function (evt) {
+          jsh.XDom(parentobj, lovparents_selector).on('change', function (evt) {
             var parentvals = [];
             //Narrow value of child LOV to values where CODVAL1 = that value
-            var ctrl = parentobj.$find((isGrid?'.':'.') + field.name + '.xelem' + xmodel.class);
+            var ctrl = jsh.XDom(parentobj, (isGrid?'.':'.') + field.name + '.xelem' + xmodel.class).selectOne();
             jsh.XExt.JSEval(lovparents_val,this,{ parentvals: parentvals, parentobj: parentobj, xform: xform, modelid: modelid });
-            jsh.XExt.RenderParentLOV(xform.Data, ctrl, parentvals, xform.Data._LOVs[field.name], xform.Data.Fields[field.name], ('lovparents' in field));
+            // TODO: RenderParentLOV takes a jquery
+            jsh.XExt.RenderParentLOV(xform.Data, $(ctrl), parentvals, xform.Data._LOVs[field.name], xform.Data.Fields[field.name], ('lovparents' in field));
           });
         }
       });
