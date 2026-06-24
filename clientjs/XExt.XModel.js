@@ -17,6 +17,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this package.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// TODO: remaining XModel jquery refrences are wrapping arguments for calls to outside functions.
 var $ = require('./jquery-1.11.2');
 $.fn.$find = function(){ return $.fn.find.apply(this, arguments); };
 var _ = require('lodash');
@@ -38,13 +39,16 @@ exports = module.exports = function(jsh){
 
   XExtXModel.GetRowID = function (modelid,obj){
     modelid = jsh.XExt.resolveModelID(modelid);
-    var jobj = $(obj);
+    if (obj && obj.jquery) {
+      console.warn('Depreciated: XModel.GetRowID received a jquery object. Please pass a dom element.');
+      obj = obj.filter(function() {return jsh.XDom.isElement(this);}).get(0);
+    }
     var xmodel = jsh.XModels[modelid];
     var rslt = -1;
-    if(jobj.hasClass('row_independent')){ /* Do nothing */ }
+    if(jsh.XDom.class.contains(obj, 'row_independent')){ /* Do nothing */ }
     else {
-      var cur_row = jobj.closest('.xrow_'+xmodel.class);
-      if (cur_row.length) rslt = cur_row.data('id');
+      var cur_row = obj.closest('.xrow_'+xmodel.class);
+      if (cur_row) rslt = jsh.XDom.getData(cur_row, 'id');
     }
     return rslt;
   };
@@ -63,23 +67,23 @@ exports = module.exports = function(jsh){
 
       if (xmodel.layout == 'form-m') {
         if (xmodel.controller.form.Count()==0) {
-          jsh.$root('.xelem'+xmodel.class+'.xnorecords').show();
-          jsh.$root('.xelem'+xmodel.class+'.xformcontainer').css('visibility', 'hidden');
+          jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xnorecords').display = true;
+          jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xformcontainer').style.visibility = 'hidden';
         }
         else {
-          jsh.$root('.xelem'+xmodel.class+'.xnorecords').hide();
-          jsh.$root('.xelem'+xmodel.class+'.xformcontainer').css('visibility', 'visible');
+          jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xnorecords').display = false;
+          jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xformcontainer').style.visibility = 'visible';
         }
       }
       else if(xmodel.layout == 'form') {
         if(!jsh.is_insert){
           if (xmodel.controller.form.Data._is_insert) {
-            jsh.$root('.xelem'+xmodel.class+'.xnorecords').show();
-            jsh.$root('.xelem'+xmodel.class+'.xformcontainer').css('visibility', 'hidden');
+            jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xnorecords').display = true;
+            jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xformcontainer').style.visibility = 'hidden';
           }
           else {
-            jsh.$root('.xelem'+xmodel.class+'.xnorecords').hide();
-            jsh.$root('.xelem'+xmodel.class+'.xformcontainer').css('visibility', 'visible');
+            jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xnorecords').display = false;
+            jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xformcontainer').style.visibility = 'visible';
           }
         }
       }
@@ -118,7 +122,7 @@ exports = module.exports = function(jsh){
         XExtXModel.RenderField(_this, parentobj, modelid, field);
       });
       if (xmodel.layout == 'form-m') {
-        jsh.$root('.navtext_' + xmodel.class).html((xmodel.controller.form.Index + 1) + ' of ' + xmodel.controller.form.Count());
+        jsh.XDom(jsh.xdroot, '.navtext_' + xmodel.class).content.replace((xmodel.controller.form.Index + 1) + ' of ' + xmodel.controller.form.Count());
       }
     };
   };
@@ -367,24 +371,24 @@ exports = module.exports = function(jsh){
   XExtXModel.OnControlUpdate = function (modelid) {
     modelid = jsh.XExt.resolveModelID(modelid);
     return function (obj, e) {
-      var jobj = $(obj);
+      var xdObj = jsh.XDom(obj);
       var id = jsh.XExt.getFieldNameFromObject(obj);
       var _this = this;
       var field = this.Fields[id];
       if(field){
         if (!this._is_insert && !field.unbound && (field.control != 'tree') && jsh.XExt.hasAction(field.actions,'IU')) {
           if (this.HasUpdate(id)) {
-            if (!jobj.hasClass('updated')) {
-              jobj.addClass('updated');
-              if(jobj.parent().hasClass('xform_checkbox_container')) jobj.parent().addClass('updated');
-              if(field.control=='tagbox') jobj.prev().addClass('updated');
+            if (!xdObj.class.contains('updated')) {
+              xdObj.class.add('updated');
+              if(xdObj.parent().class.contains('xform_checkbox_container')) xdObj.parent().class.add('updated');
+              if(field.control=='tagbox') xdObj.previousSibling().class.add('updated');
             }
           }
           else {
-            if (jobj.hasClass('updated')) {
-              jobj.removeClass('updated');
-              if (jobj.parent().hasClass('xform_checkbox_container')) jobj.parent().removeClass('updated');
-              if(field.control=='tagbox') jobj.prev().removeClass('updated');
+            if (xdObj.class.contains('updated')) {
+              xdObj.class.remove('updated');
+              if (xdObj.parent().class.contains('xform_checkbox_container')) xdObj.parent().class.remove('updated');
+              if(field.control=='tagbox') xdObj.previousSibling(). class.remove('updated');
             }
           }
         }

@@ -107,6 +107,10 @@ XExt.XModel.RenderField(
 );
 ```
 
+#### XModel.GetRowID (second argument)
+
+```rowid = jsh.XExt.XModel.GetRowID(modelid, *rowref*);```
+
 #### ongetvalue (forth parameter) TBD XModel callback in defined in tutorials etc.
   - jctrl
 #### model.onrow(un)bind specifies a jobj argument TBD
