@@ -368,10 +368,9 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
               //Render keys
               for(var key in dbdata){
                 if(key in xform.Data.Fields){
-                  // TODO: RenderField takes a jquery
                   XExt.XModel.RenderField(
                     xform.DataSet[dbrowid],
-                    $(jsh.XDom(jsh.xdroot, xgrid.PlaceholderID).selector("tr[data-id='" + dbrowid + "']").select()), 
+                    jsh.XDom(jsh.xdroot, xgrid.PlaceholderID).selector("tr[data-id='" + dbrowid + "']").selectOne(), 
                     xmodel.id, 
                     xform.Data.Fields[key],
                     xform.DataSet[dbrowid][key],

@@ -94,13 +94,29 @@ Many callbacks and other interface methods formally took jquery wrapped sets. Th
 
 ```xmodel.datamodel.prototype.BindLOV(xform,*obj*);```
 
-#### XModel.RenderField (second argument and return value) TBD XModel
+#### XModel.RenderField (second argument and return value)
+
+```
+XExt.XModel.RenderField(
+  xform.DataSet[dbrowid],
+  jsh.XDom(jsh.xdroot, xgrid.PlaceholderID).selector("tr[data-id='" + dbrowid + "']").selectOne(), 
+  xmodel.id, 
+  xform.Data.Fields[key],
+  xform.DataSet[dbrowid][key],
+  { updatePreviousValue: false }
+);
+```
+
 #### ongetvalue (forth parameter) TBD XModel callback in defined in tutorials etc.
   - jctrl
 #### model.onrow(un)bind specifies a jobj argument TBD
+#### XPage.Enable (first argument)
+#### XPage.Disable (first argument)
 #### XExt.Render(Parent)LOV (second argument)
 #### XExt.TreeRender (first argument)
+#### XExt.TreeSelectNode (first argument)
 #### XExt.TagBox_Render (both arguments)
+#### XExt.TagBox_Refresh (both arguments)
 #### popupShow jquery arguments TBD
 #### jsh.XBarcode.EnableScanner($(this)); TBD needs request
 
