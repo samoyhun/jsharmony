@@ -344,7 +344,7 @@ exports = module.exports = function(jsh){
 
   XEditableGrid.prototype.BindRow = function (obj, datarow) {
     if (obj.jquery) {
-      console.warn('Depreciated: XEditableGrid.BindRow received a query object. Please pass a dom element.');
+      console.warn('Depreciated: XEditableGrid.BindRow received a jquery object. Please pass a dom element.');
       obj = obj.filter(function() {return jsh.XDom.isElement(this);}).get(0);
     }
     var _this = this;

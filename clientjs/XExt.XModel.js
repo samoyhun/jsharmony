@@ -53,14 +53,14 @@ exports = module.exports = function(jsh){
     modelid = jsh.XExt.resolveModelID(modelid);
     return function(){
       var _this = this; //datamodel
-      var parentobj = jsh.root;
-      if (this._jrow) parentobj = this._jrow;
+      var parentobj = jsh.XDom.selectOne(null, jsh.xdroot);
+      if (this._row) parentobj = this._row;
       var xmodel = jsh.XModels[modelid];
       if(!xmodel) return;
       var isGrid = (xmodel.layout == 'grid');
       //Clear highlighted background of currently edited cells
-      parentobj.$find('.xelem'+xmodel.class+'.xform_ctrl.updated').removeClass('updated');
-      
+      jsh.XDom(parentobj, '.xelem'+xmodel.class+'.xform_ctrl.updated').class.remove('updated');
+
       if (xmodel.layout == 'form-m') {
         if (xmodel.controller.form.Count()==0) {
           jsh.$root('.xelem'+xmodel.class+'.xnorecords').show();
@@ -89,28 +89,34 @@ exports = module.exports = function(jsh){
         for (var _LOV in this._LOVs) {
           var lovselector = '.' + _LOV + '.xelem' + xmodel.class;
           if (isGrid) lovselector = '.' + _LOV + '.xelem' + xmodel.class;
-          var ctrl = parentobj.$find(lovselector);
+          var ctrl = jsh.XDom.selectOne(lovselector, parentobj);
           if (('control' in this.Fields[_LOV]) && (this.Fields[_LOV].control == 'tree'))
-            jsh.XExt.TreeRender(ctrl, this._LOVs[_LOV], this.Fields[_LOV]);
+            // TODO: TreeRender takes a jquery
+            jsh.XExt.TreeRender($(ctrl), this._LOVs[_LOV], this.Fields[_LOV]);
           else if ('lovparent' in this.Fields[_LOV])
-            jsh.XExt.RenderParentLOV(_this, ctrl, [_this[this.Fields[_LOV].lovparent]], this._LOVs[_LOV], this.Fields[_LOV], false);
+            // TODO: RenderParentLOV takes a jquery
+            jsh.XExt.RenderParentLOV(_this, $(ctrl), [_this[this.Fields[_LOV].lovparent]], this._LOVs[_LOV], this.Fields[_LOV], false);
           else if ('lovparents' in this.Fields[_LOV]) {
             var parentvals = [];
             for (var i = 0; i < this.Fields[_LOV].lovparents.length; i++) {
               parentvals.push(_this[this.Fields[_LOV].lovparents[i]]);
             }
-            jsh.XExt.RenderParentLOV(_this, ctrl, parentvals, this._LOVs[_LOV], this.Fields[_LOV], true);
+            // TODO: RenderParentLOV takes a jquery
+            jsh.XExt.RenderParentLOV(_this, $(ctrl), parentvals, this._LOVs[_LOV], this.Fields[_LOV], true);
           }
           else
-            jsh.XExt.RenderLOV(this, ctrl, this._LOVs[_LOV]);
+            // TODO: RenderLOV takes a jquery
+            jsh.XExt.RenderLOV(this, $(ctrl), this._LOVs[_LOV]);
         }
       }
       //Put data into the form
       _.each(this.Fields, function (field) {
         if(field.control=='tagbox'){
-          jsh.XExt.TagBox_Render(parentobj.$find('.'+field.name+'_editor.xtagbox'+'.xelem'+xmodel.class), parentobj.$find('.'+field.name+'.xelem'+xmodel.class));
+          // TODO: TagBox_Render takes two jquery
+          jsh.XExt.TagBox_Render($(jsh.XDom(parentobj, '.'+field.name+'_editor.xtagbox'+'.xelem'+xmodel.class).select()), $(jsh.XDom(parentobj, '.'+field.name+'.xelem'+xmodel.class).select()));
         }
-        XExtXModel.RenderField(_this, parentobj, modelid, field);
+        // TODO: RenderField takes jquery
+        XExtXModel.RenderField(_this, $(parentobj), modelid, field);
       });
       if (xmodel.layout == 'form-m') {
         jsh.$root('.navtext_' + xmodel.class).html((xmodel.controller.form.Index + 1) + ' of ' + xmodel.controller.form.Count());
@@ -120,15 +126,17 @@ exports = module.exports = function(jsh){
 
   XExtXModel.SetFieldValue = function (xformdata, field, val){
     xformdata[field.name] = val;
-    var parentobj = jsh.root;
-    if (xformdata._jrow) parentobj = xformdata._jrow;
-    XExtXModel.RenderField(xformdata, parentobj, xformdata._modelid, field, val);
+    var parentobj = jsh.XDom.selectOne(null, jsh.xdroot);
+    if (xformdata._row) parentobj = xformdata._row;
+    // TODO: RenderField takes jquery
+    XExtXModel.RenderField(xformdata, $(parentobj), xformdata._modelid, field, val);
   };
 
   XExtXModel.SetControlValue = function (xformdata, field, val) { //Leave val to "undefined" for refresh
-    var parentobj = jsh.root;
-    if (xformdata._jrow) parentobj = xformdata._jrow;
-    var jctrl = XExtXModel.RenderField(xformdata, parentobj, xformdata._modelid, field, val, { updatePreviousValue: false });
+    var parentobj = jsh.XDom.selectOne(null, jsh.xdroot);
+    if (xformdata._row) parentobj = xformdata._row;
+    // TODO: RenderField takes jquery and returns a jquery
+    var jctrl = XExtXModel.RenderField(xformdata, $(parentobj), xformdata._modelid, field, val, { updatePreviousValue: false });
     if(jctrl && jctrl.length){
       jctrl.trigger('change');
       xformdata.OnControlUpdate(jctrl[0]);
@@ -409,40 +417,40 @@ exports = module.exports = function(jsh){
   XExtXModel.GetValue = function (modelid) {
     modelid = jsh.XExt.resolveModelID(modelid);
     return function (field) {
-      var parentobj = jsh.root;
-      if (this._jrow) parentobj = this._jrow;
+      var parentobj = jsh.XDom.selectOne(null, jsh.xdroot);
+      if (this._row) parentobj = this._row;
       var xmodel = jsh.XModels[modelid];
       var isGrid = (xmodel.layout == 'grid');
       
       var fieldselector = '.' + field.name + '.xelem' + xmodel.class;
       if (isGrid) fieldselector = '.' + field.name + '.xelem' + xmodel.class;
-      var jctrl = parentobj.$find(fieldselector);
+      var ctrl = jsh.XDom(parentobj, fieldselector).selectOne();
       var val = '';
 
       if (('control' in field) && (field.control == 'file_upload')) {
         var filefieldselector = '.xelem' + xmodel.class + ' .' + field.name;
         if (isGrid) filefieldselector = '.xelem' + xmodel.class + ' .' + field.name;
 
-        var jctrl_token = parentobj.$find(filefieldselector + '_token');
-        var jctrl_dbdelete = parentobj.$find(filefieldselector + '_dbdelete');
-        var jctrl_dbexists = parentobj.$find(filefieldselector + '_dbexists');
-        var file_token = jctrl_token.val();
+        var ctrl_token = jsh.XDom(parentobj, filefieldselector + '_token');
+        var ctrl_dbdelete = jsh.XDom(parentobj, filefieldselector + '_dbdelete').selectOne();
+        var ctrl_dbexists = jsh.XDom(parentobj, filefieldselector + '_dbexists').selectOne();
+        var file_token = ctrl_token.value;
         if (file_token) val = file_token;
-        else if (jctrl_dbdelete.val() == '1') val = '';
-        else if (jctrl_dbexists.val() == '1') val = true;
+        else if (ctrl_dbdelete.value == '1') val = '';
+        else if (ctrl_dbexists.value == '1') val = true;
         else val = false;
       }
       else if (('control' in field) && (field.control == 'tree')) {
-        if (jctrl.length) {
-          var selected_nodes = jsh.XExt.TreeGetSelectedNodes(jctrl[0]);
+        if (ctrl) {
+          var selected_nodes = jsh.XExt.TreeGetSelectedNodes(ctrl);
           if (selected_nodes.length > 0) val = selected_nodes[0];
           else val = null;
         }
         else val = null;
       }
       else if (('control' in field) && (field.control == 'checkbox')) {
-        var checked = jctrl.prop('checked');
-        var ishidden = jctrl.css('visibility').toLowerCase() == 'hidden';
+        var checked = ctrl && ctrl.checked;
+        var ishidden = ctrl && ctrl.style.visibility.toLowerCase() == 'hidden';
         var checkval = checked ? '1':'0';
         
         if ('controlparams' in field) {
@@ -453,10 +461,10 @@ exports = module.exports = function(jsh){
         val = checkval;
       }
       else {
-        val = jctrl.val();
+        val = ctrl && ctrl.value;
         if(_.includes(['html','label','linkbutton','button'],field.control)){
-          var jctrl_hidden = parentobj.$find('.'+field.name+'_field_value.xelem'+xmodel.class);
-          val = jctrl_hidden.val();
+          var ctrl_hidden = jsh.XDom(parentobj, '.'+field.name+'_field_value.xelem'+xmodel.class).selectOne();
+          val = ctrl_hidden.value;
         }
         if(typeof val === 'undefined') val = '';
         var ckeditorid = xmodel.class+'_'+field.name;
@@ -475,7 +483,8 @@ exports = module.exports = function(jsh){
         if(!val || ((typeof binding_val != 'undefined') && (binding_val !== null) && (binding_val !== ''))) val = binding_val;
       }
 
-      if (field.ongetvalue) val = field.ongetvalue(val, field, xmodel, jctrl, parentobj);
+      // TODO: ongetvalue takes a jquery
+      if (field.ongetvalue) val = field.ongetvalue(val, field, xmodel, $(ctrl), parentobj);
       if ('format' in field) {
         val = jsh.XFormat.Decode(field.format, val);
       }

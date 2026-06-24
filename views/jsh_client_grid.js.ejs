@@ -117,7 +117,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     xgrid.OnRowBind = function(obj,datarow,readonly){
       if(!xeditablegrid) return;
       if (obj.jquery) {
-        console.warn('Depreciated: jsh_client_grid.OnBindRow received a query object. Please pass a dom element.');
+        console.warn('Depreciated: jsh_client_grid.OnBindRow received a jquery object. Please pass a dom element.');
         obj = obj.filter(function() {return jsh.XDom.isElement(this);}).get(0);
       }
       if (_.isArray(obj)) obj = _.filter(obj, jsh.XDom.isElement)[0];
@@ -183,8 +183,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
             var rowidx = 0;
             jsh.async.eachSeries(data[_this.modelid], function(row, row_cb){
               var rowid = _this.RowCount + rowidx;
-              // TODO: SetIndex takes a jquery
-              xform.SetIndex(rowid, false, $(rows[rowid]));
+              xform.SetIndex(rowid, false, rows[rowid]);
               xform.Render({ resetValidation: false });
               _this.OnRowBind(rows[rowid], row, readOnlyGrid);
               rowidx++;
@@ -410,9 +409,8 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
     },function(data, handled){
       //On Fail
-      // TODO: direct access to _jrow, a jquery object
-      if(xform.Data._jrow){
-        jsh.XDom(xform.Data._jrow.get()).selector('.xform_ctrl').class.add(xmodel.datamodel.prototype.xvalidate.ErrorClass);
+      if(xform.Data._row){
+        jsh.XDom(xform.Data._row, '.xform_ctrl').class.add(xmodel.datamodel.prototype.xvalidate.ErrorClass);
       }
       if(oncancel) oncancel(false);
       if(!handled){

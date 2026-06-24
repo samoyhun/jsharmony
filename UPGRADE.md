@@ -82,13 +82,22 @@ Many callbacks and other interface methods formally took jquery wrapped sets. Th
 
 ```xeditablegrid.BindRow(*obj*,datarow);```
 
-#### xform.SetIndex TBD
-  - xform.Data._jrow
+#### xform.SetIndex (optional third argument)
+
+```xform.SetIndex(rowid, false, rows[rowid]);```
+
+#### xform.Data._jrow
+
+`XForm.Data._jrow` has become `XForm.Data._row`, and is a plain element.
+
 #### model.onrow(un)bind specifies a jobj argument TBD
-#### ongetvalue TBD XModel callback in defined in tutorials etc.
+#### ongetvalue (forth parameter) TBD XModel callback in defined in tutorials etc.
   - jctrl
 #### datamodel BindLOV (second argument) TBD XModel
-#### XModel.RenderField TBD XModel
+#### XModel.RenderField (second argument and return value) TBD XModel
+#### XExt.Render(Parent)LOV (second argument)
+#### XExt.TreeRender (first argument)
+#### XExt.TagBox_Render (both arguments)
 #### popupShow jquery arguments TBD
 #### jsh.XBarcode.EnableScanner($(this)); TBD needs request
 

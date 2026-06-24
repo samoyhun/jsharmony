@@ -106,8 +106,9 @@ exports = module.exports = function(jsh){
     else if(obj.xvalidate) validator = obj.xvalidate;
     else return true;
     var parentobj = undefined;
-    if (this.xData) parentobj = this.Data._jrow;
-    return validator.ValidateControls(perms,obj,'',parentobj);
+    if (this.xData) parentobj = this.Data._row;
+    // TODO: validation takes a jquery object
+    return validator.ValidateControls(perms,obj,'',$(parentobj));
   };
   XForm.prototype.ResetValidation = function(obj){
     obj = obj || (this.Index>=0?this.Data:undefined);
@@ -172,7 +173,7 @@ exports = module.exports = function(jsh){
     this.NavTo(this.Count()-1);
   };
   // TODO: SetIndex takes a jquery object, and puts into Data, which is directly accessed elsewhere.
-  XForm.prototype.SetIndex = function (_index, saveold, jrow) {
+  XForm.prototype.SetIndex = function (_index, saveold, row) {
     if (typeof saveold == 'undefined') saveold = true;
     if (_index > this.Count()) { jsh.XExt.Alert('Cannot navigate - Index greater than size of collection'); return false; }
     else if (_index < 0) { jsh.XExt.Alert('Cannot navigate - Index less than zero'); return false; }
@@ -190,8 +191,15 @@ exports = module.exports = function(jsh){
     this.Data._bcrumbs = this.bcrumbs;
     this.Data._title = this.title;
     if (this.xData) {
-      if(jrow) this.Data._jrow = jrow;
-      else this.Data._jrow = jsh.$root(this.xData.PlaceholderID).$find("tr[data-id='" + this.Index + "']");
+      if(row) {
+        if (row.jquery) {
+          console.warn('Depreciated: XForm.SetIndex received a jquery object. Please pass a dom element.');
+          row = row.filter(function() {return jsh.XDom.isElement(this);}).get(0);
+        }
+        this.Data._row = row;
+      }
+      else this.Data._row = jsh.XDom(jsh.xdroot, this.xData.PlaceholderID).selectOne("tr[data-id='" + this.Index + "']");
+      //this.Data._jrow = $(this.Data._row);
     }
     return true;
   };
