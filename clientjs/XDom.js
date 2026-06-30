@@ -875,7 +875,7 @@ XDom.animate.height = function(tgt, to, callback, duration){
   var xdobj = XDom(tgt);
   var _el = xdobj.select();
   if(_el.length != 1) {_.map(_el, function(el){ XDom.animate.height(el, to, callback, duration); }); return; }
-  duration = duration || 500;
+  duration = (!duration && (duration !== 0)) ? 500 : duration;
 
   var resetOverflow = false;
   var isVisible = xdobj.isVisible();
@@ -916,7 +916,7 @@ XDom.animate.opacity = function(tgt, to, callback, duration){
   var xdobj = XDom(tgt);
   var _el = xdobj.select();
   if(_el.length != 1) {_.map(_el, function(el){ XDom.animate.opacity(el, to, callback, duration); }); return; }
-  duration = duration || 500;
+  duration = (!duration && (duration !== 0)) ? 500 : duration;
   
   var isVisible = xdobj.isVisible();
   if(to === null || to === undefined) to = !isVisible;
