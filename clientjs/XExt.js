@@ -2146,7 +2146,6 @@ exports = module.exports = function(jsh){
       function(){
         bindDialogHandler(xdobj.select('input.button_ok'), 'click', function(){ acceptfunc(); });
         bindDialogHandler(xdobj.select('input.button_cancel'), 'click', function(){ cancelfunc(); });
-        bindDialogHandler(xdobj.select('a.xpopup_header_close'), 'click', function(){ cancelfunc(); });
         bindDialogHandler(xdobj, 'acceptDialog', function(){ acceptfunc(); });
         bindDialogHandler(xdobj, 'cancelDialog', function(){ cancelfunc(); });
         bindDialogHandler(xdobj.select('input, textarea, select'), 'keydown', function (e) {
@@ -2386,19 +2385,36 @@ exports = module.exports = function(jsh){
           if(xgrid && xgrid.Prop){ xgrid.Prop.Enabled = false; }
           if(xform && xform.Prop){ xform.Prop.Enabled = false; }
         };
-        //var xsubform = XDom(POPUP_CONTAINER).filter(function(el){return XDom.class.contains(el, 'xsubform');});
-        //if(xsubform.length){
-        //  xsubform.style.maxHeight = (XDom(window).calc.height()-100)+'px';
-        //  xsubform.style.display = 'block';
-        //  xsubform.style.overflow = 'auto';
-        //}
 
-        var xdPopup = XDom(jsh.xdDialogBlock, POPUP_CONTAINER).parent('.xdialogbox.xpopup');
-        if(!xdPopup.length) {
-          xdPopup = XExt.renderTemplate('script.template_popup');
-          xdPopup.selectOne('.xpopup_content').appendChild(XDom.selectOne(POPUP_CONTAINER));
+        var panelWidth = null;
+        var panelHeight = null;
+        var xsubform = XDom(jsh.xdroot, POPUP_CONTAINER).filter(function(el){return XDom.class.contains(el, 'xsubform');});
+        if(xsubform.length){
+          xsubform.style.maxHeight = (window.innerHeight-100)+'px';
+          var xdXpanel = XDom(xsubform, '.xpanel');
+          if(xdXpanel.length) {
+            panelWidth = xdXpanel.style.width;
+            panelHeight = xdXpanel.style.height;
+          }
         }
-        XDom.content.replaceText(xdPopup.select('.xpopup_header_title'), title);
+
+        var xdPopup = XDom(jsh.xdDialogBlock, POPUP_CONTAINER).parent('.xdialogbox.xpopupbox');
+        if(!xdPopup.length) {
+          xdPopup = XExt.renderTemplate('script.template_popupbox');
+          xdPopup.selectOne('.xpopupbox_content').appendChild(jsh.xdroot.selectOne(POPUP_CONTAINER));
+          XDom.on(xdPopup.select('a.xpopupbox_header_close'), 'click', function(){ XExt.CancelDialog() });
+        }
+
+        //Set max-width on xbodyheader
+        var xdXbodyhead = XDom(xdPopup, '.xbodyhead');
+        var ww = window.innerWidth;
+        var sleft = window.scrollX;
+        var bodyhead_width = (ww - xdXbodyhead.calc.left() - 10 + sleft);
+        xdXbodyhead.style.maxWidth = bodyhead_width + 'px';
+
+        XDom.content.replaceText(xdPopup.select('.xpopupbox_header_title'), title);
+        if(panelWidth) XDom.setStyle(xdPopup.select('.xpopupbox_content'), 'width', panelWidth);
+        if(panelHeight) XDom.setStyle(xdPopup.select('.xpopupbox_content'), 'min-height', panelHeight);
         XExt.CustomPrompt(null, xdPopup.selectOne(), onInit, null, null, onClosed, {backgroundClose: true});
       });
   };
