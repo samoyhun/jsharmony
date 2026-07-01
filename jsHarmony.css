@@ -1121,6 +1121,7 @@ DIALOG BOXES
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  max-width: 770px;
 }
 <%-jshElementSelector%> .xpopup_header {
   display: flex;
