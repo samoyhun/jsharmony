@@ -2386,12 +2386,6 @@ exports = module.exports = function(jsh){
           if(xgrid && xgrid.Prop){ xgrid.Prop.Enabled = false; }
           if(xform && xform.Prop){ xform.Prop.Enabled = false; }
         };
-        var xsubform = XDom(POPUP_CONTAINER).filter(function(el){return XDom.class.contains(el, 'xsubform');});
-        if(xsubform.length){
-          xsubform.style.maxHeight = (XDom(window).calc.height()-100)+'px';
-          xsubform.style.display = 'block';
-          xsubform.style.overflow = 'auto';
-        }
 
         var xdPopup = XDom(jsh.xdDialogBlock, POPUP_CONTAINER);       
         if(!xdPopup.length) {

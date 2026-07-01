@@ -501,13 +501,10 @@ jsHarmony.prototype.XDialogResize = function (source, params) {
       if (dtop < 0) dtop = 0;
       //dleft += sleft;
       //dtop += stop;
-      var dwpad = xdobj.calc.widthToPadding();
-      var dborderwidth = parseInt(dw - dwpad) || 0;
-      var dpadwidth = parseInt(dwpad - xdobj.calc.widthToContent()) || 0;
 
       xdobj.style.left = dleft + 'px';
       xdobj.style.top = dtop + 'px';
-      xdobj.style.maxwidth = (params.docw - dborderwidth - dpadwidth) + 'px';
+      if(params.docw) xdobj.style.maxWidth = params.docw + 'px';
     });
   }
 };
