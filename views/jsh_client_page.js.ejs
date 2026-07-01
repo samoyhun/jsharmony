@@ -1002,7 +1002,8 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       jsh.XDom.setAttribute(jsh.xdroot.select('.xfileuploader_form'), 'action', jsh._BASEURL + '_ul/');
       XExt.clearFileInput(jsh.xdroot.selectOne('.xfileuploader_file'));
     };
-    jsh.XExt.CustomPrompt(null, xdFileUploader.selectOne(), onInit, null, null, null, {title: title});
+    jsh.XDom.content.replace(xdFileUploader.select('.xfileuploader_title'), title);
+    jsh.XExt.CustomPrompt(null, xdFileUploader.selectOne(), onInit);
   }
 
   XPage.FileUploadSubmit = function() {

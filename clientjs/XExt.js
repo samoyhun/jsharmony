@@ -2146,6 +2146,7 @@ exports = module.exports = function(jsh){
       function(){
         bindDialogHandler(xdobj.select('input.button_ok'), 'click', function(){ acceptfunc(); });
         bindDialogHandler(xdobj.select('input.button_cancel'), 'click', function(){ cancelfunc(); });
+        bindDialogHandler(xdobj.select('a.xpopup_header_close'), 'click', function(){ cancelfunc(); });
         bindDialogHandler(xdobj, 'acceptDialog', function(){ acceptfunc(); });
         bindDialogHandler(xdobj, 'cancelDialog', function(){ cancelfunc(); });
         bindDialogHandler(xdobj.select('input, textarea, select'), 'keydown', function (e) {
@@ -2170,16 +2171,6 @@ exports = module.exports = function(jsh){
           });
         }
         jsh.xdDialogBlock.selectOne().appendChild(customPrompt);
-
-        if(xdobj.select('.xcustomprompt_header').length) XDom.remove(xdobj.select('.xcustomprompt_header'));
-        var xdHeader = XExt.renderTemplate('script.template_xcustomprompt_header');
-        if(options.title) XDom.content.replaceText(xdHeader.select('.xcustomprompt_titlebar'), options.title);
-        xdobj.content.prepend(xdHeader.outerHTML);
-        if(options.btnClose){
-          XDom.style.display(xdobj.select('.xcustomprompt_titlebar_close'), true);
-          bindDialogHandler(xdobj.select('a.xcustomprompt_titlebar_close'), 'click', function(){ cancelfunc(); });
-        } 
-
         xdobj.style.display = true;
         jsh.xdDialogBlock.style.display = true;
         if(jsh.XPage && jsh.XPage.LayoutOneColumn) jsh.XPage.LayoutOneColumn(customPrompt, { reset: true });
@@ -2401,9 +2392,16 @@ exports = module.exports = function(jsh){
           xsubform.style.display = 'block';
           xsubform.style.overflow = 'auto';
         }
-        var element = XDom.selectOne(POPUP_CONTAINER);
-        if(!XDom.class.contains(element, 'xdialogbox')) XDom.class.add(element, 'xdialogbox');
-        XExt.CustomPrompt(null, element, onInit, null, null, onClosed, {backgroundClose: true, title: title, btnClose: true});
+
+        var xdPopup = XDom(jsh.xdDialogBlock, POPUP_CONTAINER);       
+        if(!xdPopup.length) {
+          xdPopup = XExt.renderTemplate('script.template_popup');
+          xdPopup.selectOne('.xpopup_content').appendChild(XDom.selectOne(POPUP_CONTAINER));
+        } else {
+          xdPopup = xdPopup.parent('.xdialogbox.xpopup');
+        }
+        XDom.content.replaceText(xdPopup.select('.xpopup_header_title'), title);
+        XExt.CustomPrompt(null, xdPopup.selectOne(), onInit, null, null, onClosed, {backgroundClose: true});
       });
   };
 

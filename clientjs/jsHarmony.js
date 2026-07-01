@@ -540,7 +540,8 @@ jsHarmony.prototype.InitFileUpload = function () {
   this.xfileuploadLoader = new Object();
   this.root.append(
     '<div style="display:none;">\
-      <div class="xdialogbox xfileuploader" align="center" style="height:100px;"><div style="position:relative;">\
+      <div class="xdialogbox xfileuploader" align="center" style="height:130px;"><div style="position:relative;">\
+        <strong class="xfileuploader_title"></strong>\
         <form class="xfileuploader_form" enctype="multipart/form-data" method="post" target="'+this.getInstance()+'_xfileproxy">\
           <input type="hidden" name="MAX_FILE_SIZE" value="'+this.Config.max_filesize+'" />\
           <input type="hidden" name="prevtoken" class="xfileuploader_prevtoken" value="" />\
@@ -568,7 +569,8 @@ jsHarmony.prototype.requireHTML5 = function(){
   $(document).ready(function() {
     if (!document.createElement('canvas').getContext) {
       var content = '\
-      <div class="browser_upgrade_msg xdialogbox" style="height: 130px; text-align: center; width: 450px;">\
+      <div class="browser_upgrade_msg xdialogbox" style="height: 165px; text-align: center; width: 450px;">\
+        <strong>Did you know that your browser is out of date?</strong>\
         <p>In order to use this system, you will need to upgrade your web browser to a modern version that supports HTML5.  Please click "Upgrade" to view supported browsers.</p>\
         <div>\
         <input style="padding:2px 6px;" type="button" value="Upgrade" onclick="window.location.href=\'http://www.browsehappy.com\';" />\
@@ -576,7 +578,7 @@ jsHarmony.prototype.requireHTML5 = function(){
         </div>\
       </div>\
       ';
-      _this.XExt.CustomPrompt(null, content, null, null, null, null, {title: "Did you know that your browser is out of date?"});
+      _this.XExt.CustomPrompt(null, content);
     }
   });
 };
