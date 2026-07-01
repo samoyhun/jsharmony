@@ -2388,13 +2388,12 @@ exports = module.exports = function(jsh){
 
         var panelWidth = null;
         var panelHeight = null;
-        var xsubform = XDom(jsh.xdroot, POPUP_CONTAINER).filter(function(el){return XDom.class.contains(el, 'xsubform');});
-        if(xsubform.length){
-          xsubform.style.maxHeight = (window.innerHeight-100)+'px';
-          var xdXpanel = XDom(xsubform, '.xpanel');
-          if(xdXpanel.length) {
-            panelWidth = xdXpanel.style.width;
-            panelHeight = xdXpanel.style.height;
+        var xsubformPanel = XDom(jsh.xdroot, POPUP_CONTAINER).filter(function(el){return XDom.class.contains(el, 'xsubform');}).selectOne('.xpanel');
+        if(xsubformPanel){
+          var xdPanel = XDom(xsubform, '.xpanel');
+          if(xdPanel.length) {
+            panelWidth = xdPanel.style.width;
+            panelHeight = xdPanel.style.height;
           }
         }
 
@@ -2406,11 +2405,11 @@ exports = module.exports = function(jsh){
         }
 
         //Set max-width on xbodyheader
-        var xdXbodyhead = XDom(xdPopup, '.xbodyhead');
+        var xdHead = XDom(xdPopup, '.xbodyhead');
         var ww = window.innerWidth;
         var sleft = window.scrollX;
-        var bodyhead_width = (ww - xdXbodyhead.calc.left() - 10 + sleft);
-        xdXbodyhead.style.maxWidth = bodyhead_width + 'px';
+        var bodyhead_width = (ww - xdHead.calc.left() - 10 + sleft);
+        xdHead.style.maxWidth = bodyhead_width + 'px';
 
         XDom.content.replaceText(xdPopup.select('.xpopupbox_header_title'), title);
         if(panelWidth) XDom.setStyle(xdPopup.select('.xpopupbox_content'), 'width', panelWidth);

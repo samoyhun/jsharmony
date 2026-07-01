@@ -1113,11 +1113,6 @@ DIALOG BOXES
 	min-height:60px;
 	text-align:left;
 }
-<%-jshElementSelector%>.xdialogblock .xpopup {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
 <%-jshElementSelector%>.xdialogblock .xpopupbox {
   display: flex;
   flex-direction: column;
