@@ -2067,10 +2067,8 @@ exports = module.exports = function(jsh){
       customPrompt = html;
       if(html && html.jquery) customPrompt = html[0];// TODO: For JQuery, html[0] returns the element
       if(!customPrompt) customPrompt = document.createElement('div');
-      var objDialog = XDom.parent(customPrompt, '.xdialog');
-      if(!objDialog.length) objDialog = [customPrompt];
       for(var i=0;i<jsh.xDialog.length;i++){
-        if(jsh.xDialog[i].obj == objDialog[0]){
+        if(jsh.xDialog[i].obj == customPrompt){
           if(jsh.xDialog[i].onDestroy) jsh.xDialog[i].onDestroy({ recycle: true });
           jsh.xDialog.splice(i, 1);
           i--;
@@ -2395,14 +2393,15 @@ exports = module.exports = function(jsh){
           xsubform.style.overflow = 'auto';
         }
 
-        var xdPopupTemp = XExt.renderTemplate('script.template_popup');
-        var popup = xdPopupTemp.selectOne();
-
-        XDom.content.replaceText(xdPopupTemp.select('.xpopup_header_title'), title);
-        xdPopupTemp.selectOne('.xpopup_content').appendChild(XDom.selectOne(POPUP_CONTAINER));
-
-
-        XExt.CustomPrompt(null, popup, onInit, null, null, onClosed, {backgroundClose: true});
+        var xdPopup = XDom(jsh.xdDialogBlock, POPUP_CONTAINER);       
+        if(!xdPopup.length) {
+          xdPopup = XExt.renderTemplate('script.template_popup');
+          xdPopup.selectOne('.xpopup_content').appendChild(XDom.selectOne(POPUP_CONTAINER));
+        } else {
+          xdPopup = xdPopup.parent('.xdialogbox.xpopup');
+        }
+        XDom.content.replaceText(xdPopup.select('.xpopup_header_title'), title);
+        XExt.CustomPrompt(null, xdPopup.selectOne(), onInit, null, null, onClosed, {backgroundClose: true});
       });
   };
 
