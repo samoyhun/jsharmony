@@ -456,9 +456,12 @@ jsHarmony.prototype.refreshBodyHead = function(_el){
   if(!_el) _el = this.xdroot.select('.xbodyhead');
   if(_el.length === 0) return;
   var ww = window.innerWidth;
-  var sleft = window.scrollX;
   _.each(_el, function(el){
-    var bodyhead_width = (ww - XDom.calc.left(el) - 10 + sleft);
+    var bodyhead_width = (ww - XDom.calc.left(el) - 10);
+    var dialogParent = XDom.parent(el, '.xdialogbox');
+    if(dialogParent.length){
+      bodyhead_width = XDom.calc.width(dialogParent) - XDom.calc.leftFromOffsetParent(el) - 10;
+    }
     XDom.setStyle(el, 'max-width', bodyhead_width + 'px');
   });
 };

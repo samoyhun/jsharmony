@@ -2104,11 +2104,11 @@ exports = module.exports = function(jsh){
 
     var cancelDialogFunc = function(_onClosed){
       XExt.dialogButtonFunc(customPrompt, oldactive, function () {
-        if (onClosed) onClosed();
-        if (_onClosed) _onClosed();
+        if (onClosed) onClosed(xDialogObj);
+        if (_onClosed) _onClosed(xDialogObj);
       }, { onClosing: options.onClosing })();
     };
-    var cancelfunc = function(options, _onClosed){
+    var cancelfunc = xDialogObj.cancelfunc = function(options, _onClosed){
       options = _.extend({ force: false }, options);
       options.forceCancel = function(){ cancelfunc({ force: true }); };
       if (onCancel){
@@ -2118,28 +2118,28 @@ exports = module.exports = function(jsh){
     };
     var acceptfunc_aftervalidate = function(_onClosed){
       XExt.dialogButtonFunc(customPrompt, oldactive, function () {
-        if (onClosed) onClosed();
-        if (_onClosed) _onClosed();
+        if (onClosed) onClosed(xDialogObj);
+        if (_onClosed) _onClosed(xDialogObj);
       }, { onClosing: options.onClosing })();
     };
-    var acceptfunc = function (_onClosed) {
+    var acceptfunc = xDialogObj.acceptfunc = function (_onClosed) {
       //Verify this is the topmost dialog
       if ((jsh.xDialog.length > 0) && (jsh.xDialog[0].obj != customPrompt)) return;
       
       if (onAccept) return onAccept(function () { acceptfunc_aftervalidate(_onClosed); });
       else acceptfunc_aftervalidate(_onClosed);
     };
-    function bindDialogHandler(tgt, evtName, handler){
+    var bindDialogHandler = xDialogObj.bindDialogHandler = function bindDialogHandler(tgt, evtName, handler){
       XDom.on(tgt, evtName, handler);
       if(reuse) xDialogObj.handlers.push({target: tgt, eventType: evtName, handler: handler});
-    }
+    };
     XExt.execif(true,
       function(done){
         if(onInit && options.asyncInit){
-          onInit(acceptfunc, cancelfunc, done);
+          onInit(xDialogObj, done);
         }
         else {
-          if (onInit) onInit(acceptfunc, cancelfunc);
+          if (onInit) onInit(xDialogObj);
           return done();
         }
       },
@@ -2358,7 +2358,7 @@ exports = module.exports = function(jsh){
         if(xform && xform.Prop){ xform.Prop.Enabled = true; }
         var orig_jsh_ignorefocusHandler = jsh.ignorefocusHandler;
         jsh.ignorefocusHandler = true;
-        var onInit = function () {
+        var onInit = function (xDialogObj) {
           if (options.OnPopupOpen) if(options.OnPopupOpen(popupData[modelid])===false) return;
           numOpens++;
           if(xgrid && (numOpens==1)) xgrid.Select();
@@ -2366,7 +2366,9 @@ exports = module.exports = function(jsh){
             XDom.focus(jsh.xdroot.selectOne(POPUP_CONTAINER + ' .xsearch_value'));
           }
           else if (XDom(jsh.xdroot, POPUP_CONTAINER).select('td a').length) XDom.focus(XDom(jsh.xdroot, POPUP_CONTAINER).selectOne('td a'));
-        //else jsh.$root(POPUP_CONTAINER).$find('input,select,textarea').first().focus();
+          //else jsh.$root(POPUP_CONTAINER).$find('input,select,textarea').first().focus();
+
+          xDialogObj.bindDialogHandler(XDom.selectOne('.xpopupbox_content', xDialogObj.obj), 'scroll', function(){ jsh.refreshBodyHead(xdPopup.select('.xbodyhead')); });
         };
         var onClosed = function () {
           if (parentobj && (typeof popupData[modelid].result !== 'undefined')) {
