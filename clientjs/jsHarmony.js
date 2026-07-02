@@ -25,7 +25,6 @@ var $ = require('./jquery-1.11.2');
 $.fn.$find = function(){ return $.fn.find.apply(this, arguments); };
 var jQuery = $;
 require('../public/jquery-ui/js/jquery-ui-1.10.3.custom-aspa.min.js')(jQuery);
-require('../public/js/jquery.colorbox-min.js')(jQuery);
 require('../public/js/jquery.csv.min.js')(jQuery);
 var _ = require('lodash');
 var ejs = require('ejs');
@@ -146,7 +145,6 @@ var jsHarmony = function(options){
   this.xDialogLoader = null;
   this.xDebugConsole = null;
   this.xDialog = [];
-  this.xPopupStack = [];
   this.xfileuploadLoader = null;
   this.appStartTime = Date.now();
   this.pageStartTime = Date.now();
@@ -454,6 +452,16 @@ jsHarmony.prototype.InitControls = function() {
   $('.xtabcontrol').not('.initialized').each(function(){ _this.XExt.bindTabControl(this); });
   $('.xaccordiontab').not('.initialized').each(function(){ _this.XExt.bindAccordion(this); });
 };
+jsHarmony.prototype.refreshBodyHead = function(_el){
+  if(!_el) _el = this.xdroot.select('.xbodyhead');
+  if(_el.length === 0) return;
+  var ww = window.innerWidth;
+  var sleft = window.scrollX;
+  _.each(_el, function(el){
+    var bodyhead_width = (ww - XDom.calc.left(el) - 10 + sleft);
+    XDom.setStyle(el, 'max-width', bodyhead_width + 'px');
+  });
+};
 jsHarmony.prototype.XWindowResize = function (source) {
   var ww = $(window).width();
   var wh = $(window).height();
@@ -464,11 +472,7 @@ jsHarmony.prototype.XWindowResize = function (source) {
   var pw = ((docw > ww) ? docw : ww); //Page width = greater of document or window width
   var ph = ((doch > wh) ? doch : wh); //Page height = greater of document or window height
   var params = { ww: ww, wh: wh, sleft: sleft, stop: stop, docw: docw, doch: doch, pw: pw, ph: ph };
-  this.$root('.xbodyhead').each(function(){
-    var jobj = $(this);
-    var bodyhead_width = (ww - jobj.offset().left - 10 + sleft);
-    jobj.css('max-width', bodyhead_width + 'px');
-  });
+  this.refreshBodyHead();
   this.$root('.xhead').css('top', (-1 * stop) + 'px');
   this.XDialogResize(source, params);
   this.RefreshLayout();
@@ -503,13 +507,10 @@ jsHarmony.prototype.XDialogResize = function (source, params) {
       if (dtop < 0) dtop = 0;
       //dleft += sleft;
       //dtop += stop;
-      var dwpad = xdobj.calc.widthToPadding();
-      var dborderwidth = parseInt(dw - dwpad) || 0;
-      var dpadwidth = parseInt(dwpad - xdobj.calc.widthToContent()) || 0;
 
       xdobj.style.left = dleft + 'px';
       xdobj.style.top = dtop + 'px';
-      xdobj.style.maxwidth = (params.docw - dborderwidth - dpadwidth) + 'px';
+      if(params.docw) xdobj.style.maxWidth = params.docw + 'px';
     });
   }
 };
@@ -542,7 +543,8 @@ jsHarmony.prototype.InitFileUpload = function () {
   this.xfileuploadLoader = new Object();
   this.root.append(
     '<div style="display:none;">\
-      <div class="xfileuploader colorbox_inline" align="center" style="height:80px;"><div style="position:relative;">\
+      <div class="xdialogbox xfileuploader" align="center" style="height:130px;"><div style="position:relative;">\
+        <strong class="xfileuploader_title"></strong>\
         <form class="xfileuploader_form" enctype="multipart/form-data" method="post" target="'+this.getInstance()+'_xfileproxy">\
           <input type="hidden" name="MAX_FILE_SIZE" value="'+this.Config.max_filesize+'" />\
           <input type="hidden" name="prevtoken" class="xfileuploader_prevtoken" value="" />\
@@ -555,7 +557,7 @@ jsHarmony.prototype.InitFileUpload = function () {
               <td></td>\
               <td style="padding-top:10px;">\
                 <a class="linkbutton" style="padding-right:15px;" href="#" onClick="'+this.getInstance()+'.XPage.FileUploadSubmit();return false;"><img src="'+this._PUBLICURL+'images/icon_ok.png" alt="Upload" title="Upload" />Upload</a>\
-                <a class="linkbutton" href="javascript:'+this.getInstance()+'.$.colorbox.close()"><img src="'+this._PUBLICURL+'images/icon_cancel.png" alt="Cancel" title="Cancel" />Cancel</a></td>\
+                <a class="linkbutton" href="javascript:'+this.getInstance()+'.XExt.CancelDialog()"><img src="'+this._PUBLICURL+'images/icon_cancel.png" alt="Cancel" title="Cancel" />Cancel</a></td>\
             </tr>\
           </table>\
         </form>\
@@ -570,7 +572,8 @@ jsHarmony.prototype.requireHTML5 = function(){
   $(document).ready(function() {
     if (!document.createElement('canvas').getContext) {
       var content = '\
-      <div class="browser_upgrade_msg" style="height: 120px; text-align: center; width: 450px;">\
+      <div class="browser_upgrade_msg xdialogbox" style="height: 165px; text-align: center; width: 450px;">\
+        <strong>Did you know that your browser is out of date?</strong>\
         <p>In order to use this system, you will need to upgrade your web browser to a modern version that supports HTML5.  Please click "Upgrade" to view supported browsers.</p>\
         <div>\
         <input style="padding:2px 6px;" type="button" value="Upgrade" onclick="window.location.href=\'http://www.browsehappy.com\';" />\
@@ -578,16 +581,7 @@ jsHarmony.prototype.requireHTML5 = function(){
         </div>\
       </div>\
       ';
-      $.colorbox({
-        html: content,
-        closeButton: false,
-        arrowKey: false,
-        preloading: false,
-        overlayClose: false,
-        escKey: false,
-        opacity: 0.5,
-        title: 'Did you know that your browser is out of date?'
-      });
+      _this.XExt.CustomPrompt(null, content);
     }
   });
 };

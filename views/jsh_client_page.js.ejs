@@ -994,17 +994,16 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     var xmodel = jsh.XModels[modelid];
     var field = xmodel.fields[fieldname];
     //Get PrevToken, if Applicable
-    jsh.xfileupload_ctrl = jsh.$root('.' + fieldname + '.xelem' + xmodel.class);
-    if (jsh.xfileupload_ctrl.size() != 1) return;
-    $.colorbox({
-      href: jsh.$root(".xfileuploader"), inline: true, closeButton: false, arrowKey: false, preloading: false, overlayClose: false, title: title, fixed: true,
-      onOpen: function () {
-        jsh.$root('.xfileuploader_prevtoken').val(jsh.xfileupload_ctrl.children('.xform_file_token').val());
-        jsh.$root('.xfileuploader_form').attr('action', jsh._BASEURL + '_ul/');
-        XExt.clearFileInput(jsh.$root('.xfileuploader_file')[0]);
-      },
-      onComplete: function () { /* Optionally set element focus */ }
-    });
+    jsh.xfileupload_ctrl = jsh.XDom(jsh.xdroot, '.' + fieldname + '.xelem' + xmodel.class);
+    if (jsh.xfileupload_ctrl.length != 1) return;
+    var xdFileUploader = jsh.XDom(jsh.xdroot, '.xfileuploader');
+    var onInit = function () {
+      jsh.XDom.setValue(jsh.xdroot.select('.xfileuploader_prevtoken'), jsh.XDom.getValue(jsh.xfileupload_ctrl.children.filter(function(el){ return jsh.XDom.class.contains(el, 'xform_file_token') })));
+      jsh.XDom.setAttribute(jsh.xdroot.select('.xfileuploader_form'), 'action', jsh._BASEURL + '_ul/');
+      XExt.clearFileInput(jsh.xdroot.selectOne('.xfileuploader_file'));
+    };
+    jsh.XDom.content.replace(xdFileUploader.select('.xfileuploader_title'), title);
+    jsh.XExt.CustomPrompt(null, xdFileUploader.selectOne(), onInit);
   }
 
   XPage.FileUploadSubmit = function() {
@@ -1018,7 +1017,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
   }
 
   XPage.FileUploadComplete = function(rslt) {
-    $.colorbox.close();
+    jsh.XExt.AcceptDialog();
     if (!('file_token' in rslt)) return;
     jsh.xfileupload_ctrl.children('.xform_file_token').val(rslt.file_token);
     jsh.xfileupload_ctrl.children('.xform_file_dbdelete').val('0');
@@ -1227,7 +1226,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
         win.opener = window.opener;
       }
       XPage.RefreshParent();
-      $.colorbox.close();
+      jsh.XDom.CancelDialog();
       XPage.Refresh();
     }, {
       onBeforeUpdate: function () {

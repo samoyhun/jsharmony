@@ -157,6 +157,9 @@ var Selector = function(){
   Object.defineProperty(this, 'innerHTML', {
     get: function() { return XDom.innerHTML(this); },
   });
+  Object.defineProperty(this, 'innerText', {
+    get: function() { return XDom.innerText(this); },
+  });
   Object.defineProperty(this, 'outerHTML', {
     get: function() { return XDom.outerHTML(this); },
   });
@@ -315,8 +318,16 @@ XDom.class = {
 XDom.render = function(html){
   var container = document.createElement('template');
   container.innerHTML = html;
-  // childNodes is a live NodeList, if we return it direclty, it will likely have surprising results as nodes are moved elsewhere.
+  // childNodes is a live NodeList, if we return it directly, it will likely have surprising results as nodes are moved elsewhere.
   return Array.prototype.slice.call(container.content.childNodes);
+};
+
+XDom.renderText = function(txt){
+  var container = document.createElement('template');
+  container.innerText = txt;
+  // childNodes is a live NodeList, if we return it directly, it will likely have surprising results as nodes are moved elsewhere.
+  return Array.prototype.slice.call(container.childNodes);
+  
 };
 
 XDom.renderOne = function(html){
@@ -341,6 +352,11 @@ XDom.content = {
   replace: function(target, val){
     _.each(XDom.resolve(target), function(el){
       if(el && el.replaceChildren) el.replaceChildren.apply(el, XDom.render(val));
+    });
+  },
+  replaceText: function(target, val){
+    _.each(XDom.resolve(target), function(el){
+      if(el && el.replaceChildren) el.replaceChildren.apply(el, XDom.renderText(val));
     });
   },
   clear: function(target){
@@ -646,6 +662,7 @@ function execOnFirstElWithProp(prop, f){
   };
 }
 
+XDom.innerText = execOnFirstElWithProp('innerText', function(el){ return el.innerText; });
 XDom.innerHTML = execOnFirstElWithProp('innerHTML', function(el){ return el.innerHTML; });
 XDom.outerHTML = execOnFirstElWithProp('outerHTML', function(el){ return el.outerHTML; });
 
@@ -771,7 +788,7 @@ function parseStyleUnit(str) {
     return {val: hexrgba, unit: 'rgba'};
   }
   else{
-    var matches = str.match(/(^-?\d+(?:\.\d+)?)([a-zA-Z%]+)?$/);
+    var matches = str.match(/^(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)([a-zA-Z%]+)?$/);
     if(!matches) return null;
     return {val: [Number(matches[1])], unit: matches[2] || ''};
   }
@@ -869,6 +886,7 @@ XDom.animate.height = function(tgt, to, callback, duration){
 
   var resetOverflow = false;
   var isVisible = xdobj.isVisible();
+  var boolTarget = !to || (to === true);
   if(to === null || to === undefined) to = !isVisible;
 
   if(to) {
@@ -878,7 +896,15 @@ XDom.animate.height = function(tgt, to, callback, duration){
       xdobj.style.height = 0;
       xdobj.style.display = true;
     }
-    if(to === true) to = _el[0].scrollHeight;
+    if(to === true){
+      var elStyles = XDom.style.calc(_el[0]);
+      var paddingHeight = (parseFloat(elStyles.paddingTop)||0) + (parseFloat(elStyles.paddingBottom)||0);
+      to = _el[0].scrollHeight - paddingHeight;
+      if(elStyles.boxSizing === 'border-box'){
+        to += 2 * paddingHeight;
+        to += (parseFloat(elStyles.marginTop)||0) + (parseFloat(elStyles.marginBottom)||0);
+      }
+    }
   }
   else {
     to = 0;
@@ -889,6 +915,7 @@ XDom.animate.height = function(tgt, to, callback, duration){
   xdobj.animate({height: to+'px'}, duration, function(){
     if(resetOverflow) xdobj.style.overflow = (resetOverflow === true) ? '' : resetOverflow;
     if(!to) xdobj.style.display = false;
+    if(to && boolTarget) xdobj.style.height = 'auto';
     callback();
   });
 };

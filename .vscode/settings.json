@@ -8,8 +8,6 @@
         "node_modules": true,
         "data": true,
         "**/public/js/tinymce": true,
-        "**/public/js/colorbox": true,
         "**/public/jquery-ui": true,
-        "**/public/js/jquery.colorbox-min.js": true,
     }
 }
