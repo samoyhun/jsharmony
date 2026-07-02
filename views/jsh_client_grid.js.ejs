@@ -119,7 +119,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       // TODO: calls a bunch of things that take jquery
       var jobj;
       if (obj.jquery) jobj = obj;
-      if (_.isArray(obj)) jobj = $(obj[0]);
+      if (_.isArray(obj)) jobj = $(_.filter(obj, XDom.isElement)[0]);
       else jobj = $(obj);
       if(!readonly) xeditablegrid.BindRow(obj,datarow);
       xmodel.datamodel.prototype.BindLOV(xform,jobj);
@@ -586,7 +586,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     if(xdControls.selector('.xform_ctrl_subfocus').length) xdControls = xdControls.selector('.xform_ctrl_subfocus').first();
     xdControls.focus();
     // TODO: onrowbind takes a jquery
-    if(xgrid.OnRowBind) xgrid.OnRowBind($(xdRow.select()), newrow);
+    if(xgrid.OnRowBind) xgrid.OnRowBind($(xdRow.filter(jsh.XDom.isElement).select()), newrow);
     xdControls.focus();
     if(xdControls.length) xeditablegrid.CurrentCell = xdControls.selectOne();
     else xeditablegrid.CurrentCell = document.activeElement;
@@ -919,7 +919,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     if(txt == '(') txt = '';
     else txt += ')';
     if(txt){
-      jsh.XDom(jsh.xdroot, '.xtitlecaption'+xmodel.class).style.display = true;
+      jsh.XDom(jsh.xdroot, '.xtitlecaption'+xmodel.class).style.display = 'inline-block';
     }
     else {
       jsh.XDom(jsh.xdroot, '.xtitlecaption'+xmodel.class).style.display = false;
