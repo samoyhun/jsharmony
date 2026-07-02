@@ -100,17 +100,17 @@ exports = module.exports = function(jsh){
   XExt.TagBox_Refresh = function(xdctrl, xdbaseinputctrl){
     //TODO: Remove jQuery when all calls of TagBox_Refresh nolonger pass jQuery
     if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
-    if(xdbaseinputctrl && xdbaseinputctrl.jquery) xdbaseinputctrl = XDom(xdbaseinputctrl[0])
+    if(xdbaseinputctrl && xdbaseinputctrl.jquery) xdbaseinputctrl = XDom(xdbaseinputctrl[0]);
     //TODO: Remove jQuery when all calls of TagBox_Refresh nolonger pass jQuery
     XDom.remove(xdctrl.select('span'));
     XExt.TagBox_AddTags(xdctrl, xdbaseinputctrl, xdbaseinputctrl.value.split(','));
   };
 
   XExt.TagBox_Save = function(xdctrl, xdbaseinputctrl){
-    //TODO: Remove jQuery when all calls of TagBox_Refresh nolonger pass jQuery
+    //TODO: Remove jQuery when all calls of TagBox_Save nolonger pass jQuery
     if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
-    if(xdbaseinputctrl && xdbaseinputctrl.jquery) xdbaseinputctrl = XDom(xdbaseinputctrl[0])
-    //TODO: Remove jQuery when all calls of TagBox_Refresh nolonger pass jQuery
+    if(xdbaseinputctrl && xdbaseinputctrl.jquery) xdbaseinputctrl = XDom(xdbaseinputctrl[0]);
+    //TODO: Remove jQuery when all calls of TagBox_Save nolonger pass jQuery
     var tags = [];
     xdctrl.children.select().forEach(function(el){
       if(el.tagName == 'SPAN') tags.push(XDom.getData(el, 'val'));
@@ -135,7 +135,7 @@ exports = module.exports = function(jsh){
   XExt.TagBox_AddTags = function(xdctrl, xdbaseinputctrl, new_tags){
     //TODO: Remove jQuery when all calls of TagBox_AddTags nolonger pass jQuery
     if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
-    if(xdbaseinputctrl && xdbaseinputctrl.jquery) xdbaseinputctrl = XDom(xdbaseinputctrl[0])
+    if(xdbaseinputctrl && xdbaseinputctrl.jquery) xdbaseinputctrl = XDom(xdbaseinputctrl[0]);
     //TODO: Remove jQuery when all calls of TagBox_AddTags nolonger pass jQuery
 
     var addTag = function(val){
@@ -163,7 +163,7 @@ exports = module.exports = function(jsh){
   XExt.TagBox_Render = function(xdctrl, xdbaseinputctrl){
     //TODO: Remove jQuery when all calls of TagBox_Render nolonger pass jQuery
     if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
-    if(xdbaseinputctrl && xdbaseinputctrl.jquery) xdbaseinputctrl = XDom(xdbaseinputctrl[0])
+    if(xdbaseinputctrl && xdbaseinputctrl.jquery) xdbaseinputctrl = XDom(xdbaseinputctrl[0]);
     //TODO: Remove jQuery when all calls of TagBox_Render nolonger pass jQuery
     xdbaseinputctrl.style.display = false;
     xdctrl.content.clear();
@@ -268,43 +268,46 @@ exports = module.exports = function(jsh){
   };
 
   XExt.HideContextMenu = function () {
-    jsh.$root('.xcontext_menu').hide();
+    XDom.style.display(jsh.xdroot.select('.xcontext_menu'), false);
   };
 
   XExt.ShowContextMenu = function (selector, context_item, data, options){
     options = _.extend({ top: jsh.mouseY, left: jsh.mouseX }, options);
     if (!selector) selector = '.xcontext_menu';
     XExt.HideContextMenu();
-    jsh.$root(selector).css('visibility', 'hidden');
-    jsh.$root(selector).show();
+    var xdSelector = XDom(jsh.xdroot, selector);
+    xdSelector.style.visibility = 'hidden';
+    xdSelector.style.display = true;
     var xtop = options.top; var xleft = options.left;
 
-    var wwidth = $(window).width();
-    var wheight = $(window).height() - 20;
-    var dwidth = jsh.$root(selector).outerWidth()+4;
-    var dheight = jsh.$root(selector).outerHeight()+4;
+    var wwidth = window.innerWidth;
+    var wheight = window.innerHeight - 20;
+    var dwidth = xdSelector.calc.widthToBorder()+4;
+    var dheight = xdSelector.calc.heightToBorder()+4;
     if ((xtop + dheight) > wheight) xtop = wheight - dheight;
     if ((xleft + dwidth) > wwidth) xleft = wwidth - dwidth;
-
-    var offset = jsh.$root(selector).offsetParent().offset();
+    var offsetParent = xdSelector.selectOne().offsetParent;
+    var offset = {top: XDom.calc.top(offsetParent), left: XDom.calc.left(offsetParent)};
     xtop -= offset.top - 1;
     xleft -= offset.left - 1;
 
     if (xtop < 0) xtop = 0;
     if (xleft < 0) xleft = 0;
 
-    jsh.$root(selector).children('a').each(function(){
-      var obj = this;
-      var onrender = $(obj).data('onrender');
+    xdSelector.children.filter(function(el){return (el.nodeName.toLowerCase()=='a');}).select().forEach(function(el){
+      var obj = el;
+      var onrender = XDom.getData(obj, 'onrender');
       if(onrender){
         var f = (new Function('context_item', 'data', onrender));
         var frslt = f.call(obj, context_item, data);
-        $(this).toggle(frslt !== false);
+        if(frslt !== false) XDom.style.display(el, true);
+        else XDom.style.display(el, false);
       }
     });
 
-    jsh.$root(selector).css({ 'top': xtop, 'left': xleft });
-    jsh.$root(selector).css('visibility', 'visible');
+    xdSelector.style.top = xtop+'px';
+    xdSelector.style.left = xleft+'px';
+    xdSelector.style.visibility = 'visible';
     if(jsh){
       jsh.xContextMenuVisible = true;
       jsh.xContextMenuItem = context_item;
@@ -523,9 +526,9 @@ exports = module.exports = function(jsh){
     modelid = XExt.resolveModelID(modelid);
     var modelclass = modelid;
     if(modelid in jsh.XModels) modelclass = jsh.XModels[modelid].class;
-    jsh.$root('.xtab' + modelclass).each(function (i, obj) {
-      var jobj = $(obj);
-      if (jobj.html() == tabname) jobj.hide();
+    jsh.xdroot.select('.xtab' + modelclass).forEach(function (obj) {
+      var xdobj = XDom(obj);
+      if (xdobj.innerHTML == tabname) xdobj.style.display = false;
     });
   };
 
@@ -856,13 +859,15 @@ exports = module.exports = function(jsh){
     if(!id){ if(cb) cb(); return; }
     if (window.CKEDITOR.instances[id]){ if(cb) cb(); return; }
     
-    var elem = jsh.$root('#'+id);
-    if(!elem.length) elem = jsh.$root('.'+id);
+    var elem = XDom(jsh.xdroot, '#'+id);
+    if(!elem.length) elem = XDom(jsh.$root, '.'+id);
     if(!elem.length){ return XExt.Alert('Cound not initialize editor on '+id+': form control with that id not found'); }
-    var orig_width = elem.outerWidth();
-    var orig_height = elem.outerHeight();
-    if(!elem.parent().hasClass(id + '_container')){
-      elem.wrap('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
+    var orig_width = elem.calc.widthToBorder();
+    var orig_height = elem.calc.heightToBorder();
+    if(!elem.parent().class.contains(id + '_container')){
+      var wraper = XDom.renderOne('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
+      elem.parent().selectOne().append(wraper);
+      wraper.appendChild(elem.selectOne());
     }
     window.CKEDITOR.replace(id, _.extend({ height: orig_height },config));
     if(cb) cb();
@@ -878,13 +883,15 @@ exports = module.exports = function(jsh){
     if(!config){ if(cb) cb(); return; }
     if (window.tinymce.get(id)){ if(cb) cb(); return; }
     
-    var elem = jsh.$root('#'+id);
-    if(!elem.length) elem = jsh.$root('.'+id);
+    var elem = XDom(jsh.xdroot, '#'+id);
+    if(!elem.length) elem = XDom(jsh.xdroot, '.'+id);
     if(!elem.length){ return XExt.Alert('Cound not initialize editor on '+id+': form control with that id not found'); }
-    var orig_width = elem.outerWidth();
-    var orig_height = elem.outerHeight();
-    if(!elem.parent().hasClass(id + '_container')){
-      elem.wrap('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
+    var orig_width = elem.calc.widthToBorder();
+    var orig_height = elem.calc.heightToBorder();
+    if(!elem.parent().class.contains(id + '_container')){
+      var wraper = XDom.renderOne('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
+      elem.parent().selectOne().append(wraper);
+      wraper.appendChild(elem.selectOne());
     }
     config = config || {};
     config.selector = '#' + id;
@@ -987,10 +994,10 @@ exports = module.exports = function(jsh){
     a.href = url;
     return a;
   };
-  XExt.aPhoneCheck = function (jobj, caption) {
-    var val = jobj.val();
+  XExt.aPhoneCheck = function (xdobj, caption) {
+    var val = xdobj.value;
     if (val && (val == '1' || !val.match(/[0123456789]/))) {
-      jobj.addClass('xinputerror');
+      xdobj.class.add('xinputerror');
       XExt.Alert('Invalid ' + caption);
       return false;
     }
@@ -1194,12 +1201,12 @@ exports = module.exports = function(jsh){
   }
 
   XExt.TreeRender = function (xdctrl, LOV, field) {
-    //TODO: remove below
+    //TODO: remove below when all calls of TreeRender no-longer pass jQuery
     if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
-    //TODO: remove above
-     var ctrl = xdctrl.selectOne();
+    //TODO: remove above when all calls of TreeRender no-longer pass jQuery
+    var ctrl = xdctrl.selectOne();
     //Create Cache of Opened Nodes
-    var firstRender = !xdctrl.children.select().length;
+    var firstRender = !xdctrl.children.length;
     var expanded_nodes = XExt.TreeGetExpandedNodes(ctrl);
     var selected_nodes = XExt.TreeGetSelectedNodes(ctrl);
 
@@ -1221,7 +1228,7 @@ exports = module.exports = function(jsh){
     if(controlparams.item_dropdown){
       if(field && field.name){
         var xdContextmenu = XDom(jsh.xdroot, '._item_context_menu_' + field.name);
-        if(!xdContextmenu.length || !xdContextmenu.children().length) controlparams.item_dropdown = false;
+        if(!xdContextmenu.length || !xdContextmenu.children.length) controlparams.item_dropdown = false;
       }
     }
 
@@ -1278,7 +1285,7 @@ exports = module.exports = function(jsh){
     }
     XExt.ReplaceEventHandler(xdctrl.select('.tree_render_lazy'), 'tree_render_lazy', renderLazy);
     XExt.ReplaceEventHandler(xdctrl, 'tree_path', function(e){
-      treePathInfo = e.detail;
+      var treePathInfo = e.detail;
       if(treePathInfo){
         for(var nodeID in nodes){
           var node = nodes[nodeID];
@@ -1404,7 +1411,7 @@ exports = module.exports = function(jsh){
     jsh.off('.jsh_tree_'+treeid); // TODO: Fix handlers
     var hoverBorderStart = 0;
     jsh.on('jsh_mouseDrag.jsh_tree_'+treeid,function(event, mouseDragObj, targetObj, origEvent){  // TODO: Fix handlers
-      var dragTarget = xdctrl.select('.xdragtarget')
+      var dragTarget = xdctrl.select('.xdragtarget');
       XDom.class.remove(dragTarget, 'xdragtarget');
       XDom.class.remove(dragTarget, 'xdragtop');
       XDom.class.remove(dragTarget, 'xdragbottom');
@@ -1412,7 +1419,7 @@ exports = module.exports = function(jsh){
       XDom.class.remove(dragTarget, 'xdragleft');
       XDom.class.remove(dragTarget, 'xdragright');
       //Check if mouse is hovering over tree border
-      var offset = {top: xdctrl.calc.top(), left: xdctrl.calc.left() }; 
+      var offset = {top: xdctrl.calc.top(), left: xdctrl.calc.left() };
       var w = xdctrl.calc.widthToBorder();
       var h = xdctrl.calc.heightToBorder();
       if ((jsh.mouseX >= offset.left) && (jsh.mouseX <= (offset.left + w))) {
@@ -1454,7 +1461,7 @@ exports = module.exports = function(jsh){
 
 
       if(!targetObj) return;
-      var xdTargetObj = XDom(targetObj); 
+      var xdTargetObj = XDom(targetObj);
       if(xdTargetObj.data.id==XDom.getData(mouseDragObj, 'id')) return;
       XDom.setStyle(jsh.xdroot.select('.xdrag'), 'visibility','visible');
 
@@ -1704,23 +1711,23 @@ exports = module.exports = function(jsh){
     return rslt;
   };
   XExt.TreeExpandAll = function (xdctrl) {
-    //TODO: remove below jQuery jquery $
+    //TODO: remove below when all calls of TreeRender no-longer pass jQuery
     if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
-    //TODO: remove above
-    var xdctrl = xdctrl.parent('.xform_ctrl.tree');
+    //TODO: remove above when all calls of TreeRender no-longer pass jQuery
+    xdctrl = xdctrl.parent('.xform_ctrl.tree');
     if(!xdctrl.select('.tree_render_lazy').length){
       XDom.class.add(xdctrl.select('.tree_item'), 'expanded');
       XDom.class.add(xdctrl.select('.children'), 'expanded');
       XDom.content.replace(xdctrl.select('.glyph'), '&#x25e2;');
     }
     else{
-      var unexpanded = XDom.omit(xdctrl.select('.tree_item'), function(el){return XDom.class.contains(el, 'expanded')});
+      var unexpanded = XDom.omit(xdctrl.select('.tree_item'), function(el){return XDom.class.contains(el, 'expanded');});
       var i = 0;
       while(unexpanded.length){
         i++;
         if(i>1000)break;
         unexpanded.forEach(function(el){ XExt.TreeExpandNode(xdctrl, XDom.getAttribute(el, 'data-id')); });
-        unexpanded = XDom.omit(xdctrl.select('.tree_item'), function(el){return XDom.class.contains(el, 'expanded')});
+        unexpanded = XDom.omit(xdctrl.select('.tree_item'), function(el){return XDom.class.contains(el, 'expanded');});
       }
     }
   };
@@ -1729,8 +1736,8 @@ exports = module.exports = function(jsh){
    * GENERAL FUNCTIONS *
    *********************/
 
-  /**
-   * Used when an element(s) eventType requires a new callback handler, deletes the old handler and replaces it with the new 
+  /** W.I.P.
+   * Used when a target's eventType requires a new callback handler, deletes the old handler and replaces it with the new
    * @param {XDom}      target        - XDom seletor, element array or element
    * @param {String}    eventType     - Name of the event / event type
    * @param {Function}  handler       - replacement function
@@ -1738,15 +1745,15 @@ exports = module.exports = function(jsh){
    */
   XExt.ReplaceEventHandler = function (target, eventType, handler, eventOptions){
     if(!target || !XDom(target).length) return;
-    // Idea is to remove identical event, to apply a new one
-    for(var i=0; i<jsh.OnReplaceEvent.length; i++){ // TODO A WeakMap may turn this from O(n) => O(1)
-      if(jsh.OnReplaceEvent[i].eventType == eventType){
-        XDom.off(target, eventType, jsh.OnReplaceEvent[i].handler, jsh.OnReplaceEvent[i].eventOptions);
+    for(var i=0; i<jsh.OnReplaceEvent.length; i++){
+      var prev = jsh.OnReplaceEvent[i];
+      if(prev.eventType == eventType){ // TODO: eventType is too weak a check, could be wrong entry...
+        XDom.off(target, eventType, prev.handler, prev.eventOptions);
         jsh.OnReplaceEvent.splice(i, 1);
         i--;
       }
     }
-    if(!handler) return; // enables removal without a need for replacement
+    if(!handler) return; // enables removal without a need for replacement handler
     XDom.on(target, eventType, handler, eventOptions);
     var handlerObj = {target: target, eventType: eventType, handler: handler, eventOptions: eventOptions};
     jsh.OnReplaceEvent.push(handlerObj);
