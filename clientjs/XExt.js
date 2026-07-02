@@ -2239,16 +2239,6 @@ exports = module.exports = function(jsh){
           });
         }
         jsh.xdDialogBlock.selectOne().appendChild(customPrompt);
-
-        if(xdobj.select('.xcustomprompt_header').length) XDom.remove(xdobj.select('.xcustomprompt_header'));
-        var xdHeader = XExt.renderTemplate('script.template_xcustomprompt_header');
-        if(options.title) XDom.content.prepend(xdHeader.select('.xcustomprompt_titlebar'), '<strong>' + options.title + '</strong>');
-        xdobj.content.prepend(xdHeader.outerHTML);
-        if(options.btnClose){
-          XDom.style.display(xdobj.select('.xcustomprompt_titlebar_close'), true);
-          bindDialogHandler(xdobj.select('a.xcustomprompt_titlebar_close'), 'click', function(){ cancelfunc(); });
-        } 
-
         xdobj.style.display = true;
         jsh.xdDialogBlock.style.display = true;
         if(jsh.XPage && jsh.XPage.LayoutOneColumn) jsh.XPage.LayoutOneColumn(customPrompt, { reset: true });
@@ -2432,7 +2422,7 @@ exports = module.exports = function(jsh){
         if(xgrid){
           xgrid.RowCount = 0;
           if (xgrid.Prop) xgrid.Prop.Enabled = true;
-          XDom.content.replace(jsh.xdroot.select(xgrid.PlaceholderID), '');
+          XDom.content.clear(jsh.xdroot.select(xgrid.PlaceholderID));
         }
         if(xform && xform.Prop){ xform.Prop.Enabled = true; }
         var orig_jsh_ignorefocusHandler = jsh.ignorefocusHandler;
@@ -2464,15 +2454,27 @@ exports = module.exports = function(jsh){
           if(xgrid && xgrid.Prop){ xgrid.Prop.Enabled = false; }
           if(xform && xform.Prop){ xform.Prop.Enabled = false; }
         };
-        var xsubform = XDom(POPUP_CONTAINER).filter(function(el){return XDom.class.contains(el, 'xsubform');});
-        if(xsubform.length){
-          xsubform.style.maxHeight = (XDom(window).calc.height()-100)+'px';
-          xsubform.style.display = 'block';
-          xsubform.style.overflow = 'auto';
+
+        var panelWidth = null;
+        var panelHeight = null;
+        var xsubformPanel = XDom(jsh.xdroot, POPUP_CONTAINER).filter(function(el){return XDom.class.contains(el, 'xsubform');}).selectOne('.xpanel');
+        if(xsubformPanel) {
+          panelWidth = XDom.getStyle(xsubformPanel, 'width');
+          panelHeight = XDom.getStyle(xsubformPanel, 'height');
         }
-        var element = XDom.selectOne(POPUP_CONTAINER);
-        if(!XDom.class.contains(element, 'xdialogbox')) XDom.class.add(element, 'xdialogbox');
-        XExt.CustomPrompt(null, element, onInit, null, null, onClosed, {backgroundClose: true, title: title, btnClose: true});
+
+        var xdPopup = XDom(jsh.xdDialogBlock, POPUP_CONTAINER).parent('.xdialogbox.xpopupbox');
+        if(!xdPopup.length) {
+          xdPopup = XExt.renderTemplate('script.template_popupbox');
+          xdPopup.selectOne('.xpopupbox_content').appendChild(jsh.xdroot.selectOne(POPUP_CONTAINER));
+          XDom.on(xdPopup.select('a.xpopupbox_header_close'), 'click', function(){ XExt.CancelDialog(); });
+        }
+
+        jsh.ApplyMaxWidth(xdPopup.select('.xbodyhead'));
+        XDom.content.replaceText(xdPopup.select('.xpopupbox_header_title'), title);
+        if(panelWidth) XDom.setStyle(xdPopup.select('.xpopupbox_content'), 'width', panelWidth);
+        if(panelHeight) XDom.setStyle(xdPopup.select('.xpopupbox_content'), 'min-height', panelHeight);
+        XExt.CustomPrompt(null, xdPopup.selectOne(), onInit, null, null, onClosed, {backgroundClose: true});
       });
   };
 
