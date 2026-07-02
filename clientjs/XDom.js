@@ -880,6 +880,7 @@ XDom.animate.height = function(tgt, to, callback, duration){
 
   var resetOverflow = false;
   var isVisible = xdobj.isVisible();
+  var boolTarget = !to || (to === true);
   if(to === null || to === undefined) to = !isVisible;
 
   if(to) {
@@ -889,7 +890,15 @@ XDom.animate.height = function(tgt, to, callback, duration){
       xdobj.style.height = 0;
       xdobj.style.display = true;
     }
-    if(to === true) to = _el[0].scrollHeight;
+    if(to === true){
+      var elStyles = XDom.style.calc(_el[0]);
+      var paddingHeight = (parseFloat(elStyles.paddingTop)||0) + (parseFloat(elStyles.paddingBottom)||0);
+      to = _el[0].scrollHeight - paddingHeight;
+      if(elStyles.boxSizing === 'border-box'){
+        to += 2 * paddingHeight;
+        to += (parseFloat(elStyles.marginTop)||0) + (parseFloat(elStyles.marginBottom)||0);
+      }
+    }
   }
   else {
     to = 0;
@@ -900,6 +909,7 @@ XDom.animate.height = function(tgt, to, callback, duration){
   xdobj.animate({height: to+'px'}, duration, function(){
     if(resetOverflow) xdobj.style.overflow = (resetOverflow === true) ? '' : resetOverflow;
     if(!to) xdobj.style.display = false;
+    if(to && boolTarget) xdobj.style.height = 'auto';
     callback();
   });
 };

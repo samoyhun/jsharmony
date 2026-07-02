@@ -453,18 +453,17 @@ jsHarmony.prototype.InitControls = function() {
   $('.xtabcontrol').not('.initialized').each(function(){ _this.XExt.bindTabControl(this); });
   $('.xaccordiontab').not('.initialized').each(function(){ _this.XExt.bindAccordion(this); });
 };
-jsHarmony.prototype.ApplyMaxWidth = function(target){
-  var _el = XDom.resolve(target);
+jsHarmony.prototype.refreshBodyHead = function(_el){
+  if(!_el) _el = this.xdroot.select('.xbodyhead');
   if(_el.length === 0) return;
   var ww = window.innerWidth;
   var sleft = window.scrollX;
-  _el.forEach(function(el){
+  _.each(_el, function(el){
     var bodyhead_width = (ww - XDom.calc.left(el) - 10 + sleft);
     XDom.setStyle(el, 'max-width', bodyhead_width + 'px');
   });
 };
 jsHarmony.prototype.XWindowResize = function (source) {
-  var _this = this;
   var ww = $(window).width();
   var wh = $(window).height();
   var sleft = $(window).scrollLeft();
@@ -474,7 +473,7 @@ jsHarmony.prototype.XWindowResize = function (source) {
   var pw = ((docw > ww) ? docw : ww); //Page width = greater of document or window width
   var ph = ((doch > wh) ? doch : wh); //Page height = greater of document or window height
   var params = { ww: ww, wh: wh, sleft: sleft, stop: stop, docw: docw, doch: doch, pw: pw, ph: ph };
-  this.ApplyMaxWidth(_this.xdroot.select('.xbodyhead'));
+  this.refreshBodyHead();
   this.$root('.xhead').css('top', (-1 * stop) + 'px');
   this.XDialogResize(source, params);
   this.RefreshLayout();
