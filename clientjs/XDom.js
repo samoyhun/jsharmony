@@ -328,7 +328,7 @@ XDom.renderText = function(txt){
   // childNodes is a live NodeList, if we return it directly, it will likely have surprising results as nodes are moved elsewhere.
   return Array.prototype.slice.call(container.childNodes);
   
-}
+};
 
 XDom.renderOne = function(html){
   var _el = XDom.render((html||'').trim());

@@ -2389,28 +2389,19 @@ exports = module.exports = function(jsh){
         var panelWidth = null;
         var panelHeight = null;
         var xsubformPanel = XDom(jsh.xdroot, POPUP_CONTAINER).filter(function(el){return XDom.class.contains(el, 'xsubform');}).selectOne('.xpanel');
-        if(xsubformPanel){
-          var xdPanel = XDom(xsubform, '.xpanel');
-          if(xdPanel.length) {
-            panelWidth = xdPanel.style.width;
-            panelHeight = xdPanel.style.height;
-          }
+        if(xsubformPanel) {
+          panelWidth = XDom.getStyle(xsubformPanel, 'width');
+          panelHeight = XDom.getStyle(xsubformPanel, 'height');
         }
 
         var xdPopup = XDom(jsh.xdDialogBlock, POPUP_CONTAINER).parent('.xdialogbox.xpopupbox');
         if(!xdPopup.length) {
           xdPopup = XExt.renderTemplate('script.template_popupbox');
           xdPopup.selectOne('.xpopupbox_content').appendChild(jsh.xdroot.selectOne(POPUP_CONTAINER));
-          XDom.on(xdPopup.select('a.xpopupbox_header_close'), 'click', function(){ XExt.CancelDialog() });
+          XDom.on(xdPopup.select('a.xpopupbox_header_close'), 'click', function(){ XExt.CancelDialog(); });
         }
 
-        //Set max-width on xbodyheader
-        var xdHead = XDom(xdPopup, '.xbodyhead');
-        var ww = window.innerWidth;
-        var sleft = window.scrollX;
-        var bodyhead_width = (ww - xdHead.calc.left() - 10 + sleft);
-        xdHead.style.maxWidth = bodyhead_width + 'px';
-
+        jsh.ApplyMaxWidth(xdPopup.select('.xbodyhead'));
         XDom.content.replaceText(xdPopup.select('.xpopupbox_header_title'), title);
         if(panelWidth) XDom.setStyle(xdPopup.select('.xpopupbox_content'), 'width', panelWidth);
         if(panelHeight) XDom.setStyle(xdPopup.select('.xpopupbox_content'), 'min-height', panelHeight);
