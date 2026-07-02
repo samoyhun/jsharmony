@@ -2390,8 +2390,8 @@ exports = module.exports = function(jsh){
         var panelHeight = null;
         var xsubformPanel = XDom(jsh.xdroot, POPUP_CONTAINER).filter(function(el){return XDom.class.contains(el, 'xsubform');}).selectOne('.xpanel');
         if(xsubformPanel) {
-          panelWidth = XDom.getStyle(xsubformPanel, 'width');
-          panelHeight = XDom.getStyle(xsubformPanel, 'height');
+          panelWidth = xsubformPanel.style.width;
+          panelHeight = xsubformPanel.style.height;
         }
 
         var xdPopup = XDom(jsh.xdDialogBlock, POPUP_CONTAINER).parent('.xdialogbox.xpopupbox');
@@ -2401,7 +2401,7 @@ exports = module.exports = function(jsh){
           XDom.on(xdPopup.select('a.xpopupbox_header_close'), 'click', function(){ XExt.CancelDialog(); });
         }
 
-        jsh.ApplyMaxWidth(xdPopup.select('.xbodyhead'));
+        jsh.refreshBodyHead(xdPopup.select('.xbodyhead'));
         XDom.content.replaceText(xdPopup.select('.xpopupbox_header_title'), title);
         if(panelWidth) XDom.setStyle(xdPopup.select('.xpopupbox_content'), 'width', panelWidth);
         if(panelHeight) XDom.setStyle(xdPopup.select('.xpopupbox_content'), 'min-height', panelHeight);
