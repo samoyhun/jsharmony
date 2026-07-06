@@ -48,8 +48,11 @@ exports = module.exports = function(jsh){
   };
 
   XExt.RenderLOV = function (_data, ctrl, LOV) {
-    ctrl.empty();
-    ctrl.html(jsh.ejs.render('\
+    if (ctrl && ctrl.jquery) {
+      console.warn('Depreciated: XExt.RenderLOV received a jquery object. Please pass a dom element.');
+      ctrl = ctrl.filter(function() {return jsh.XDom.isElement(this);}).get(0);
+    }
+    jsh.XDom.content.replace(ctrl, jsh.ejs.render('\
       <% for(var i=0;i<data.length;i++){ %>\
       <option value="<%=data[i][jsh.uimap.code_val]%>"><%=data[i][jsh.uimap.code_txt]%></option>\
       <% } %>'
@@ -58,10 +61,13 @@ exports = module.exports = function(jsh){
   };
 
   XExt.RenderParentLOV = function (_data, ctrl, parentvals, LOV, field, plural) {
+    if (ctrl && ctrl.jquery) {
+      console.warn('Depreciated: XExt.RenderParentLOV received a jquery object. Please pass a dom element.');
+      ctrl = ctrl.filter(function() {return jsh.XDom.isElement(this);}).get(0);
+    }
     //Get Previous Value
     var prevval = _data[field.name];
     if (prevval == null) prevval = '';
-    ctrl.empty();
     var lovfilter = {};
     if (!plural) lovfilter[jsh.uimap.code_parent] = parentvals[0];
     else {
@@ -86,15 +92,15 @@ exports = module.exports = function(jsh){
     if ((!plural) && (!(jsh.uimap.code_parent in LOV[0]))) cLOV.unshift(LOV[0]);
     else if ((plural) && (!((jsh.uimap.code_parent + '1') in LOV[0]))) cLOV.unshift(LOV[0]);
     else if ('lovblank' in field) cLOV.unshift(LOV[0]);
-    ctrl.html(jsh.ejs.render('\
+    jsh.XDom.content.replace(ctrl, jsh.ejs.render('\
       <% for(var i=0;i<data.length;i++){ %>\
       <option value="<%=data[i][jsh.uimap.code_val]%>"><%=data[i][jsh.uimap.code_txt]%></option>\
       <% } %>'
     , { data: cLOV, jsh: jsh }
     ));
     //Apply prevval
-    var lov_matches = ctrl.children('option').filter(function () { return String($(this).val()).toUpperCase() == String(prevval).toUpperCase(); }).length;
-    if (lov_matches > 0) ctrl.val(prevval);
+    var lov_matches = _.filter(ctrl.children, function (el) { return String(el.value).toUpperCase() == String(prevval).toUpperCase(); }).length;
+    if (lov_matches > 0) ctrl.value = prevval;
   };
 
   XExt.TagBox_Refresh = function(jctrl, jbaseinputctrl){

@@ -98,19 +98,16 @@ exports = module.exports = function(jsh){
             // TODO: TreeRender takes a jquery
             jsh.XExt.TreeRender($(ctrl), this._LOVs[_LOV], this.Fields[_LOV]);
           else if ('lovparent' in this.Fields[_LOV])
-            // TODO: RenderParentLOV takes a jquery
-            jsh.XExt.RenderParentLOV(_this, $(ctrl), [_this[this.Fields[_LOV].lovparent]], this._LOVs[_LOV], this.Fields[_LOV], false);
+            jsh.XExt.RenderParentLOV(_this, ctrl, [_this[this.Fields[_LOV].lovparent]], this._LOVs[_LOV], this.Fields[_LOV], false);
           else if ('lovparents' in this.Fields[_LOV]) {
             var parentvals = [];
             for (var i = 0; i < this.Fields[_LOV].lovparents.length; i++) {
               parentvals.push(_this[this.Fields[_LOV].lovparents[i]]);
             }
-            // TODO: RenderParentLOV takes a jquery
-            jsh.XExt.RenderParentLOV(_this, $(ctrl), parentvals, this._LOVs[_LOV], this.Fields[_LOV], true);
+            jsh.XExt.RenderParentLOV(_this, ctrl, parentvals, this._LOVs[_LOV], this.Fields[_LOV], true);
           }
           else
-            // TODO: RenderLOV takes a jquery
-            jsh.XExt.RenderLOV(this, $(ctrl), this._LOVs[_LOV]);
+            jsh.XExt.RenderLOV(this, ctrl, this._LOVs[_LOV]);
         }
       }
       //Put data into the form
@@ -645,8 +642,7 @@ exports = module.exports = function(jsh){
             //Narrow value of child LOV to values where CODVAL1 = that value
             var ctrl = jsh.XDom(parentobj, (isGrid?'.':'.') + field.name + '.xelem' + xmodel.class).selectOne();
             jsh.XExt.JSEval(lovparents_val,this,{ parentvals: parentvals, parentobj: parentobj, xform: xform, modelid: modelid });
-            // TODO: RenderParentLOV takes a jquery
-            jsh.XExt.RenderParentLOV(xform.Data, $(ctrl), parentvals, xform.Data._LOVs[field.name], xform.Data.Fields[field.name], ('lovparents' in field));
+            jsh.XExt.RenderParentLOV(xform.Data, ctrl, parentvals, xform.Data._LOVs[field.name], xform.Data.Fields[field.name], ('lovparents' in field));
           });
         }
       });

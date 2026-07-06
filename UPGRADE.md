@@ -128,6 +128,11 @@ Model field ongetvalue code snipits formally provided an environment witha `jctr
 Model onrowbind/onrowunbind code snipits formally provided an environment with a `jobj` jQuery object. This is now `obj`, a plain dom object.
 
 #### XExt.Render(Parent)LOV (second argument)
+
+```jsh.XExt.RenderLOV(this, *ctrl*, this._LOVs[_LOV]);```
+
+``jsh.XExt.RenderParentLOV(_this, *ctrl*, [_this[this.Fields[_LOV].lovparent]], this._LOVs[_LOV], this.Fields[_LOV], false);``
+
 #### XPage.Enable (first argument)
 #### XPage.Disable (first argument)
 #### XExt.TreeRender (first argument)
