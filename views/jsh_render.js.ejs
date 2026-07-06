@@ -192,7 +192,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       jsh.$root('.xbody').html(ejsrslt);
       var body_class = XExt.escapeCSSClass('xbody_'+jsh.state.modelid);
       if(model._basemodel) body_class += ' ' + XExt.escapeCSSClass('xbody_'+ model._basemodel);
-      var prevClasses = XExt.getClasses(jsh.$root('.xbody'));
+      var prevClasses = XExt.getClasses(jsh.xdroot.selectOne('.xbody'));
       for(var i=0;i<prevClasses.length;i++){
         if(XExt.beginsWith(prevClasses[i], 'xbody_')){
           jsh.$root('.xbody').removeClass(prevClasses[i]);

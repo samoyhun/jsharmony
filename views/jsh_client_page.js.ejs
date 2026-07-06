@@ -994,11 +994,11 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     var xmodel = jsh.XModels[modelid];
     var field = xmodel.fields[fieldname];
     //Get PrevToken, if Applicable
-    jsh.xfileupload_ctrl = jsh.XDom(jsh.xdroot, '.' + fieldname + '.xelem' + xmodel.class);
-    if (jsh.xfileupload_ctrl.length != 1) return;
+    jsh.xfileupload_xdctrl = jsh.XDom(jsh.xdroot, '.' + fieldname + '.xelem' + xmodel.class);
+    if (jsh.xfileupload_xdctrl.length != 1) return;
     var xdFileUploader = jsh.XDom(jsh.xdroot, '.xfileuploader');
     var onInit = function () {
-      jsh.XDom.setValue(jsh.xdroot.select('.xfileuploader_prevtoken'), jsh.XDom.getValue(jsh.xfileupload_ctrl.children.filter(function(el){ return jsh.XDom.class.contains(el, 'xform_file_token') })));
+      jsh.XDom.setValue(jsh.xdroot.select('.xfileuploader_prevtoken'), jsh.XDom.getValue(jsh.xfileupload_xdctrl.children.filter(function(el){ return jsh.XDom.class.contains(el, 'xform_file_token') })));
       jsh.XDom.setAttribute(jsh.xdroot.select('.xfileuploader_form'), 'action', jsh._BASEURL + '_ul/');
       XExt.clearFileInput(jsh.xdroot.selectOne('.xfileuploader_file'));
     };
@@ -1019,12 +1019,13 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
   XPage.FileUploadComplete = function(rslt) {
     jsh.XExt.AcceptDialog();
     if (!('file_token' in rslt)) return;
-    jsh.xfileupload_ctrl.children('.xform_file_token').val(rslt.file_token);
-    jsh.xfileupload_ctrl.children('.xform_file_dbdelete').val('0');
-    jsh.xfileupload_ctrl.removeClass('nodocument');
+    jsh.xfileupload_xdctrl.getChildren('.xform_file_token').value = rslt.file_token;
+    jsh.xfileupload_xdctrl.getChildren('.xform_file_dbdelete').value = '0';
+    jsh.xfileupload_xdctrl.class.remove('nodocument');
     //Rerender Control
-    var val = XExt.getFormField(XExt.getFormFromObject(jsh.xfileupload_ctrl), jsh.xfileupload_ctrl.data('id'));
-    XExt.setFormControl(XExt.getFormFromObject(jsh.xfileupload_ctrl), jsh.xfileupload_ctrl.data('id'), val);
+    var ctrl = jsh.xfileupload_xdctrl.selectOne();
+    var val = XExt.getFormField(XExt.getFormFromObject(ctrl), jsh.xfileupload_xdctrl.data.id);
+    XExt.setFormControl(XExt.getFormFromObject(ctrl), jsh.xfileupload_xdctrl.data.id, val);
   }
 
   XPage.onJSProxyComplete = function(id, data) {
@@ -1127,7 +1128,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       else jctrl.prop('readonly', true);
       if (!show_lookup && jctrl.next().hasClass('xlookup')) jctrl.next().addClass('uneditable');
       if(!field && (jctrl.hasClass('xform_ctrl') || jctrl.hasClass('xform_file_upload'))){
-        field = XExt.getFieldFromObject(jctrl);
+        field = XExt.getFieldFromObject(jctrl[0]);
       }
       if(field && field.ondisabled) field.ondisabled(jctrl[0]);
     });
@@ -1148,7 +1149,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       else jctrl.prop('readonly', false);
       if (jctrl.next().hasClass('xlookup')) jctrl.next().removeClass('uneditable');
       if(!field && (jctrl.hasClass('xform_ctrl') || jctrl.hasClass('xform_file_upload'))){
-        field = XExt.getFieldFromObject(jctrl);
+        field = XExt.getFieldFromObject(jctrl[0]);
       }
       if(field && field.onenabled) field.onenabled(jctrl[0]);
     });
@@ -1254,7 +1255,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       handled = true;
     }
     else if ((e.which == 78) && (e.altKey)) {//ALT+N = NEW
-      XExt.findClosest(e.target, '.xbuttoninsert:visible').first().trigger('click');
+      XExt.findClosest(e.target, '.xbuttoninsert').filter(jsh.XDom.isVisible).first().emit('click');
       handled = true;
     }
     else if ((e.which == 70) && (e.altKey)) {//ALT+Q = Search

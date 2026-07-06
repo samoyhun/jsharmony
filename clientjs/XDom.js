@@ -206,6 +206,9 @@ var Selector = function(){
   _this.omit = function(f){
     return new Selector(XDom.omit(this, f));
   };
+  _this.getChildren = function(childrenSelector){
+    return new Selector(XDom.getChildren(this, childrenSelector));
+  }
   _this.isVisible = XDom.isVisible.bind(XDom, this);
   _this.insertBefore = XDom.insertBefore.bind(XDom, this);
   _this.remove = XDom.remove.bind(XDom, this);
@@ -547,7 +550,7 @@ XDom.last = function(target){
   }
 };
 
-XDom.getChildren = function(target){
+XDom.getChildren = function(target, childrenSelector){
   var _el = XDom.resolve(target);
   var rslt = [];
   for(var i=0;i<_el.length;i++){
@@ -560,7 +563,10 @@ XDom.getChildren = function(target){
         for(var k=0;k<startIdx;k++){
           if(child === rslt[k]){ duplicate = true; break; }
         }
-        if(!duplicate) rslt.push(el.children[j]);
+        if(!duplicate) {
+          if(!childrenSelector) rslt.push(child);
+          else if(child.matches(childrenSelector)) rslt.push(child);
+        }
       }
     }
   }
