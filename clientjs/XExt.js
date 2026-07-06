@@ -149,7 +149,7 @@ exports = module.exports = function(jsh){
       XDom.on(xdnew.select('.xtag_remove'), 'click', function(e){
         if(xdctrl.class.contains('uneditable')) return;
         xdctrl.emit('click_remove', e);
-        // if(e.isPropagationStopped()||e.isImmediatePropagationStopped()) return; // TODO: Replace isPropagationStopped isImmediatePropagationStopped
+        // if(e.isPropagationStopped()||e.isImmediatePropagationStopped()) return; // TODO: Discuss replacement of isPropagationStopped & isImmediatePropagationStopped in review
         XDom.blur(xdctrl.select('.xtag_input'));
         XDom(this).parent('span').remove();
         XExt.TagBox_Save(xdctrl, xdbaseinputctrl);
@@ -1408,9 +1408,9 @@ exports = module.exports = function(jsh){
     });
     //While dragging, update styles on drop points
     var treeid = xdctrl.data.treeid;
-    jsh.off('.jsh_tree_'+treeid); // TODO: Fix handlers
+    jsh.off('.jsh_tree_'+treeid);
     var hoverBorderStart = 0;
-    jsh.on('jsh_mouseDrag.jsh_tree_'+treeid,function(event, mouseDragObj, targetObj, origEvent){  // TODO: Fix handlers
+    jsh.on('jsh_mouseDrag.jsh_tree_'+treeid,function(event, mouseDragObj, targetObj, origEvent){
       var dragTarget = xdctrl.select('.xdragtarget');
       XDom.class.remove(dragTarget, 'xdragtarget');
       XDom.class.remove(dragTarget, 'xdragtop');
@@ -2121,7 +2121,7 @@ exports = module.exports = function(jsh){
     else {
       reuse = true;
       customPrompt = html;
-      if(html && html.jquery) customPrompt = html[0];// TODO: For JQuery, html[0] returns the element
+      if(html && html.jquery) customPrompt = html[0]; // TODO: Remove when all calls of CustomPrompt no longer pass html as JQuery
       if(!customPrompt) customPrompt = document.createElement('div');
       for(var i=0;i<jsh.xDialog.length;i++){
         if(jsh.xDialog[i].obj == customPrompt){
