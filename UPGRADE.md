@@ -111,9 +111,22 @@ XExt.XModel.RenderField(
 
 ```rowid = jsh.XExt.XModel.GetRowID(modelid, *rowref*);```
 
-#### ongetvalue (forth parameter) TBD XModel callback in defined in tutorials etc.
-  - jctrl
-#### model.onrow(un)bind specifies a jobj argument TBD
+#### field.ongetvalue (forth and fifth parameter)
+
+```val = field.ongetvalue(val, field, xmodel, *ctrl*, *parentobj*);```
+
+Model field ongetvalue code snipits formally provided an environment witha `jctrl` jquery object. This is now `ctrl`, a plain dom object.
+
+`parentobj` should also be treated as a plain dom object. It previously defaulted to jsh.root, a jQuery object that typically wrapped `document`
+
+#### model.onrow(un)bind (second parameter)
+
+```xmodel.onrowbind(xmodel,*obj*,datarow);```
+
+```xmodel.onrowunbind(xmodel,xdObj.selectOne(),rowid);```
+
+Model onrowbind/onrowunbind code snipits formally provided an environment with a `jobj` jQuery object. This is now `obj`, a plain dom object.
+
 #### XExt.Render(Parent)LOV (second argument)
 #### XPage.Enable (first argument)
 #### XPage.Disable (first argument)

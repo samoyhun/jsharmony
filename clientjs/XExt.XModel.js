@@ -48,7 +48,7 @@ exports = module.exports = function(jsh){
     if(jsh.XDom.class.contains(obj, 'row_independent')){ /* Do nothing */ }
     else {
       var cur_row = obj.closest('.xrow_'+xmodel.class);
-      if (cur_row) rslt = jsh.XDom.getData(cur_row, 'id');
+      if (cur_row) rslt = parseInt(jsh.XDom.getData(cur_row, 'id'));
     }
     return rslt;
   };
@@ -505,8 +505,7 @@ exports = module.exports = function(jsh){
         if(!val || ((typeof binding_val != 'undefined') && (binding_val !== null) && (binding_val !== ''))) val = binding_val;
       }
 
-      // TODO: ongetvalue takes a jquery
-      if (field.ongetvalue) val = field.ongetvalue(val, field, xmodel, $(ctrl), parentobj);
+      if (field.ongetvalue) val = field.ongetvalue(val, field, xmodel, ctrl, parentobj);
       if ('format' in field) {
         val = jsh.XFormat.Decode(field.format, val);
       }

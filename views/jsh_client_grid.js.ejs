@@ -123,15 +123,12 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       if (_.isArray(obj)) obj = _.filter(obj, jsh.XDom.isElement)[0];
       if(!readonly) xeditablegrid.BindRow(obj,datarow);
       xmodel.datamodel.prototype.BindLOV(xform,obj);
-      // TODO: model.onrowbind takes a jquery
-      if(xmodel.onrowbind) xmodel.onrowbind(xmodel,$(obj),datarow);
+      if(xmodel.onrowbind) xmodel.onrowbind(xmodel,obj,datarow);
     };
     xgrid.OnDestroyingRows = function(xdObj){
       if(!xeditablegrid) return;
       xdObj.selector('tr[data-id]').select().forEach(function(tr){
-        // TODO: model.onrowunbind specifies a jobj
-        var jobj = $(tr);
-        if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,jobj,jobj.data('id'));
+        if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,tr,jsh.XDom.getData(tr, 'id'));
       });
     }
     xgrid.OnMetaData = function(data){ xform.LOVs = this.LOVs; xform.defaults = this.defaults; xform.title = this.title; }
@@ -339,8 +336,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
   xcontroller.OnDestroy = function(){
     if(!xeditablegrid) return;
     jsh.XDom(jsh.xdroot, xgrid.PlaceholderID).selector("tr[data-id]").select().forEach(function(tr){
-      // TODO: onrowunbind takes a jquery
-      if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,$(tr),XDom.getData(tr, 'id'));
+      if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,tr,XDom.getData(tr, 'id'));
     });
   }
 
@@ -452,8 +448,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
             datatable: [_this.DataSet[rowid]], 
           });
           var xdObj = jsh.XDom(jsh.xdroot, xgrid.PlaceholderID).selector("tr[data-id='" + rowid + "']");
-          // TODO: onrowbind takes a jquery
-          if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,$(xdObj.select()),rowid);
+          if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,xdObj.selectOne(),rowid);
           var container = document.createElement('template');
           container.innerHTML = ejsrslt;
           xdObj.select().forEach(function(row) {
@@ -665,8 +660,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
           xform.DataSet[rowid]._orig = null;
           xform.DataSet[rowid]._previous_values = {};
           var xdRow = jsh.XDom(jsh.xdroot, xgrid.PlaceholderID).selector("tr[data-id='" + rowid + "']");
-          // TODO: onrowunbind takes a jquery
-          if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,$(xdRow.select()),rowid);
+          if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,xdRow.selectOne(),rowid);
           xdRow.remove();
           if(!jsh.XDom(jsh.xdroot, xgrid.PlaceholderID).selector('tr').length) xgrid.RenderNoResultsMessage();
           xeditablegrid.CurrentCell = null;

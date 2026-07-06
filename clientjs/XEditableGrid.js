@@ -327,7 +327,7 @@ exports = module.exports = function(jsh){
         containerobj = jsh.XDom.parent(obj, '.xtagbox').nextElementSibling;
       }
       else {
-        var parentctrl = jsh.XDom.parent(obj, '.xform_ctrl');
+        var parentctrl = jsh.XDom.parent(obj, '.xform_ctrl')[0];
         if(parentctrl && jsh.XDom.class.contains(parentctrl, 'editable')){
           containerobj = parentctrl;
         }
