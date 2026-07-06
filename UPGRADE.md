@@ -114,9 +114,9 @@ XExt.XModel.RenderField(
 #### ongetvalue (forth parameter) TBD XModel callback in defined in tutorials etc.
   - jctrl
 #### model.onrow(un)bind specifies a jobj argument TBD
+#### XExt.Render(Parent)LOV (second argument)
 #### XPage.Enable (first argument)
 #### XPage.Disable (first argument)
-#### XExt.Render(Parent)LOV (second argument)
 #### XExt.TreeRender (first argument)
 #### XExt.TreeSelectNode (first argument)
 #### XExt.TagBox_Render (both arguments)

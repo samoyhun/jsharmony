@@ -67,22 +67,22 @@ exports = module.exports = function(jsh){
 
       if (xmodel.layout == 'form-m') {
         if (xmodel.controller.form.Count()==0) {
-          jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xnorecords').display = true;
+          jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xnorecords').style.display = true;
           jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xformcontainer').style.visibility = 'hidden';
         }
         else {
-          jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xnorecords').display = false;
+          jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xnorecords').style.display = false;
           jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xformcontainer').style.visibility = 'visible';
         }
       }
       else if(xmodel.layout == 'form') {
         if(!jsh.is_insert){
           if (xmodel.controller.form.Data._is_insert) {
-            jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xnorecords').display = true;
+            jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xnorecords').style.display = true;
             jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xformcontainer').style.visibility = 'hidden';
           }
           else {
-            jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xnorecords').display = false;
+            jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xnorecords').style.display = false;
             jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xformcontainer').style.visibility = 'visible';
           }
         }
@@ -190,52 +190,56 @@ exports = module.exports = function(jsh){
       var ctrl_dbdelete = jsh.XDom(parentobj, filefieldselector + '_dbdelete').selectOne();
       var ctrl_dbexists = jsh.XDom(parentobj, filefieldselector + '_dbexists').selectOne();
       var ctrl_thumbnail = jsh.XDom(parentobj, filefieldselector + '_thumbnail').selectOne();
-      var file_token = ctrl_token.value;
+      var file_token = ctrl_token && ctrl_token.value;
       if (val === true) {
         //Has DB file
         xdCtrl.class.remove('nodocument');
-        ctrl_token.value = '';
-        ctrl_dbdelete.value = '0';
-        ctrl_dbexists.value = '1';
+        if (ctrl_token) ctrl_token.value = '';
+        if (ctrl_dbdelete) ctrl_dbdelete.value = '0';
+        if (ctrl_dbexists) ctrl_dbexists.value = '1';
         //Set thumbnail
-        if (ctrl_thumbnail && ((field.control=='image') || (field.controlparams.show_thumbnail))) {
-          var keys = xmodel.controller.form.GetKeys();
-          if (xmodel.keys.length != 1) { throw new Error('File models require one key.'); }
-          var download_thumb_url = jsh._BASEURL + '_dl/' + modelid + '/' + keys[xmodel.keys[0]] + '/' + field.name + '?view=1&_=' + (Date.now());
-          if(field.controlparams.show_thumbnail) download_thumb_url += '&thumb='+field.controlparams.show_thumbnail;
-          ctrl_thumbnail.src = download_thumb_url;
-          jsh.XDom(ctrl_thumbnail).style.display = true;
-          if(typeof field.controlparams.thumbnail_width != 'undefined') ctrl_thumbnail.style.maxWidth = field.controlparams.thumbnail_width + 'px';
+        if (ctrl_thumbnail) {
+          if ((field.control=='image') || (field.controlparams.show_thumbnail)) {
+            var keys = xmodel.controller.form.GetKeys();
+            if (xmodel.keys.length != 1) { throw new Error('File models require one key.'); }
+            var download_thumb_url = jsh._BASEURL + '_dl/' + modelid + '/' + keys[xmodel.keys[0]] + '/' + field.name + '?view=1&_=' + (Date.now());
+            if(field.controlparams.show_thumbnail) download_thumb_url += '&thumb='+field.controlparams.show_thumbnail;
+            ctrl_thumbnail.src = download_thumb_url;
+            jsh.XDom(ctrl_thumbnail).style.display = true;
+            if(typeof field.controlparams.thumbnail_width != 'undefined') ctrl_thumbnail.style.maxWidth = field.controlparams.thumbnail_width + 'px';
+          }
+          else jsh.XDom(ctrl_thumbnail).style.display = false;
         }
-        else jsh.XDom(ctrl_thumbnail).style.display = false;
       }
       else if (val === false) {
         //No DB File
         xdCtrl.class.add('nodocument');
-        ctrl_token.value = '';
-        ctrl_dbdelete.value = '0';
-        ctrl_dbexists.value ='0';
+        if (ctrl_token) ctrl_token.value = '';
+        if (ctrl_dbdelete) ctrl_dbdelete.value = '0';
+        if (ctrl_dbexists) ctrl_dbexists.value = '0';
       }
       else if (val === '') {
         //Delete action (either delete temp file or DB file
         xdCtrl.class.add('nodocument');
-        ctrl_token.value = '';
-        if (ctrl_dbexists.value == '1') ctrl_dbdelete.value = '1';
+        if (ctrl_token) ctrl_token.value = '';
+        if (ctrl_dbexists && ctrl_dbexists.value == '1') ctrl_dbdelete.value = '1';
         else ctrl_dbdelete.value = '0';
       }
       else if (_.isString(val)) {
         //Uploaded new temp file
         xdCtrl.class.remove('nodocument');
-        ctrl_token.value = val;
-        ctrl_dbdelete.value = '0';
+        if (ctrl_token) ctrl_token.value = val;
+        if (ctrl_dbdelete) ctrl_dbdelete.value = '0';
         //Set thumbnail
-        if (ctrl_thumbnail && field.controlparams.show_thumbnail) {
-          var thumb_url = jsh._BASEURL + '_dl/_temp/' + file_token + '?view=1&thumb='+field.controlparams.show_thumbnail;
-          ctrl_thumbnail.src = thumb_url;
-          jsh.XDom(ctrl_thumbnail).style.display = true;
-          if(typeof field.controlparams.thumbnail_width != 'undefined') ctrl_thumbnail.style.maxWidth = field.controlparams.thumbnail_width + 'px';
+        if (ctrl_thumbnail) {
+          if (field.controlparams.show_thumbnail) {
+            var thumb_url = jsh._BASEURL + '_dl/_temp/' + file_token + '?view=1&thumb='+field.controlparams.show_thumbnail;
+            ctrl_thumbnail.src = thumb_url;
+            jsh.XDom(ctrl_thumbnail).style.display = true;
+            if(typeof field.controlparams.thumbnail_width != 'undefined') ctrl_thumbnail.style.maxWidth = field.controlparams.thumbnail_width + 'px';
+          }
+          else jsh.XDom(ctrl_thumbnail).style.display = false;
         }
-        else jsh.XDom(ctrl_thumbnail).style.display = false;
       }
     }
     else if (('control' in field) && (field.control == 'tree')) {
@@ -303,7 +307,7 @@ exports = module.exports = function(jsh){
         xdCtrl.class.add('hidden');
       }
     }
-    else if ((xdCtrl.length > 0) && (String(xdCtrl.attr.nodeName).toUpperCase() == 'SELECT')) {
+    else if ((xdCtrl.length > 0) && (String(xdCtrl.selectOne().nodeName).toUpperCase() == 'SELECT')) {
       //Check if SELECT has value.  If not, add it as an additional option at the end
       var lov_matches = xdCtrl.children.filter(function (el) { return el.nodeName == 'OPTION' && String(el.value).toUpperCase() == String(val).toUpperCase(); }).length;
       var has_lov = (lov_matches > 0);
@@ -317,7 +321,7 @@ exports = module.exports = function(jsh){
           var newOption = document.createElement('option');
           newOption.value = val;
           newOption.text = codtxt;
-          xdCtrl.content.append(newOption);
+          xdCtrl.content.append(newOption.outerHTML);
         }
         xdCtrl.value = val;
       }
