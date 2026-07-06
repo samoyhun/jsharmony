@@ -208,7 +208,7 @@ var Selector = function(){
   };
   _this.getChildren = function(childrenSelector){
     return new Selector(XDom.getChildren(this, childrenSelector));
-  }
+  };
   _this.isVisible = XDom.isVisible.bind(XDom, this);
   _this.insertBefore = XDom.insertBefore.bind(XDom, this);
   _this.remove = XDom.remove.bind(XDom, this);

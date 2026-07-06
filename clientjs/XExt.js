@@ -2944,8 +2944,8 @@ exports = module.exports = function(jsh){
       var sel = window.getSelection();
       if(!sel || !sel.rangeCount) return false;
       var rstart = sel.getRangeAt(0);
-      if(xdjobj.selectOne() == rstart.startContainer) return true;
-      function contains(el_container, el_target){ // TODO: Check CanIUse 'contains' in CodeReview
+      if(xdobj.selectOne() == rstart.startContainer) return true;
+      var contains = function(el_container, el_target){ // TODO: Check CanIUse 'contains' in CodeReview
         if(el_container.children && el_container.children.length){
           for(var i=0; i<el_container.children.length; i++){
             if(el_container.children[i] == el_target) return true;
@@ -2953,7 +2953,7 @@ exports = module.exports = function(jsh){
           }
         }
         return false;
-      }
+      };
       return contains(xdobj.selectOne(),rstart.startContainer);
     }
     else throw new Error('Inserting text into contenteditable not supported.');
@@ -3011,7 +3011,7 @@ exports = module.exports = function(jsh){
   };
   XExt.scrollIntoView = function(xdcontainer, pos, h){
     if(!xdcontainer.length) return;
-    var container = xdcontainer.selectOne(); 
+    var container = xdcontainer.selectOne();
     var sTop = container.scrollTop;
     var sLeft = container.scrollLeft;
     var cW = container.clientWidth;
@@ -3119,13 +3119,13 @@ exports = module.exports = function(jsh){
       xdTabButton.class.add('selected');
       if(tabFor){
         xdTabPanels.class.remove('selected');
-        xdTabPanels.filter(function(el){return XDom.class.contains(el, '.'+tabFor)}).class.add('selected');
+        xdTabPanels.filter(function(el){return XDom.class.contains(el, '.'+tabFor);}).class.add('selected');
       }
       var ontabselected = xdTabButton.data.ontabselected;
       if(ontabselected) XExt.JSEval(ontabselected, xdTabButton.selectOne());
     });
-    if(!xdTabButton.filter(function(el){return XDom.class.contains(el, '.selected')}).length) xdTabButton.first().add.class('selected');
-    xdTabPanels.filter(function(el){return XDom.class.contains(el, '.'+xdTabButton.filter(function(el){return XDom.class.contains(el, '.selected')}).attr.for)}).class.add('selected');
+    if(!xdTabButtons.filter(function(el){return XDom.class.contains(el, '.selected');}).length) xdTabButtons.first().add.class('selected');
+    xdTabPanels.filter(function(el){return XDom.class.contains(el, '.'+xdTabButtons.filter(function(el){return XDom.class.contains(el, '.selected');}).attr.for);}).class.add('selected');
     xdobj.class.add('initialized');
   };
   //Bind accordion events
