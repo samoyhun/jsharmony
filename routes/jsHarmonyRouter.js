@@ -319,7 +319,7 @@ var jsHarmonyRouter = function (jsh, siteid) {
           jsh.AppSrv.exportCSV(req, res, dbtask, fullmodelid, options);
         }
         else if (verb == 'post') {
-          options = _.pick(req.query || {}, ['batch_size']);
+          options = _.pick(req.query || {}, ['batchsize', 'type']);
           jsh.AppSrv.importCSV(req, res, fullmodelid, req.query, req.body, options);
         }
       });

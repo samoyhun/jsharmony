@@ -22,6 +22,7 @@ var HelperFS = require('./lib/HelperFS.js');
 var _ = require('lodash');
 var async = require('async');
 var csv = require('csv');
+var XValidate = require('jsharmony-validate');
 
 module.exports = exports = {};
 
@@ -293,17 +294,26 @@ exports.getModelRecordset = function (req, res, fullmodelid, Q, P, rowlimit, opt
 };
 
 exports.importCSV = function (req, res, fullmodelid, Q, P, options) {
-  options = _.extend({ batch_size: 100 }, options);
   var _this = this;
-  var model = this.jsh.getModel(req, fullmodelid);
+  var jsh = _this.jsh;
+  if (!jsh.hasModel(req, fullmodelid)) throw new Error('Model not found');
+  options = _.extend({ batchsize: 100, type: 'csv' }, options);
+  var model = jsh.getModel(req, fullmodelid);
   var canupdate = Helper.hasModelAction(req, model, 'U');
   var caninsert = Helper.hasModelAction(req, model, 'I');
   if (!canupdate && !caninsert) { Helper.GenError(req, res, -11, _this._tP('Invalid Model Access for @fullmodelid', { fullmodelid })); return; }
   var keys = _this.getKeys(model.fields);
-  var db = _this.jsh.getModelDB(req, fullmodelid);
-  var dbcontext = _this.jsh.getDBContext(req, model, db);
-  if (!_this.ParamCheck('Q', Q, ['|batch_size'])) { Helper.GenError(req, res, -4, 'Invalid Parameters'); return; }
+  var db = jsh.getModelDB(req, fullmodelid);
+  var dbcontext = jsh.getDBContext(req, model, db);
+  if (!_this.ParamCheck('Q', Q, ['|batchsize','|type'])) { Helper.GenError(req, res, -4, 'Invalid Parameters'); return; }
   if (!_this.ParamCheck('P', P, ['&csv_data'])) { Helper.GenError(req, res, -4, 'Invalid Parameters'); return; }
+
+  var validate = new XValidate();
+  validate.AddValidator('_obj.batchsize', 'Batch Size', 'B', [XValidate._v_IsNumeric()]);
+  validate.AddValidator('_obj.type', 'Import Type', 'B', [XValidate._v_InArray(['csv','tsv'])]);
+  var verrors = validate.Validate('B', Q);
+  if (!_.isEmpty(verrors)) { Helper.GenError(req, res, -2, verrors[''].join('\n')); return; }
+
   var sql_ptypes = [];
   var sql_pnames = [];
   var verrors = {};
@@ -313,7 +323,10 @@ exports.importCSV = function (req, res, fullmodelid, Q, P, options) {
   try {
     var data = P.csv_data || [];
     if(data.length < 2) return Helper.GenError(req, res, -11, 'Imported CSV data must contain one header row and at least one data row');
-    _.each(data[0], function(field_caption) { csv_header[field_caption] = { found: false }; });
+    _.each(data[0], function(field_caption) {
+      if (options.type == 'csv') { field_caption = Helper.trim(field_caption, '"'); }
+      csv_header[field_caption] = { found: false };
+    });
     var num_csv_header = Object.keys(csv_header).length;
     for(var i=1; i<data; i++){
       if(data[i].length != num_csv_header) return Helper.GenError(req, res, -11, 'Imported CSV data must contain rows of equal length');
@@ -334,8 +347,9 @@ exports.importCSV = function (req, res, fullmodelid, Q, P, options) {
       csv_header[field.caption].found = true;
     }
   });
-  for(var key in csv_header) { if(!csv_header[key].found) return Helper.GenError(req, res, -11, 'Imported CSV data must contain one header row and at least one data row'); }
-  if (!_.isEmpty(verrors)) { Helper.GenError(req, res, -2, verrors[''].join('\n')); return; }
+  var extra_csv_headers = [];
+  for(var key in csv_header) { if(!csv_header[key].found) { extra_csv_headers.push(key); } }
+  if (extra_csv_headers.length) { return Helper.GenError(req, res, -11, 'Imported CSV data contains extra columns ('+extra_csv_headers.join(',')+')'); }
   var upsertQueue = new Helper.gather(function(sqls, gather_cb){
     if(!sqls.length) return gather_cb();
     var dbtasks = {};
@@ -365,13 +379,15 @@ exports.importCSV = function (req, res, fullmodelid, Q, P, options) {
       if(err) return Helper.GenError(req, res, -99999, err.toString());
       return gather_cb(err, rslt);
     });
-  }, { length: options.batch_size });
+  }, { length: options.batchsize });
   async.each(csv_data, function (csv_row, csv_cb) {
     var sql_params = {};
     var param_datalocks = [];
     var datalockqueries = [];
     for(var i=0; i<csv_row.length; i++){
-      sql_params[sql_pnames[i]] = csv_row[i];
+      var val = csv_row[i];
+      if (options.type == 'csv') { val = Helper.trim(val, '"'); }
+      sql_params[sql_pnames[i]] = val;
     }
     _.each(model.fields, function (field) {
       //Add PreCheck, if type='F'
@@ -385,7 +401,7 @@ exports.importCSV = function (req, res, fullmodelid, Q, P, options) {
     });
     //Add DataLock parameters to SQL
     _this.getDataLockSQL(req, model, csv_fields, sql_ptypes, sql_params, verrors, function (datalockquery) { datalockqueries.push(datalockquery); }, null, fullmodelid);
-    var upsertSql = db.sql.upsertModelForm(_this.jsh, model, csv_fields, keys, param_datalocks, datalockqueries, { canupdate, caninsert });
+    var upsertSql = db.sql.upsertModelForm(jsh, model, csv_fields, keys, param_datalocks, datalockqueries, { canupdate, caninsert });
     var upsertSqlApplied = db.applySQLParams(upsertSql, sql_ptypes, sql_params).trim();
     if(!Helper.endsWith(upsertSqlApplied, ';')) upsertSqlApplied += ';';
     upsertQueue.push(upsertSqlApplied, csv_cb);

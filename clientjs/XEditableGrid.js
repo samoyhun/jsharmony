@@ -397,28 +397,19 @@ exports = module.exports = function(jsh){
     html = jsh.XExt.renderEJS(html, modelid);
     var sel = '.xgrid_import_'+xmodel.class;
     jsh.XExt.CustomPrompt(sel, html, function () { //onInit
-      var jprompt = jsh.$dialogBlock(sel);
-      jprompt.find('.xdownloadbutton').on('click', function() {
+      jsh.$dialogBlock(sel + ' .xdownloadbutton').on('click', function() {
         xmodel.controller.Export({ iscsvpaste: true });
       });
     }, function (success) { //onAccept
-      var jprompt = jsh.$dialogBlock(sel);
-      var str_data = jprompt.find('textarea').val();
-      var check_csv = false;
-      if(str_data){
-        if(str_data.indexOf('\t')>=0) check_csv = true;
-        else if((str_data.indexOf('\n')>=0) && !jobj.is('textarea,.xtextzoom')) check_csv = true;
-      }
-      if(check_csv){
-        var csv_data = undefined;
-        try{
-          csv_data = $.csv.toArrays(str_data, { separator: '\t' });
-        }
-        catch(ex){ }
-        if(csv_data) {
+      var str_data = jsh.$dialogBlock(sel +' textarea').val();
+      if(str_data && ((str_data.indexOf('\t')>=0) || (str_data.indexOf('\n')>=0))) {
+        var type = (str_data.indexOf('\t')>=0) ? 'tsv' : 'csv';
+        var delim = (type == 'tsv') ? '\t' : ',';
+        var csv_data = str_data.trim().split(/\r?\n/).map(function(row) { return row.split(delim); });
+        if (csv_data) {
           jsh.XForm.Post(
             jsh._BASEURL + '_csv/' + modelid + '/',
-            { },
+            { type: type },
             { csv_data: csv_data },
             function(){
               jsh.XPage.Refresh();
@@ -428,7 +419,7 @@ exports = module.exports = function(jsh){
         }
       }
     });
-  }
+  };
 
   return XEditableGrid;
 };
