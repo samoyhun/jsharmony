@@ -192,14 +192,10 @@ exports = module.exports = function(jsh){
     this.Data._title = this.title;
     if (this.xData) {
       if(row) {
-        if (row.jquery) {
-          console.warn('Depreciated: XForm.SetIndex received a jquery object. Please pass a dom element.');
-          row = row.filter(function() {return jsh.XDom.isElement(this);}).get(0);
-        }
+        row = jsh.parseJQueryElements(row, 'XForm.SetIndex');
         this.Data._row = row;
       }
       else this.Data._row = jsh.XDom(jsh.xdroot, this.xData.PlaceholderID).selectOne("tr[data-id='" + this.Index + "']");
-      //this.Data._jrow = $(this.Data._row);
     }
     return true;
   };

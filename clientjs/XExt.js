@@ -48,10 +48,7 @@ exports = module.exports = function(jsh){
   };
 
   XExt.RenderLOV = function (_data, ctrl, LOV) {
-    if (ctrl && ctrl.jquery) {
-      console.warn('Depreciated: XExt.RenderLOV received a jquery object. Please pass a dom element.');
-      ctrl = ctrl.filter(function() {return jsh.XDom.isElement(this);}).get(0);
-    }
+    ctrl = jsh.parseJQueryElements(ctrl, 'XExt.RenderLOV');
     jsh.XDom.content.replace(ctrl, jsh.ejs.render('\
       <% for(var i=0;i<data.length;i++){ %>\
       <option value="<%=data[i][jsh.uimap.code_val]%>"><%=data[i][jsh.uimap.code_txt]%></option>\
@@ -61,10 +58,7 @@ exports = module.exports = function(jsh){
   };
 
   XExt.RenderParentLOV = function (_data, ctrl, parentvals, LOV, field, plural) {
-    if (ctrl && ctrl.jquery) {
-      console.warn('Depreciated: XExt.RenderParentLOV received a jquery object. Please pass a dom element.');
-      ctrl = ctrl.filter(function() {return jsh.XDom.isElement(this);}).get(0);
-    }
+    ctrl = jsh.parseJQueryElements(ctrl, 'XExt.RenderParentLOV');
     //Get Previous Value
     var prevval = _data[field.name];
     if (prevval == null) prevval = '';
