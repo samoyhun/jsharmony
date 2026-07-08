@@ -295,14 +295,6 @@ exports = module.exports = function(jsh){
     }
   };
 
-  XExt.jForEach = function(jctrls, f){
-    if(!jctrls || !jctrls.length) return;
-    if(jctrls.length==1) f(jctrls);
-    else {
-      for(var i=0;i<jctrls.length;i++) f($(jctrls[i]));
-    }
-  };
-
   XExt.CallAppFunc = function (url, method, d, onComplete, onFail, options){
     if(!jsh) throw new Error('XExt requires jsHarmony instance to run CallAppFunc');
     if(!options) options = {};
