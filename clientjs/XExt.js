@@ -48,8 +48,11 @@ exports = module.exports = function(jsh){
   };
 
   XExt.RenderLOV = function (_data, ctrl, LOV) {
-    ctrl.empty();
-    ctrl.html(jsh.ejs.render('\
+    if (ctrl && ctrl.jquery) {
+      console.warn('Depreciated: XExt.RenderLOV received a jquery object. Please pass a dom element.');
+      ctrl = ctrl.filter(function() {return jsh.XDom.isElement(this);}).get(0);
+    }
+    jsh.XDom.content.replace(ctrl, jsh.ejs.render('\
       <% for(var i=0;i<data.length;i++){ %>\
       <option value="<%=data[i][jsh.uimap.code_val]%>"><%=data[i][jsh.uimap.code_txt]%></option>\
       <% } %>'
@@ -58,10 +61,13 @@ exports = module.exports = function(jsh){
   };
 
   XExt.RenderParentLOV = function (_data, ctrl, parentvals, LOV, field, plural) {
+    if (ctrl && ctrl.jquery) {
+      console.warn('Depreciated: XExt.RenderParentLOV received a jquery object. Please pass a dom element.');
+      ctrl = ctrl.filter(function() {return jsh.XDom.isElement(this);}).get(0);
+    }
     //Get Previous Value
     var prevval = _data[field.name];
     if (prevval == null) prevval = '';
-    ctrl.empty();
     var lovfilter = {};
     if (!plural) lovfilter[jsh.uimap.code_parent] = parentvals[0];
     else {
@@ -86,15 +92,15 @@ exports = module.exports = function(jsh){
     if ((!plural) && (!(jsh.uimap.code_parent in LOV[0]))) cLOV.unshift(LOV[0]);
     else if ((plural) && (!((jsh.uimap.code_parent + '1') in LOV[0]))) cLOV.unshift(LOV[0]);
     else if ('lovblank' in field) cLOV.unshift(LOV[0]);
-    ctrl.html(jsh.ejs.render('\
+    jsh.XDom.content.replace(ctrl, jsh.ejs.render('\
       <% for(var i=0;i<data.length;i++){ %>\
       <option value="<%=data[i][jsh.uimap.code_val]%>"><%=data[i][jsh.uimap.code_txt]%></option>\
       <% } %>'
     , { data: cLOV, jsh: jsh }
     ));
     //Apply prevval
-    var lov_matches = ctrl.children('option').filter(function () { return String($(this).val()).toUpperCase() == String(prevval).toUpperCase(); }).length;
-    if (lov_matches > 0) ctrl.val(prevval);
+    var lov_matches = _.filter(ctrl.children, function (el) { return String(el.value).toUpperCase() == String(prevval).toUpperCase(); }).length;
+    if (lov_matches > 0) ctrl.value = prevval;
   };
 
   XExt.TagBox_Refresh = function(xdctrl, xdbaseinputctrl){
@@ -312,14 +318,6 @@ exports = module.exports = function(jsh){
       jsh.xContextMenuVisible = true;
       jsh.xContextMenuItem = context_item;
       jsh.xContextMenuItemData = data;
-    }
-  };
-
-  XExt.jForEach = function(jctrls, f){
-    if(!jctrls || !jctrls.length) return;
-    if(jctrls.length==1) f(jctrls);
-    else {
-      for(var i=0;i<jctrls.length;i++) f($(jctrls[i]));
     }
   };
 
@@ -2160,11 +2158,11 @@ exports = module.exports = function(jsh){
 
     var cancelDialogFunc = function(_onClosed){
       XExt.dialogButtonFunc(customPrompt, oldactive, function () {
-        if (onClosed) onClosed();
-        if (_onClosed) _onClosed();
+        if (onClosed) onClosed(xDialogObj);
+        if (_onClosed) _onClosed(xDialogObj);
       }, { onClosing: options.onClosing })();
     };
-    var cancelfunc = function(options, _onClosed){
+    var cancelfunc = xDialogObj.cancelfunc = function(options, _onClosed){
       options = _.extend({ force: false }, options);
       options.forceCancel = function(){ cancelfunc({ force: true }); };
       if (onCancel){
@@ -2174,28 +2172,28 @@ exports = module.exports = function(jsh){
     };
     var acceptfunc_aftervalidate = function(_onClosed){
       XExt.dialogButtonFunc(customPrompt, oldactive, function () {
-        if (onClosed) onClosed();
-        if (_onClosed) _onClosed();
+        if (onClosed) onClosed(xDialogObj);
+        if (_onClosed) _onClosed(xDialogObj);
       }, { onClosing: options.onClosing })();
     };
-    var acceptfunc = function (_onClosed) {
+    var acceptfunc = xDialogObj.acceptfunc = function (_onClosed) {
       //Verify this is the topmost dialog
       if ((jsh.xDialog.length > 0) && (jsh.xDialog[0].obj != customPrompt)) return;
       
       if (onAccept) return onAccept(function () { acceptfunc_aftervalidate(_onClosed); });
       else acceptfunc_aftervalidate(_onClosed);
     };
-    function bindDialogHandler(tgt, evtName, handler){
+    var bindDialogHandler = xDialogObj.bindDialogHandler = function bindDialogHandler(tgt, evtName, handler){
       XDom.on(tgt, evtName, handler);
       if(reuse) xDialogObj.handlers.push({target: tgt, eventType: evtName, handler: handler});
-    }
+    };
     XExt.execif(true,
       function(done){
         if(onInit && options.asyncInit){
-          onInit(acceptfunc, cancelfunc, done);
+          onInit(xDialogObj, done);
         }
         else {
-          if (onInit) onInit(acceptfunc, cancelfunc);
+          if (onInit) onInit(xDialogObj);
           return done();
         }
       },
@@ -2414,7 +2412,7 @@ exports = module.exports = function(jsh){
         if(xform && xform.Prop){ xform.Prop.Enabled = true; }
         var orig_jsh_ignorefocusHandler = jsh.ignorefocusHandler;
         jsh.ignorefocusHandler = true;
-        var onInit = function () {
+        var onInit = function (xDialogObj) {
           if (options.OnPopupOpen) if(options.OnPopupOpen(popupData[modelid])===false) return;
           numOpens++;
           if(xgrid && (numOpens==1)) xgrid.Select();
@@ -2422,7 +2420,9 @@ exports = module.exports = function(jsh){
             XDom.focus(jsh.xdroot.selectOne(POPUP_CONTAINER + ' .xsearch_value'));
           }
           else if (XDom(jsh.xdroot, POPUP_CONTAINER).select('td a').length) XDom.focus(XDom(jsh.xdroot, POPUP_CONTAINER).selectOne('td a'));
-        //else jsh.$root(POPUP_CONTAINER).$find('input,select,textarea').first().focus();
+          //else jsh.$root(POPUP_CONTAINER).$find('input,select,textarea').first().focus();
+
+          xDialogObj.bindDialogHandler(XDom.selectOne('.xpopupbox_content', xDialogObj.obj), 'scroll', function(){ jsh.refreshBodyHead(xdPopup.select('.xbodyhead')); });
         };
         var onClosed = function () {
           if (parentobj && (typeof popupData[modelid].result !== 'undefined')) {

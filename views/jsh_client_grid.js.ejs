@@ -116,21 +116,19 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
     xgrid.OnRowBind = function(obj,datarow,readonly){
       if(!xeditablegrid) return;
-      // TODO: calls a bunch of things that take jquery
-      var jobj;
-      if (obj.jquery) jobj = obj;
-      if (_.isArray(obj)) jobj = $(obj[0]);
-      else jobj = $(obj);
+      if (obj.jquery) {
+        console.warn('Depreciated: jsh_client_grid.OnBindRow received a jquery object. Please pass a dom element.');
+        obj = obj.filter(function() {return jsh.XDom.isElement(this);}).get(0);
+      }
+      if (_.isArray(obj)) obj = _.filter(obj, jsh.XDom.isElement)[0];
       if(!readonly) xeditablegrid.BindRow(obj,datarow);
-      xmodel.datamodel.prototype.BindLOV(xform,jobj);
-      if(xmodel.onrowbind) xmodel.onrowbind(xmodel,jobj,datarow);
+      xmodel.datamodel.prototype.BindLOV(xform,obj);
+      if(xmodel.onrowbind) xmodel.onrowbind(xmodel,obj,datarow);
     };
     xgrid.OnDestroyingRows = function(xdObj){
       if(!xeditablegrid) return;
       xdObj.selector('tr[data-id]').select().forEach(function(tr){
-        // TODO: model.onrowunbind specifies a jobj
-        var jobj = $(tr);
-        if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,jobj,jobj.data('id'));
+        if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,tr,jsh.XDom.getData(tr, 'id'));
       });
     }
     xgrid.OnMetaData = function(data){ xform.LOVs = this.LOVs; xform.defaults = this.defaults; xform.title = this.title; }
@@ -181,8 +179,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
             var rowidx = 0;
             jsh.async.eachSeries(data[_this.modelid], function(row, row_cb){
               var rowid = _this.RowCount + rowidx;
-              // TODO: SetIndex takes a jquery
-              xform.SetIndex(rowid, false, $(rows[rowid]));
+              xform.SetIndex(rowid, false, rows[rowid]);
               xform.Render({ resetValidation: false });
               _this.OnRowBind(rows[rowid], row, readOnlyGrid);
               rowidx++;
@@ -339,8 +336,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
   xcontroller.OnDestroy = function(){
     if(!xeditablegrid) return;
     jsh.XDom(jsh.xdroot, xgrid.PlaceholderID).selector("tr[data-id]").select().forEach(function(tr){
-      // TODO: onrowunbind takes a jquery
-      if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,$(tr),XDom.getData(tr, 'id'));
+      if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,tr,XDom.getData(tr, 'id'));
     });
   }
 
@@ -367,10 +363,9 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
               //Render keys
               for(var key in dbdata){
                 if(key in xform.Data.Fields){
-                  // TODO: RenderField takes a jquery
                   XExt.XModel.RenderField(
                     xform.DataSet[dbrowid],
-                    $(jsh.XDom(jsh.xdroot, xgrid.PlaceholderID).selector("tr[data-id='" + dbrowid + "']").select()), 
+                    jsh.XDom(jsh.xdroot, xgrid.PlaceholderID).selector("tr[data-id='" + dbrowid + "']").selectOne(), 
                     xmodel.id, 
                     xform.Data.Fields[key],
                     xform.DataSet[dbrowid][key],
@@ -407,9 +402,8 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
     },function(data, handled){
       //On Fail
-      // TODO: direct access to _jrow, a jquery object
-      if(xform.Data._jrow){
-        jsh.XDom(xform.Data._jrow.get()).selector('.xform_ctrl').class.add(xmodel.datamodel.prototype.xvalidate.ErrorClass);
+      if(xform.Data._row){
+        jsh.XDom(xform.Data._row, '.xform_ctrl').class.add(xmodel.datamodel.prototype.xvalidate.ErrorClass);
       }
       if(oncancel) oncancel(false);
       if(!handled){
@@ -454,8 +448,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
             datatable: [_this.DataSet[rowid]], 
           });
           var xdObj = jsh.XDom(jsh.xdroot, xgrid.PlaceholderID).selector("tr[data-id='" + rowid + "']");
-          // TODO: onrowbind takes a jquery
-          if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,$(xdObj.select()),rowid);
+          if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,xdObj.selectOne(),rowid);
           var container = document.createElement('template');
           container.innerHTML = ejsrslt;
           xdObj.select().forEach(function(row) {
@@ -584,8 +577,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     var xdControls = xdRow.selector('.xform_ctrl.editable:not(input[type=hidden]),.xlookup:not(input[type=hidden])').filter(jsh.XDom.isVisible).first();
     if(xdControls.selector('.xform_ctrl_subfocus').length) xdControls = xdControls.selector('.xform_ctrl_subfocus').first();
     xdControls.focus();
-    // TODO: onrowbind takes a jquery
-    if(xgrid.OnRowBind) xgrid.OnRowBind($(xdRow.select()), newrow);
+    if(xgrid.OnRowBind) xgrid.OnRowBind(xdRow.filter(jsh.XDom.isElement).select(), newrow);
     xdControls.focus();
     if(xdControls.length) xeditablegrid.CurrentCell = xdControls.selectOne();
     else xeditablegrid.CurrentCell = document.activeElement;
@@ -668,8 +660,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
           xform.DataSet[rowid]._orig = null;
           xform.DataSet[rowid]._previous_values = {};
           var xdRow = jsh.XDom(jsh.xdroot, xgrid.PlaceholderID).selector("tr[data-id='" + rowid + "']");
-          // TODO: onrowunbind takes a jquery
-          if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,$(xdRow.select()),rowid);
+          if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,xdRow.selectOne(),rowid);
           xdRow.remove();
           if(!jsh.XDom(jsh.xdroot, xgrid.PlaceholderID).selector('tr').length) xgrid.RenderNoResultsMessage();
           xeditablegrid.CurrentCell = null;

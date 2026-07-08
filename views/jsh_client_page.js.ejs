@@ -1108,50 +1108,53 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     _.each(xmodel.fields, function(field){
       var fieldselector = '.' + field.name + '.xelem' + xmodel.class;
       if (isGrid) fieldselector = '.' + field.name + '.xelem' + xmodel.class;
-      var jctrl = jsh.root.find(fieldselector);
-      if(jctrl.length) XPage.Disable(jctrl, field);
+      var xdctrls = jsh.XDom(jsh.xdroot, fieldselector);
+      if(xdctrls.length) XPage.Disable(xdctrls, field);
     });
   }
 
-  XPage.Disable = function(jctrls,field,show_lookup) {
-    XExt.jForEach(jctrls, function(jctrl){
-      jctrl.removeClass('editable');
-      jctrl.addClass('uneditable');
+  XPage.Disable = function(xdctrls,field,show_lookup) {
+    if(!xdctrls || !xdctrls.length) return;
+    xdctrls.select().forEach(function(el){
+      var xdctrl = jsh.XDom(el);
+      xdctrl.class.remove('editable');
+      xdctrl.class.add('uneditable');
 
-      if (jctrl.hasClass('dropdown')) jctrl.prop('disabled', true);
-      else if (jctrl.hasClass('checkbox')) jctrl.prop('disabled', true);
-      else if (jctrl.hasClass('xform_ctrl_htmlarea')) jctrl.prop('disabled', true);
-      else if(jctrl.hasClass('xtagbox_base')){
-        jctrl.prev().addClass('uneditable');
-        jctrl.prev().find('input').prop('disabled', true);
+      if (xdctrl.class.contains('dropdown')) el.disabled = true;
+      else if (xdctrl.class.contains('checkbox')) el.disabled = true;
+      else if (xdctrl.class.contains('xform_ctrl_htmlarea')) el.disabled = true;
+      else if(xdctrl.class.contains('xtagbox_base')){
+        xdctrl.previousSibling().class.add('uneditable');
+        xdctrl.previousSibling().select('input').forEach(function(inputEl){ inputEl.disabled = true; });
       }
-      else jctrl.prop('readonly', true);
-      if (!show_lookup && jctrl.next().hasClass('xlookup')) jctrl.next().addClass('uneditable');
-      if(!field && (jctrl.hasClass('xform_ctrl') || jctrl.hasClass('xform_file_upload'))){
-        field = XExt.getFieldFromObject(jctrl[0]);
+      else el.readonly = true;
+      if (!show_lookup && xdctrl.nextSibling().class.contains('xlookup')) xdctrl.nextSibling().class.add('uneditable');
+      if(!field && (xdctrl.class.contains('xform_ctrl') || xdctrl.class.contains('xform_file_upload'))){
+        field = XExt.getFieldFromObject(el);
       }
-      if(field && field.ondisabled) field.ondisabled(jctrl[0]);
+      if(field && field.ondisabled) field.ondisabled(el);
     });
   }
 
-  XPage.Enable = function(jctrls,field) {
-    XExt.jForEach(jctrls, function(jctrl){
-      jctrl.removeClass('uneditable');
-      jctrl.addClass('editable');
+  XPage.Enable = function(xdctrls,field) {
+    if(!xdctrls || !xdctrls.length) return;
+    xdctrls.select().forEach(function(el){
+      var xdctrl = jsh.XDom(el); 
+      xdctrl.class.remove('uneditable');
+      xdctrl.class.add('editable');
 
-      if (jctrl.hasClass('dropdown')) jctrl.prop('disabled', false);
-      else if (jctrl.hasClass('checkbox')) jctrl.prop('disabled', false);
-      else if (jctrl.hasClass('xform_ctrl_htmlarea')) jctrl.prop('disabled', false);
-      else if(jctrl.hasClass('xtagbox_base')){
-        jctrl.prev().removeClass('uneditable');
-        jctrl.prev().find('input').prop('disabled', false);
+      if (xdctrl.class.contains('dropdown')) el.disabled = false;
+      else if (xdctrl.class.contains('xform_ctrl_htmlarea')) el.disabled = false;
+      else if(xdctrl.class.contains('xtagbox_base')){
+        xdctrl.previousSibling().class.remove('uneditable');
+        xdctrl.previousSibling().select('input').forEach(function(inputEl){ inputEl.disabled = false; });
       }
-      else jctrl.prop('readonly', false);
-      if (jctrl.next().hasClass('xlookup')) jctrl.next().removeClass('uneditable');
-      if(!field && (jctrl.hasClass('xform_ctrl') || jctrl.hasClass('xform_file_upload'))){
-        field = XExt.getFieldFromObject(jctrl[0]);
+      else el.readonly = false;
+      if (xdctrl.nextSibling().class.contains('xlookup')) xdctrl.nextSibling().class.remove('uneditable');
+      if(!field && (xdctrl.class.contains('xform_ctrl') || xdctrl.class.contains('xform_file_upload'))){
+        field = XExt.getFieldFromObject(el);
       }
-      if(field && field.onenabled) field.onenabled(jctrl[0]);
+      if(field && field.onenabled) field.onenabled(el);
     });
   }
 

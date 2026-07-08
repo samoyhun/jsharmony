@@ -503,6 +503,13 @@ XDom.isVisible = function(target){
   return false;
 };
 
+XDom.isElement = function(target){
+  var _el = XDom.resolve(target);
+  for(var i=0; i< _el.length; i++)
+    if(_el[i].nodeType == Node.ELEMENT_NODE) return true;
+  return false;
+};
+
 function nodeMap(target, f){
   var _el = XDom.resolve(target);
   return _.uniq(_.compact(_.flatMap(_el, f)));

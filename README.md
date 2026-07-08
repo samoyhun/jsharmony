@@ -53,6 +53,13 @@ jsh.Init(function(){
 });
 ```
 
+## Upgrade XDom
+
+XExt.CustomPrompt
+  onInit, onClosed
+    new parameter: xDialogObj instead of acceptfunc, cancelfunc
+    Also, acceptfunc, cancelfunc _onClosed now passed parameter xDialogObj
+  
 
 ## Tests
 

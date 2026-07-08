@@ -1071,6 +1071,27 @@ var mocha = require('mocha');
     });
   });
 
+  describe('XDom isElement', function() {
+    before(function(){
+      document.querySelector('#workspace').innerHTML = [
+        'text',
+        '<div></div>',
+      ].join('');
+    });
+
+    it('is element', function(){
+      assert(XDom.isElement(XDom('#workspace div').select()[0]), 'div is element');
+    });
+
+    it('is not element', function(){
+      assert(!XDom.isElement(document.querySelector('#workspace').childNodes[0]), 'text is not element');
+    });
+
+    after(function(){
+      document.querySelector('#workspace').innerHTML = '';
+    });
+  });
+
   describe('XDom animate', function() {
     beforeEach(function(){
       document.querySelector('#workspace').innerHTML = [
