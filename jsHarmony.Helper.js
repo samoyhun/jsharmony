@@ -355,7 +355,7 @@ exports.getURL_onclick = function (req, model, link) {
       }
     }
     if(ptarget.action=='download'){
-      rslt = "url += '?format=js'; "+req.jshsite.instance+".getFileProxy().prop('src', url); return false;";
+      rslt = "url += '?format=js'; "+req.jshsite.instance+".getFileProxy().src = url; return false;";
     }
     else if ((tmodel && ('popup' in tmodel))||!_.isEmpty(ptarget.actionParams)) {
       var params = {

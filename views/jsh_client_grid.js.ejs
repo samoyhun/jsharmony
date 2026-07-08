@@ -608,7 +608,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       if (key_names.length != 1) { throw new Error('Models with file downloads must have one key.'); }
       url = jsh._BASEURL + '_dl/' + modelid + '/' + keys[key_names[0]] + '/' + field;
     }
-    jsh.getFileProxy().prop('src', url);
+    jsh.getFileProxy().src = url;
   }
 
   xcontroller.FilePreview = function(field, title, rowid){

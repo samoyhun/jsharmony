@@ -1408,7 +1408,7 @@ exports = module.exports = function(jsh){
     var treeid = xdctrl.data.treeid;
     jsh.off('.jsh_tree_'+treeid);
     var hoverBorderStart = 0;
-    jsh.on('jsh_mouseDrag.jsh_tree_'+treeid,function(event, mouseDragObj, targetObj, origEvent){
+    jsh.on('jsh_mouseDrag.jsh_tree_'+treeid, function(event, mouseDragObj, targetObj, origEvent){
       var dragTarget = xdctrl.select('.xdragtarget');
       XDom.class.remove(dragTarget, 'xdragtarget');
       XDom.class.remove(dragTarget, 'xdragtop');
@@ -1474,7 +1474,7 @@ exports = module.exports = function(jsh){
       else if(targetAnchor[1]=='full') xdTargetObj.class.add('xdragfull');
     });
     //On Drop
-    jsh.on('jsh_mouseDragEnd.jsh_tree_'+treeid,function(event, mouseDragObj, targetObj, origEvent){
+    jsh.on('jsh_mouseDragEnd.jsh_tree_'+treeid, function(event, mouseDragObj, targetObj, origEvent){
       XDom.class.remove(xdctrl.select('.xdragtarget'), 'xdragtarget');
       if(!targetObj) return;
       if(XDom.getData(targetObj, 'id')==XDom.getData(mouseDragObj, 'id')) return;
@@ -2939,22 +2939,23 @@ exports = module.exports = function(jsh){
     }
     else throw new Error('Inserting text into contenteditable not supported.');
   };
+  XExt.contains = function(el_container, el_target){ // TODO: Check CanIUse 'contains' in CodeReview
+    if(el_container.children && el_container.children.length){
+      for(var i=0; i<el_container.children.length; i++){
+        if(el_container.children[i] == el_target) return true;
+        if(XExt.contains(el_container.children[i], el_target)) return true;
+      }
+    }
+    return false;
+  };
   XExt.selectionIsChildOf = function(xdobj){
     if(window.getSelection){
       var sel = window.getSelection();
       if(!sel || !sel.rangeCount) return false;
       var rstart = sel.getRangeAt(0);
       if(xdobj.selectOne() == rstart.startContainer) return true;
-      var contains = function(el_container, el_target){ // TODO: Check CanIUse 'contains' in CodeReview
-        if(el_container.children && el_container.children.length){
-          for(var i=0; i<el_container.children.length; i++){
-            if(el_container.children[i] == el_target) return true;
-            if(contains(el_container.children[i], el_target)) return true;
-          }
-        }
-        return false;
-      };
-      return contains(xdobj.selectOne(),rstart.startContainer);
+
+      return XExt.contains(xdobj.selectOne(),rstart.startContainer);
     }
     else throw new Error('Inserting text into contenteditable not supported.');
   };
@@ -3124,7 +3125,7 @@ exports = module.exports = function(jsh){
       var ontabselected = xdTabButton.data.ontabselected;
       if(ontabselected) XExt.JSEval(ontabselected, xdTabButton.selectOne());
     });
-    if(!xdTabButtons.filter(function(el){return XDom.class.contains(el, '.selected');}).length) xdTabButtons.first().add.class('selected');
+    if(!xdTabButtons.filter(function(el){return XDom.class.contains(el, '.selected');}).length) xdTabButtons.first().class.add('selected');
     xdTabPanels.filter(function(el){return XDom.class.contains(el, '.'+xdTabButtons.filter(function(el){return XDom.class.contains(el, '.selected');}).attr.for);}).class.add('selected');
     xdobj.class.add('initialized');
   };
