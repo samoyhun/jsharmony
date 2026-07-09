@@ -202,7 +202,7 @@ var jsHarmony = function(options){
   this.popups = {};
   this.srcfiles = {};
   this.scriptLoader = {};
-  this.lastWindowSize = { width: $(window).width(), height: $(window).height() };
+  this.lastWindowSize = { width: window.innerWidth, height: window.innerHeight };
 
   this._GET = this.XExt.parseGET();
   _.extend(this._GET, this.forcequery);
@@ -239,7 +239,7 @@ jsHarmony.prototype.postFileProxy = function(url, params){
   var xdForm_container = XDom('#'+_this.getInstance()+'_xfileform_container');
   xdForm_container.content.clear();
   var form = XDom.renderOne('<form method="post" id="'+_this.getInstance()+'_xfileform"></form>');
-  var xdForm = XDom(form); 
+  var xdForm = XDom(form);
   xdForm_container.selectOne().appendChild(form);
   form.action = url;
   form.target = _this.getInstance()+'_xfileproxy';
@@ -277,8 +277,8 @@ jsHarmony.prototype.loadScript = function(url, cb){
 
 jsHarmony.prototype.BindEvents = function(){
   var _this = this;
-  $(document).ready(function(){ _this.Init(); }); // TODO: DOMContentLoaded != on.('ready')
-  $(document).ready(function () { _this.XWindowResize(); }); // TODO: DOMContentLoaded != on.('ready')
+  $(document).ready(function(){ _this.Init(); });             // TODO: DOMContentLoaded != on.('ready')
+  $(document).ready(function () { _this.XWindowResize(); });  // TODO: DOMContentLoaded != on.('ready')
   XDom.on(window, 'load', function () { _this.XWindowResize(); });
   XDom.on(window, 'resize', function () { _this.XWindowResize(); });
   XDom.on(window, 'scroll', function () { _this.XWindowResize('scroll'); });
@@ -311,10 +311,10 @@ jsHarmony.prototype.BindEvents = function(){
 
 jsHarmony.prototype.Init = function(){
   var _this = this;
-  // TODO: Remove when jsh.root is nolonger in use
+  // TODO: Remove below when jsh.root is nolonger in use
   if(_this.root.$find('body').length) _this.root = _this.root.$find('body');
   if(_this.XExt.isMobile()) _this.root.$find('.xmain').addClass('xmain_mobile');
-
+  // TODO: Remove above when jsh.root is nolonger in use
   if(_this.xdroot.select('body').length) _this.xdroot = XDom(_this.xdroot, 'body');
   if(_this.XExt.isMobile()) XDom.class.add(_this.xdroot.select('.xmain'), 'xmain_mobile');
   _this.InitFileUpload();
@@ -344,7 +344,7 @@ jsHarmony.prototype.Init = function(){
   });
   XDom.on(document, 'mousedown', function (e) {
     _this.mouseDown = true;
-  })
+  });
   XDom.on(document, 'mouseup', function (e) {
     _this.mouseDown = false;
     if(_this.mouseDragObj){
@@ -375,14 +375,14 @@ jsHarmony.prototype.mouseDragBegin = function(mouseDragObj, mouseCanDrop, e){
   _this.mouseDragObj = mouseDragObj;
   _this.mouseCanDrop = mouseCanDrop;
   var clone = XDom.renderOne(mouseDragObj.outerHTML);
-  var xdClone = XDom(clone); 
+  var xdClone = XDom(clone);
   xdClone.style.position =  'absolute';
   xdClone.style.zIndex = 99998;
   xdClone.style.left = _this.mouseX;
   xdClone.style.top = _this.mouseY;
   xdClone.class.add('xdrag');
   xdClone.class.remove('xdrop');
-  _this.xdroot.content.prepend(xdclone.outerHTML);
+  _this.xdroot.content.prepend(xdClone.outerHTML);
 
   _this.trigger('jsh_mouseDragBegin', [mouseDragObj, e]);
 };
@@ -426,6 +426,7 @@ jsHarmony.prototype.hideContextMenu = function(){
     this.xContextMenuVisible = false;
     this.xContextMenuItem = undefined;
     this.xContextMenuItemData = undefined;
+    //XDom(this.xdroot, '.xcontext_menu').style.display = false; // TODO: In review, discuss wich is prefered (note this function is called on every click)
     XDom.style.display(this.xdroot.select('.xcontext_menu'), false);
   }
 };
@@ -459,8 +460,8 @@ jsHarmony.prototype.InitDialogs = function () {
 };
 jsHarmony.prototype.InitControls = function() {
   var _this = this;
-  XDom('.xtabcontrol').omit(function(el){return XDom.class.contains(el, '.initialized')}).select().forEach(function(el){ _this.XExt.bindTabControl(el); });
-  XDom('.xaccordiontab').omit(function(el){return XDom.class.contains(el, '.initialized')}).select().forEach(function(el){ _this.XExt.bindAccordion(el); });
+  XDom('.xtabcontrol').omit(function(el){return XDom.class.contains(el, '.initialized');}).select().forEach(function(el){ _this.XExt.bindTabControl(el); });
+  XDom('.xaccordiontab').omit(function(el){return XDom.class.contains(el, '.initialized');}).select().forEach(function(el){ _this.XExt.bindAccordion(el); });
 };
 jsHarmony.prototype.refreshBodyHead = function(_el){
   if(!_el) _el = this.xdroot.select('.xbodyhead');
@@ -506,7 +507,7 @@ jsHarmony.prototype.XDialogResize = function (source, params) {
     _.each(this.xdDialogBlock.select('.xdialogbox'), function (obj) {
       var xdobj = XDom(obj);
       if (!XDom.isVisible(obj)) return;
-      if (document.activeElement && document.activeElement.matches('input,select,textarea') && XDom(document.activeElement).parent().select().length) {
+      if (document.activeElement && document.activeElement.matches('input,select,textarea') && XDom(document.activeElement).parent().length) {
         if (source == 'scroll') return;
       }
       var dw = xdobj.calc.widthToBorder();
@@ -621,7 +622,7 @@ jsHarmony.prototype.runGlobalsMonitor = function(){
     _this.runGlobalsMonitor();
   },1000);
 };
-
+// TODO: Alter prototypes below for XDom implementation
 jsHarmony.prototype.on = function(){ $(this).on.apply($(this), arguments); };
 jsHarmony.prototype.off = function(){ $(this).off.apply($(this), arguments); };
 jsHarmony.prototype.trigger = function(){ $(this).trigger.apply($(this), arguments); };
