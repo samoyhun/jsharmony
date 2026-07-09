@@ -225,15 +225,17 @@ exports.postModelMultisel = function (req, res, fullmodelid, Q, P, onComplete) {
   if (!_.isEmpty(verrors)) { Helper.GenError(req, res, -2, verrors[''].join('\n')); return; }
   _.each(subs, function (fname) { sql_params[fname] = '%%%' + fname + '%%%'; });
   
-  var sql = db.sql.postModelMultisel(_this.jsh, model, lovfield, lovvals, foreignkeyfields, param_datalocks, datalockqueries, lov_datalockqueries);
+  var dbsql = db.sql.postModelMultisel(_this.jsh, model, lovfield, lovvals, foreignkeyfields, param_datalocks, datalockqueries, lov_datalockqueries);
   
   var dbtasks = {};
   var sql_rslt = null;
   dbtasks[fullmodelid] = function (dbtrans, callback, transtbl) {
     sql_params = _this.ApplyTransTblEscapedParameters(sql_params, transtbl);
-    db.Row(dbcontext, sql, sql_ptypes, sql_params, dbtrans, function (err, rslt, stats) {
-      if (err != null) { err.model = model; err.sql = sql; }
-      if (stats) stats.model = model;
+    db.ExecTasksProxy(dbcontext, dbsql, sql_ptypes, sql_params, dbtrans, db.Row, fullmodelid, function (err, rslt, stats) {
+      if (err != null) { err.model = model; err.sql = dbsql.sql; }
+      if (stats) {
+        stats = _.extend({ notices: [], warnings: [], model: model }, stats);
+      }
       if(model.onsqlupdated) sql_rslt = rslt;
       callback(err, rslt, stats);
     });
