@@ -1127,7 +1127,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
         xdctrl.previousSibling().class.add('uneditable');
         xdctrl.previousSibling().select('input').forEach(function(inputEl){ inputEl.disabled = true; });
       }
-      else el.readonly = true;
+      else el.readOnly = true;
       if (!show_lookup && xdctrl.nextSibling().class.contains('xlookup')) xdctrl.nextSibling().class.add('uneditable');
       if(!field && (xdctrl.class.contains('xform_ctrl') || xdctrl.class.contains('xform_file_upload'))){
         field = XExt.getFieldFromObject(el);
@@ -1149,7 +1149,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
         xdctrl.previousSibling().class.remove('uneditable');
         xdctrl.previousSibling().select('input').forEach(function(inputEl){ inputEl.disabled = false; });
       }
-      else el.readonly = false;
+      else el.readOnly = false;
       if (xdctrl.nextSibling().class.contains('xlookup')) xdctrl.nextSibling().class.remove('uneditable');
       if(!field && (xdctrl.class.contains('xform_ctrl') || xdctrl.class.contains('xform_file_upload'))){
         field = XExt.getFieldFromObject(el);
