@@ -252,6 +252,7 @@ var Selector = function(){
   //.empty => .content.clear()
   //.html('html string') => .content.replace('html string')
   //.outerWidth => .calc.widthToBorder
+  //.outerWidth(true) => .calc.widthToMargin
   //.outerHeight => .calc.heightToBorder
   //$.param -> XExt.escapeQuery
 };
