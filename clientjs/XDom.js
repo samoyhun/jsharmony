@@ -114,6 +114,7 @@ var Selector = function(){
     append: XDom.content.append.bind(XDom, this),
     prepend: XDom.content.prepend.bind(XDom, this),
     replace: XDom.content.replace.bind(XDom, this),
+    replaceText: XDom.content.replaceText.bind(XDom, this),
     clear: XDom.content.clear.bind(XDom, this),
   };
   _this.attr = new Proxy({}, {
