@@ -539,15 +539,17 @@ exports.postModelForm = function (req, res, fullmodelid, Q, P, onComplete) {
         });
       }
       
-      var sql = db.sql.postModelForm(_this.jsh, model, fields, keys, sql_extfields, sql_extvalues, hashfields, param_datalocks, datalockqueries);
+      var dbsql = db.sql.postModelForm(_this.jsh, model, fields, keys, sql_extfields, sql_extvalues, hashfields, param_datalocks, datalockqueries);
       
       dbtasks[fullmodelid] = function (dbtrans, callback, transtbl) {
         sql_params = _this.ApplyTransTblEscapedParameters(sql_params, transtbl);
-        db.Row(dbcontext, sql, sql_ptypes, sql_params, dbtrans, function (err, rslt, stats) {
-          if (stats) stats.model = model;
+        db.ExecTasksProxy(dbcontext, dbsql, sql_ptypes, sql_params, dbtrans, db.Row, fullmodelid, function (err, rslt, stats) {
+          if (stats) {
+            stats = _.extend({ notices: [], warnings: [], model: model }, stats);
+          }
           if ((err == null) && (rslt != null) && (_this.jsh.map.rowcount in rslt) && (rslt[_this.jsh.map.rowcount] == 0)) err = Helper.NewError('No records affected', -3, stats);
 
-          if (err != null) { err.model = model; err.sql = sql; }
+          if (err != null) { err.model = model; err.sql = (dbsql.dbtaskstr || dbsql.sql); }
           else {
             if(model.onsqlupdated) sql_rslt = rslt;
             if (fileops.length > 0) {

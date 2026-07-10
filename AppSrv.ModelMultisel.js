@@ -232,7 +232,7 @@ exports.postModelMultisel = function (req, res, fullmodelid, Q, P, onComplete) {
   dbtasks[fullmodelid] = function (dbtrans, callback, transtbl) {
     sql_params = _this.ApplyTransTblEscapedParameters(sql_params, transtbl);
     db.ExecTasksProxy(dbcontext, dbsql, sql_ptypes, sql_params, dbtrans, db.Row, fullmodelid, function (err, rslt, stats) {
-      if (err != null) { err.model = model; err.sql = dbsql.sql; }
+      if (err != null) { err.model = model; err.sql = (dbsql.dbtaskstr || dbsql.sql); }
       if (stats) {
         stats = _.extend({ notices: [], warnings: [], model: model }, stats);
       }
