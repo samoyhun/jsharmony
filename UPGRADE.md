@@ -69,6 +69,15 @@ jQuery:
 XDom:
 ```jsh.XDom(jsh.xdroot, '.xtitlecaption'+xmodel.class).style.display = true;```
 
+### Excplicitly implement filters for jquery-specific selectors
+
+Selectors passed to jsharmony methods will longer utilize jQuery specific extensions like `:visible`
+
+jQuery:
+```jsh.$root('.xcontext_menu:visible')```
+
+XDom:
+```jsh.XDom(jsh.xdroot, '.xconext_menu').filter(jsh.XDom.isVisible)```
 
 ### Replace jQuery objects in method arguments with plain elements
 
@@ -133,12 +142,30 @@ Model onrowbind/onrowunbind code snipits formally provided an environment with a
 
 ``jsh.XExt.RenderParentLOV(_this, *ctrl*, [_this[this.Fields[_LOV].lovparent]], this._LOVs[_LOV], this.Fields[_LOV], false);``
 
-#### XPage.Enable (first argument)
-#### XPage.Disable (first argument)
+#### XPage.RenderButtons (first argument)
+
+```XPage.RenderButtons(*container*);```
+
+#### XPage.LayoutOneColumn (first argument)
+
+```jsh.XPage.LayoutOneColumn(*customPrompt*, { reset: true });```
+
+#### XPage.Disable / XPage.Enable (first argument)
+
+These functions expect an array of elements
+
+```XPage.Disable(form.querySelectorAll('.runas .user'));```
+
+#### XPage.RemoveEJSTags
+#### XPage.GetObjEJS
+
 #### XExt.TreeRender (first argument)
 #### XExt.TreeSelectNode (first argument)
 #### XExt.TagBox_Render (both arguments)
 #### XExt.TagBox_Refresh (both arguments)
+#### XExt.findClosest (took selectors with :visible, returns jquery, -> add function parameter for other filters)
+#### XExt.jForEach (removed)
+#### XExt.getFieldFromObject
 #### popupShow jquery arguments TBD
 #### jsh.XBarcode.EnableScanner($(this)); TBD needs request
 

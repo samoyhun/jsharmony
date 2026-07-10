@@ -39,10 +39,7 @@ exports = module.exports = function(jsh){
 
   XExtXModel.GetRowID = function (modelid,obj){
     modelid = jsh.XExt.resolveModelID(modelid);
-    if (obj && obj.jquery) {
-      console.warn('Depreciated: XModel.GetRowID received a jquery object. Please pass a dom element.');
-      obj = obj.filter(function() {return jsh.XDom.isElement(this);}).get(0);
-    }
+    obj = jsh.parseJQueryElements(obj, 'XModel.GetRowID');
     var xmodel = jsh.XModels[modelid];
     var rslt = -1;
     if(jsh.XDom.class.contains(obj, 'row_independent')){ /* Do nothing */ }
@@ -612,10 +609,7 @@ exports = module.exports = function(jsh){
   XExtXModel.BindLOV = function (modelid) {
     modelid = jsh.XExt.resolveModelID(modelid);
     return function (xform, parentobj) {
-      if (parentobj && parentobj.jquery) {
-        console.warn('Depreciated: XModel.BindLOV received a jquery object. Please pass a dom element.');
-        parentobj = parentobj.filter(function() {return jsh.XDom.isElement(this);}).get(0);
-      }
+      parentobj = jsh.parseJQueryElements(parentobj, 'XModel.BindLOV');
       if (!parentobj) parentobj = jsh.xdroot.selectOne();
       var xmodel = jsh.XModels[modelid];
       if(!xmodel) return;
