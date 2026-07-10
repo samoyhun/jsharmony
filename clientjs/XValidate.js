@@ -28,9 +28,6 @@ function XValidate(jsh) {
   this.ErrorClass = 'xinputerror';
   this.jsh = jsh||XValidate.jsh;
 }
-function $find(obj, sel){
-  return obj.find(sel); // eslint-disable-line es5/no-es6-methods
-}
 XValidate.jsh = undefined;
 XValidate.prototype.AddValidator = function (_field, _caption, _actions, _funcs, _roles) {
   this.Validators.push(new XValidator(_field, _caption, _actions, _funcs, undefined, _roles));
@@ -39,7 +36,7 @@ XValidate.prototype.AddControlValidator = function (_selector, _field, _caption,
   this.Validators.push(new XValidator(_field, _caption, _actions, _funcs, _selector));
 };
 XValidate.prototype.ResetValidation = function (field, parentobj) {
-  if (!parentobj) parentobj = this.jsh.root;
+  if (!parentobj) parentobj = this.jsh.xdroot;
   this.Errors.length = 0;
   field = field || '';
   for (var i = 0; i < this.Validators.length; i++) {
@@ -47,7 +44,7 @@ XValidate.prototype.ResetValidation = function (field, parentobj) {
     if (field && (field != v.Field)) continue;
     
     if ((this.ErrorClass != '') && (v.Selector != '')) {
-      $find(parentobj, v.Selector).removeClass(this.ErrorClass);
+      this.jsh.XDom(parentobj, v.Selector).class.remove(this.ErrorClass);
     }
   }
 };
@@ -55,7 +52,7 @@ XValidate.prototype.ValidateControls = function (perms, _obj, field, parentobj) 
   var _this = this;
   field = field || '';
   var firstErrorControl = '';
-  if (!parentobj) parentobj = _this.jsh.root;
+  if (!parentobj) parentobj = _this.jsh.xdroot;
   this.ResetValidation(field, parentobj);
   var verrors = this.Validate(perms, _obj, field);
   if (verrors) {
@@ -67,7 +64,7 @@ XValidate.prototype.ValidateControls = function (perms, _obj, field, parentobj) 
           firstErrorControl = ctrl;
         }
         if (this.ErrorClass != '') {
-          $find(parentobj, ctrl).addClass(this.ErrorClass);
+          _this.jsh.XDom(parentobj, ctrl).class.add(this.ErrorClass);
         }
       }
     }
@@ -77,11 +74,14 @@ XValidate.prototype.ValidateControls = function (perms, _obj, field, parentobj) 
       if (firstErrorControl != '') {
         _this.jsh.ignorefocusHandler = true;
         window.setTimeout(function () {
-          _this.jsh.$(document.activeElement).blur();
-          var newobj = $find(parentobj, firstErrorControl);
-          if($find(newobj, '.xform_ctrl_subfocus').length) newobj = $find(newobj, '.xform_ctrl_subfocus').first();
-          newobj.focus();
-          newobj.select();
+          document.activeElement && document.activeElement.blur();
+          var newobj = _this.jsh.XDom(parentobj, firstErrorControl).selectOne();
+          var subfocus = _this.jsh.XDom(newobj, '.xform_ctrl_subfocus').selectOne();
+          if(subfocus) newobj = subfocus;
+          if (newobj) {
+            newobj.focus();
+            newobj.select();
+          }
           window.setTimeout(function () { _this.jsh.ignorefocusHandler = false; }, 1);
         }, 1);
       }
