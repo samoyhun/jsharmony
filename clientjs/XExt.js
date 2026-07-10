@@ -3126,7 +3126,7 @@ exports = module.exports = function(jsh){
       var ontabselected = xdTabButton.data.ontabselected;
       if(ontabselected) XExt.JSEval(ontabselected, xdTabButton.selectOne());
     });
-    if(!xdTabButtons.filter(function(el){return XDom.class.contains(el, '.selected');}).length) xdTabButtons.first().add.class('selected');
+    if(!xdTabButtons.filter(function(el){return XDom.class.contains(el, '.selected');}).length) xdTabButtons.first().class.add('selected');
     xdTabPanels.filter(function(el){return XDom.class.contains(el, '.'+xdTabButtons.filter(function(el){return XDom.class.contains(el, '.selected');}).attr.for);}).class.add('selected');
     xdobj.class.add('initialized');
   };

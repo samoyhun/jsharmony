@@ -357,8 +357,8 @@ exports = module.exports = function(jsh){
     if(is_editable && xdCtrl.class.contains('readonly')) is_editable = false;
     if(is_editable && isGrid && xdCtrl.parent('tr.xrow').class.contains('readonly')) is_editable = false;
 
-    if (is_editable && !xdCtrl.class.contains('editable')) { jsh.XPage.Enable(xdCtrl, field); }
-    else if (!is_editable && !xdCtrl.class.contains('uneditable')) { jsh.XPage.Disable(xdCtrl, field, show_lookup_when_readonly); }
+    if (is_editable && !xdCtrl.class.contains('editable')) { jsh.XPage.Enable(xdCtrl.select(), field); }
+    else if (!is_editable && !xdCtrl.class.contains('uneditable')) { jsh.XPage.Disable(xdCtrl.select(), field, show_lookup_when_readonly); }
 
     return xdCtrl.selectOne();
   };
