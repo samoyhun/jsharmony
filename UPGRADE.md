@@ -169,7 +169,15 @@ These functions expect an array of elements
 #### popupShow jquery arguments TBD
 #### jsh.XBarcode.EnableScanner($(this)); TBD needs request
 
-### jsharmony-validate TBD
+### jsharmony-validate
+
+jsharmony-validate is no longer supported as a separate package, and package dependencies should be changed or removed. It is now part of jsHarmony, and should be imported from outside as `jsharmony/Validate`.
+
+before:
+```var XValidate = require('jsharmony-validate');```
+
+after:
+```var XValidate = require('jsharmony/Validate');```
 
 ### jQuery and jQuery plugins are not provided
 
