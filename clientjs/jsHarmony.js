@@ -36,7 +36,7 @@ var XDom = require('./XDom.js');
 var XExt = require('./XExt.js');
 var XAPI = require('./XAPI.js');
 var XFormat = require('./XFormat.js');
-var XValidate = require('jsharmony-validate');
+var XValidate = require('./XValidate.js');
 var XSearch = require('./XSearch.js');
 var XPayment = require('./XPayment.js');
 var XBarcode = require('./XBarcode.js');
@@ -615,11 +615,11 @@ jsHarmony.prototype.runGlobalsMonitor = function(){
 jsHarmony.prototype.parseJQueryElements = function(obj, method) {
   if (obj && obj.jquery) {
     console.warn('Depreciated: '+method+' received a jquery object. Please pass a dom element.');
-    return obj.filter(function() {return jsh.XDom.isElement(this);}).get(0);
+    return obj.filter(function() {return jsHarmony.XDom.isElement(this);}).get(0);
   } else {
     return obj;
   }
-}
+};
 
 jsHarmony.prototype.on = function(){ $(this).on.apply($(this), arguments); };
 jsHarmony.prototype.off = function(){ $(this).off.apply($(this), arguments); };

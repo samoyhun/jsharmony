@@ -17,8 +17,6 @@ You should have received a copy of the GNU Lesser General Public License
 along with this package.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-var $ = require('./jquery-1.11.2');
-$.fn.$find = function(){ return $.fn.find.apply(this, arguments); };
 var _ = require('lodash');
 
 exports = module.exports = function(jsh){
@@ -107,8 +105,7 @@ exports = module.exports = function(jsh){
     else return true;
     var parentobj = undefined;
     if (this.xData) parentobj = this.Data._row;
-    // TODO: validation takes a jquery object
-    return validator.ValidateControls(perms,obj,'',$(parentobj));
+    return validator.ValidateControls(perms,obj,'',parentobj);
   };
   XForm.prototype.ResetValidation = function(obj){
     obj = obj || (this.Index>=0?this.Data:undefined);
@@ -172,7 +169,6 @@ exports = module.exports = function(jsh){
     if(this.Index == (this.Count()-1)) return;
     this.NavTo(this.Count()-1);
   };
-  // TODO: SetIndex takes a jquery object, and puts into Data, which is directly accessed elsewhere.
   XForm.prototype.SetIndex = function (_index, saveold, row) {
     if (typeof saveold == 'undefined') saveold = true;
     if (_index > this.Count()) { jsh.XExt.Alert('Cannot navigate - Index greater than size of collection'); return false; }
