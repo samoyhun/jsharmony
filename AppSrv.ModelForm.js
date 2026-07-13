@@ -147,12 +147,12 @@ exports.getModelForm = function (req, res, fullmodelid, Q, P, form_m) {
   //Return applicable drop-down lists
   var dbtasks = [{},{}];
   if (!is_insert && !model.unbound) dbtasks[0][fullmodelid] = function (dbtrans, callback) {
-    var sql = db.sql.getModelForm(_this.jsh, model, selecttype, allfields, sql_allkeyfields, datalockqueries, sortfields);
+    var dbsql = db.sql.getModelForm(_this.jsh, model, selecttype, allfields, sql_allkeyfields, datalockqueries, sortfields);
     var dbfunc = db.Row;
     if (selecttype == 'multiple') dbfunc = db.Recordset;
-    dbfunc.call(db, dbcontext, sql, sql_ptypes, sql_params, dbtrans, function (err, rslt, stats) {
+    db.ExecTasksProxy(dbcontext, dbsql, sql_ptypes, sql_params, dbtrans, dbfunc, fullmodelid, function (err, rslt, stats) {
       if ((err == null) && (rslt == null)) err = Helper.NewError('Record not found', -1);
-      if (err != null) { err.model = model; err.sql = sql; }
+      if (err != null) { err.model = model; err.sql = (dbsql.dbtaskstr || dbsql.sql); }
       else {
         if (stats) stats.model = model;
         if ((rslt != null) && (selecttype == 'single') && (keylist.length == 1)) {
@@ -350,7 +350,7 @@ exports.putModelForm = function (req, res, fullmodelid, Q, P, onComplete) {
     var sql_rslt = null;
     dbtasks[fullmodelid] = function (dbtrans, callback, transtbl) {
       sql_params = _this.ApplyTransTblEscapedParameters(sql_params, transtbl);
-      db.Row(dbcontext, dbsql.sql, sql_ptypes, sql_params, dbtrans, function (err, rslt, stats) {
+      db.ExecTasksProxy(dbcontext, dbsql, sql_ptypes, sql_params, dbtrans, db.Row, fullmodelid, function (err, rslt, stats) {
         if (stats) stats.model = model;
         if ((err == null) && (rslt != null) && (_this.jsh.map.rowcount in rslt) && (rslt[_this.jsh.map.rowcount] == 0)) err = Helper.NewError('No records affected', -3, stats);
         if (err != null) { err.model = model; err.sql = dbsql.sql; }
@@ -544,9 +544,7 @@ exports.postModelForm = function (req, res, fullmodelid, Q, P, onComplete) {
       dbtasks[fullmodelid] = function (dbtrans, callback, transtbl) {
         sql_params = _this.ApplyTransTblEscapedParameters(sql_params, transtbl);
         db.ExecTasksProxy(dbcontext, dbsql, sql_ptypes, sql_params, dbtrans, db.Row, fullmodelid, function (err, rslt, stats) {
-          if (stats) {
-            stats = _.extend({ notices: [], warnings: [], model: model }, stats);
-          }
+          if (stats) stats.model = model;
           if ((err == null) && (rslt != null) && (_this.jsh.map.rowcount in rslt) && (rslt[_this.jsh.map.rowcount] == 0)) err = Helper.NewError('No records affected', -3, stats);
 
           if (err != null) { err.model = model; err.sql = (dbsql.dbtaskstr || dbsql.sql); }
@@ -627,15 +625,15 @@ exports.deleteModelForm = function (req, res, fullmodelid, Q, P, onComplete) {
   verrors = _.merge(verrors, model.xvalidate.Validate('K', sql_params));
   if (!_.isEmpty(verrors)) { Helper.GenError(req, res, -2, verrors[''].join('\n')); return; }
   
-  var sql = db.sql.deleteModelForm(_this.jsh, model, keys, datalockqueries);
+  var dbsql = db.sql.deleteModelForm(_this.jsh, model, keys, datalockqueries);
   
   var dbtasks = {};
   var sql_rslt = null;
   dbtasks[fullmodelid] = function (dbtrans, callback) {
-    db.Row(dbcontext, sql, sql_ptypes, sql_params, dbtrans, function (err, rslt, stats) {
+    db.ExecTasksProxy(dbcontext, dbsql, sql_ptypes, sql_params, dbtrans, db.Row, fullmodelid, function (err, rslt, stats) {
       if (stats) stats.model = model;
       if ((err == null) && (rslt != null) && (_this.jsh.map.rowcount in rslt) && (rslt[_this.jsh.map.rowcount] == 0)) err = Helper.NewError('No records affected', -3, stats);
-      if (err != null) { err.model = model; err.sql = sql; }
+      if (err != null) { err.model = model; err.sql = (dbsql.dbtaskstr || dbsql.sql); }
       if(model.onsqldeleted) sql_rslt = rslt;
       callback(err, rslt, stats);
     });
