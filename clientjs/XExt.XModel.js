@@ -92,7 +92,7 @@ exports = module.exports = function(jsh){
           if (isGrid) lovselector = '.' + _LOV + '.xelem' + xmodel.class;
           var ctrl = jsh.XDom.selectOne(lovselector, parentobj);
           if (('control' in this.Fields[_LOV]) && (this.Fields[_LOV].control == 'tree'))
-            jsh.XExt.TreeRender(jsh.XDom(ctrl), this._LOVs[_LOV], this.Fields[_LOV]);
+            jsh.XExt.TreeRender(ctrl, this._LOVs[_LOV], this.Fields[_LOV]);
           else if ('lovparent' in this.Fields[_LOV])
             jsh.XExt.RenderParentLOV(_this, ctrl, [_this[this.Fields[_LOV].lovparent]], this._LOVs[_LOV], this.Fields[_LOV], false);
           else if ('lovparents' in this.Fields[_LOV]) {
@@ -109,8 +109,7 @@ exports = module.exports = function(jsh){
       //Put data into the form
       _.each(this.Fields, function (field) {
         if(field.control=='tagbox'){
-          // TODO: TagBox_Render takes two jquery
-          jsh.XExt.TagBox_Render($(jsh.XDom(parentobj, '.'+field.name+'_editor.xtagbox'+'.xelem'+xmodel.class).select()), $(jsh.XDom(parentobj, '.'+field.name+'.xelem'+xmodel.class).select()));
+          jsh.XExt.TagBox_Render(jsh.XDom(parentobj, '.'+field.name+'_editor.xtagbox'+'.xelem'+xmodel.class).select(), jsh.XDom(parentobj, '.'+field.name+'.xelem'+xmodel.class).select());
         }
         XExtXModel.RenderField(_this, parentobj, modelid, field);
       });
@@ -320,8 +319,7 @@ exports = module.exports = function(jsh){
     }
     else if (('control' in field) && (field.control == 'tagbox')) {
       xdCtrl.value = val;
-      // TODO: XExt.TagBox_Refresh takes two jquery
-      jsh.XExt.TagBox_Refresh($(jsh.XDom(parentobj, '.'+field.name+'_editor.xtagbox'+'.xelem'+xmodel.class).selectOne()), $(xdCtrl.select()));
+      jsh.XExt.TagBox_Refresh(jsh.XDom(parentobj, '.'+field.name+'_editor.xtagbox'+'.xelem'+xmodel.class).selectOne(), xdCtrl.select());
     }
     else{
       xdCtrl.value = val;

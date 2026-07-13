@@ -82,6 +82,69 @@ XDom:
 ### Replace jQuery objects in method arguments with plain elements
 
 Many callbacks and other interface methods formally took jquery wrapped sets. These should be replaed with plain dom elements, or arrays of elements where requried. These arguments were often called `jobj` or similar depending on purpose, and will now be simply `obj` or similar without the `j`. Arrays will commonly have a leading underscore, e.g. `_el`.
+#### XExt.TagBox_Refresh(first and second arguments)
+
+```XExt.TagBox_Refresh(*ctrl*, *baseinputctrl*)```
+
+#### XExt.TagBox_Save(first and second argument)
+
+```XExt.TagBox_Save(*ctrl*, *baseinputctrl*)```
+
+#### XExt.TagBox_Focus(first argument)
+
+```XExt.TagBox_Focus(*ctrl*, onFocus)```
+
+#### XExt.TagBox_AddTags(first and second arguments)
+
+```XExt.TagBox_AddTags(*ctrl*, *baseinputctrl*, new_tags)```
+
+#### XExt.TagBox_Render(first and second arguments)
+
+```XExt.TagBox_Render(*ctrl*, *baseinputctrl*)```
+
+#### XExt.aPhoneCheck(first argument)
+
+```XExt.aPhoneCheck(*obj*, caption)```
+
+#### XExt.TreeRender(first argument)
+
+```XExt.TreeRender(*ctrl*, LOV, field)```
+
+#### XExt.TreeEnableDrop(first argument)
+
+```XExt.TreeEnableDrop(*ctrl*, ondrop, drag_anchor_settings)```
+
+#### XExt.TreeEnableDrag(first argument)
+
+```XExt.TreeEnableDrag(*ctrl*, onmove, drag_anchor_settings)```
+
+#### XExt.TreeToggleNode(first argument)
+
+```XExt.TreeToggleNode(*ctrl*, nodeid)```
+
+#### XExt.TreeCollapseNode(first argument)
+
+```XExt.TreeCollapseNode(*ctrl*, nodeid)```
+
+#### XExt.TreeExpandNode(first argument)
+
+```XExt.TreeExpandNode(*ctrl*, nodeid)```
+
+#### XExt.selectionIsChildOf(first argument)
+
+```XExt.selectionIsChildOf(*obj*)```
+
+#### XExt.scrollIntoView(first argument)
+
+```XExt.scrollIntoView(*container*, pos, h)```
+
+#### XExt.scrollObjIntoView(first and second arguments)
+
+```XExt.scrollObjIntoView(*container*, *obj*)```
+
+#### XExt.bindDragSource(first argument)
+
+```XExt.bindDragSource(*obj*)```
 
 #### xgrid OnRowBind (first argument)
 
@@ -197,3 +260,17 @@ After:
 #### XExt.jForEach Removed
 
 the following `.select().forEach(...)` will behave similarly to `XExt.jForEach`
+
+#### XExt.dialogButtonFunc 
+
+the `XExt.dialogButtonFunc` function signature has been changed to expect the first parameter to be `obj`
+
+Before:
+```XExt.dialogButtonFunc = function (dialogClass, oldactive, onComplete, params)```
+
+After:
+```XExt.dialogButtonFunc = function (obj, oldactive, onComplete, params)```
+
+#### XExt.renderTemplate
+
+the `XExt.renderTemplate` function is added to return an XDom selector containing a template element specified by the `sel` parameter
