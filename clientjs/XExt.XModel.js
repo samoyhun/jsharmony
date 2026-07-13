@@ -92,8 +92,7 @@ exports = module.exports = function(jsh){
           if (isGrid) lovselector = '.' + _LOV + '.xelem' + xmodel.class;
           var ctrl = jsh.XDom.selectOne(lovselector, parentobj);
           if (('control' in this.Fields[_LOV]) && (this.Fields[_LOV].control == 'tree'))
-            // TODO: TreeRender takes a jquery
-            jsh.XExt.TreeRender($(ctrl), this._LOVs[_LOV], this.Fields[_LOV]);
+            jsh.XExt.TreeRender(jsh.XDom(ctrl), this._LOVs[_LOV], this.Fields[_LOV]);
           else if ('lovparent' in this.Fields[_LOV])
             jsh.XExt.RenderParentLOV(_this, ctrl, [_this[this.Fields[_LOV].lovparent]], this._LOVs[_LOV], this.Fields[_LOV], false);
           else if ('lovparents' in this.Fields[_LOV]) {

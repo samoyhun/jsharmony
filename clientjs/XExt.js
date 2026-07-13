@@ -98,23 +98,17 @@ exports = module.exports = function(jsh){
   };
 
   XExt.TagBox_Refresh = function(xdctrl, xdbaseinputctrl){
-    //TODO: Remove jQuery when all calls of TagBox_Refresh nolonger pass jQuery
-    if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
-    if(xdbaseinputctrl && xdbaseinputctrl.jquery) xdbaseinputctrl = XDom(xdbaseinputctrl[0]);
-    //TODO: Remove jQuery when all calls of TagBox_Refresh nolonger pass jQuery
-    XDom.remove(xdctrl.select('span'));
+    xdctrl = jsh.parseJQueryElements(xdctrl,"XExt.TagBox_Refresh");
+    xdbaseinputctrl = jsh.parseJQueryElements(xdbaseinputctrl,"XExt.TagBox_Refresh");
+    XDom(xdctrl, 'span').remove();
     XExt.TagBox_AddTags(xdctrl, xdbaseinputctrl, xdbaseinputctrl.value.split(','));
   };
 
   XExt.TagBox_Save = function(xdctrl, xdbaseinputctrl){
-    //TODO: Remove jQuery when all calls of TagBox_Save nolonger pass jQuery
-    if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
-    if(xdbaseinputctrl && xdbaseinputctrl.jquery) xdbaseinputctrl = XDom(xdbaseinputctrl[0]);
-    //TODO: Remove jQuery when all calls of TagBox_Save nolonger pass jQuery
+    xdctrl = jsh.parseJQueryElements(xdctrl,"XExt.TagBox_Save");
+    xdbaseinputctrl = jsh.parseJQueryElements(xdbaseinputctrl,"XExt.TagBox_Save");
     var tags = [];
-    xdctrl.children.select().forEach(function(el){
-      if(el.tagName == 'SPAN') tags.push(XDom.getData(el, 'val'));
-    });
+    xdctrl.getChildren('span').select().forEach(function(el){ tags.push(XDom(el).data.val); });
     var prevval = xdbaseinputctrl.value;
     xdbaseinputctrl.value = tags.join(', ');
     if(xdbaseinputctrl.value!=prevval) xdbaseinputctrl.emit('input');
@@ -124,7 +118,7 @@ exports = module.exports = function(jsh){
     xdctrl.on('click_remove', function(e){
       onFocus.call(this, e.detail);
     });
-    XDom.on(xdctrl.select('.xtag_input'), 'focus', function(e){
+    XDom(xdctrl, '.xtag_input').on('focus', function(e){
       onFocus.call(this, e);
     });
     xdctrl.on('click', function(e){
@@ -133,24 +127,23 @@ exports = module.exports = function(jsh){
   };
 
   XExt.TagBox_AddTags = function(xdctrl, xdbaseinputctrl, new_tags){
-    //TODO: Remove jQuery when all calls of TagBox_AddTags nolonger pass jQuery
-    if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
-    if(xdbaseinputctrl && xdbaseinputctrl.jquery) xdbaseinputctrl = XDom(xdbaseinputctrl[0]);
-    //TODO: Remove jQuery when all calls of TagBox_AddTags nolonger pass jQuery
+    xdctrl = jsh.parseJQueryElements(xdctrl,"XExt.TagBox_AddTags");
+    xdbaseinputctrl = jsh.parseJQueryElements(xdbaseinputctrl,"XExt.TagBox_AddTags");
 
     var addTag = function(val){
       val = val.trim();
       if(!val.length) return;
 
-      var xdnew = XDom(XDom.renderOne('<span class="notextselect">'+XExt.escapeHTML(val)+'	&#8203;<div class="xtag_remove xtag_focusable">✕</div></span>'));
+      var newSpan = XDom(XDom.renderOne('<span class="notextselect">'+XExt.escapeHTML(val)+'	&#8203;<div class="xtag_remove xtag_focusable">✕</div></span>'));
+      var xdnew = XDom(newSpan);
       xdnew.data.val = val;
-      XDom.insertBefore(xdctrl, xdnew.selectOne(), xdctrl.selectOne('.xtag_input'));
+      XDom(xdctrl).insertBefore(newSpan, xdctrl.selectOne('.xtag_input'));
 
-      XDom.on(xdnew.select('.xtag_remove'), 'click', function(e){
+      XDom(xdnew, '.xtag_remove').on('click', function(e){
         if(xdctrl.class.contains('uneditable')) return;
         xdctrl.emit('click_remove', e);
         // if(e.isPropagationStopped()||e.isImmediatePropagationStopped()) return; // TODO: Discuss replacement of isPropagationStopped & isImmediatePropagationStopped in review
-        XDom.blur(xdctrl.select('.xtag_input'));
+        XDom(xdctrl, '.xtag_input').blur();
         XDom(this).parent('span').remove();
         XExt.TagBox_Save(xdctrl, xdbaseinputctrl);
       });
@@ -161,10 +154,8 @@ exports = module.exports = function(jsh){
   };
 
   XExt.TagBox_Render = function(xdctrl, xdbaseinputctrl){
-    //TODO: Remove jQuery when all calls of TagBox_Render nolonger pass jQuery
-    if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
-    if(xdbaseinputctrl && xdbaseinputctrl.jquery) xdbaseinputctrl = XDom(xdbaseinputctrl[0]);
-    //TODO: Remove jQuery when all calls of TagBox_Render nolonger pass jQuery
+    xdctrl = jsh.parseJQueryElements(xdctrl,"XExt.TagBox_Render");
+    xdbaseinputctrl = jsh.parseJQueryElements(xdbaseinputctrl,"XExt.TagBox_Render");
     xdbaseinputctrl.style.display = false;
     xdctrl.content.clear();
 
@@ -234,8 +225,9 @@ exports = module.exports = function(jsh){
         }
       }
       else if(e.which==13){ //Backspace
-        var val = XDom.getValue(this);
-        XDom.setValue(this, '');
+        var xdthis = XDom(this);
+        var val = xdthis.value;
+        xdthis.value = '';
         XExt.TagBox_AddTags(xdctrl, xdbaseinputctrl, [val]);
       }
       if(handled){
@@ -246,17 +238,18 @@ exports = module.exports = function(jsh){
     });
 
     xdinput.on('focus', function(){
-      XDom.class.remove(this, 'inactive');
+      XDom(this).class.remove('inactive');
     });
 
     xdinput.on('focusout', function(){
       if(isMovingInput) return;
+      var xdthis = XDom(this);
       if(!xdctrl.class.contains('uneditable')){
-        var val = XDom.getValue(this);
-        XDom.setValue(this, '');
+        var val = xdthis.value;
+        xdthis.value = '';
         XExt.TagBox_AddTags(xdctrl, xdbaseinputctrl, [val]);
       }
-      XDom.class.add(this, 'inactive');
+      xdthis.class.add('inactive');
     });
   };
 
@@ -268,7 +261,7 @@ exports = module.exports = function(jsh){
   };
 
   XExt.HideContextMenu = function () {
-    XDom.style.display(jsh.xdroot.select('.xcontext_menu'), false);
+    XDom(jsh.xdroot, '.xcontext_menu').style.display = false;
   };
 
   XExt.ShowContextMenu = function (selector, context_item, data, options){
@@ -294,14 +287,15 @@ exports = module.exports = function(jsh){
     if (xtop < 0) xtop = 0;
     if (xleft < 0) xleft = 0;
 
-    xdSelector.children.filter(function(el){return (el.nodeName.toLowerCase()=='a');}).select().forEach(function(el){
+    xdSelector.getChildren('a').select().forEach(function(el){
       var obj = el;
-      var onrender = XDom.getData(obj, 'onrender');
+      var xdobj = XDom(obj);
+      var onrender = xdobj.data.onrender;
       if(onrender){
         var f = (new Function('context_item', 'data', onrender));
         var frslt = f.call(obj, context_item, data);
-        if(frslt !== false) XDom.style.display(el, true);
-        else XDom.style.display(el, false);
+        if(frslt !== false) xdobj.style.display = true;
+        else xdobj.style.display = false;
       }
     });
 
@@ -1193,9 +1187,7 @@ exports = module.exports = function(jsh){
   }
 
   XExt.TreeRender = function (xdctrl, LOV, field) {
-    //TODO: remove below when all calls of TreeRender no-longer pass jQuery
-    if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
-    //TODO: remove above when all calls of TreeRender no-longer pass jQuery
+    xdctrl = jsh.parseJQueryElements(xdctrl,"XExt.TreeRender");
     var ctrl = xdctrl.selectOne();
     //Create Cache of Opened Nodes
     var firstRender = !xdctrl.children.length;
@@ -1596,9 +1588,7 @@ exports = module.exports = function(jsh){
   };
 
   XExt.TreeSelectNode = function (ctrl, nodevalue, options) {
-    // TODO: Remove below when all calls of TreeSelectNode no-longer pass jQuery
-    if(ctrl && ctrl.jquery) ctrl = ctrl[0];
-    // TODO: Remove above when all calls of TreeSelectNode no-longer pass jQuery
+    ctrl = jsh.parseJQueryElements(ctrl,"XExt.TreeSelectNode");
     if(!options) options = { triggerChange: true, source: '' };
     if(!('triggerChange' in options)) options.triggerChange = true;
 
@@ -1706,9 +1696,7 @@ exports = module.exports = function(jsh){
     return rslt;
   };
   XExt.TreeExpandAll = function (xdctrl) {
-    //TODO: remove below when all calls of TreeRender no-longer pass jQuery
-    if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
-    //TODO: remove above when all calls of TreeRender no-longer pass jQuery
+    xdctrl = jsh.parseJQueryElements(xdctrl,"XExt.TreeExpandAll");
     xdctrl = xdctrl.parent('.xform_ctrl.tree');
     if(!xdctrl.select('.tree_render_lazy').length){
       XDom.class.add(xdctrl.select('.tree_item'), 'expanded');
@@ -2115,8 +2103,7 @@ exports = module.exports = function(jsh){
     }
     else {
       reuse = true;
-      customPrompt = html;
-      if(html && html.jquery) customPrompt = html[0]; // TODO: Remove when all calls of CustomPrompt no longer pass html as JQuery
+      customPrompt = jsh.parseJQueryElements(html,"XExt.CustomPrompt");
       if(!customPrompt) customPrompt = document.createElement('div');
       for(var i=0;i<jsh.xDialog.length;i++){
         if(jsh.xDialog[i].obj == customPrompt){
@@ -2499,9 +2486,7 @@ exports = module.exports = function(jsh){
   };
 
   XExt.getModelId = function (obj) {
-    // TODO: remove below when all calls of getModelId nolonger pass jQuery
-    if(obj && obj.jquery) obj = obj[0];
-    // TODO: remove above when all calls of getModelId nolonger pass jQuery
+    obj = jsh.parseJQueryElements(obj,"XExt.getModelId");
     var xdobj = XDom(obj);
     var xid = xdobj.parent('.xtbl').data.id;
     if (!xid) xid = xdobj.parent('.xform').data.id;
@@ -3037,10 +3022,8 @@ exports = module.exports = function(jsh){
     }
   };
   XExt.scrollObjIntoView = function(xdcontainer, xdobj){
-    // TODO: Remove below when all calls of scrollObjIntoView no longer pass jQuery
-    if(xdcontainer && xdcontainer.jquery) xdcontainer = XDom(xdcontainer[0]);
-    if(xdobj && xdobj.jquery) xdobj = XDom(xdobj[0]);
-    // TODO: Remove above when all calls of scrollObjIntoView no longer pass jQuery
+    xdcontainer = jsh.parseJQueryElements(xdcontainer, 'XExt.scrollObjIntoView');
+    xdobj = jsh.parseJQueryElements(xdobj, 'XExt.scrollObjIntoView');
     var objpos = {top: xdobj.calc.top(), left: xdobj.calc.left()};
     var containerpos = {top: xdcontainer.calc.top(), left: xdcontainer.calc.left()};
     objpos.top -= containerpos.top - xdcontainer.selectOne().scrollTop;
