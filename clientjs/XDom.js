@@ -114,6 +114,7 @@ var Selector = function(){
     append: XDom.content.append.bind(XDom, this),
     prepend: XDom.content.prepend.bind(XDom, this),
     replace: XDom.content.replace.bind(XDom, this),
+    replaceText: XDom.content.replaceText.bind(XDom, this),
     clear: XDom.content.clear.bind(XDom, this),
   };
   _this.attr = new Proxy({}, {
@@ -206,6 +207,9 @@ var Selector = function(){
   _this.omit = function(f){
     return new Selector(XDom.omit(this, f));
   };
+  _this.getChildren = function(childrenSelector){
+    return new Selector(XDom.getChildren(this, childrenSelector));
+  };
   _this.isVisible = XDom.isVisible.bind(XDom, this);
   _this.insertBefore = XDom.insertBefore.bind(XDom, this);
   _this.remove = XDom.remove.bind(XDom, this);
@@ -236,7 +240,7 @@ var Selector = function(){
   //insertBefore => insertBefore
   //next => nextSibling
   //prev => previousSibling
-  //offsetParent => .calc.top({ from: 'offsetparent' }) //offsetParent !- .calc.top
+  //offsetParent => .calc.top({ from: 'offsetparent' })
   //offset => offset() .calc.top()
   //wrap => create element, insertBefore, and then put contents inside
   //not => .omit
@@ -428,10 +432,13 @@ XDom.off = function(target, eventType, handler, eventOptions){
   });
 };
 
-XDom.emit = function(target, event){
+XDom.emit = function(target, event, data){
   if (typeof(event) == 'string') {
-    // it seems only a MouseEvent will trigger a checkbox to change value
-    if (['click', 'dblclick', 'mouseup', 'mousedown'].indexOf(event) != -1) {
+    // Note: it seems only a MouseEvent will trigger a checkbox to change value
+    if(data){
+      event = new CustomEvent(event, {detail: data});
+    }
+    else if (['click', 'dblclick', 'mouseup', 'mousedown'].indexOf(event) != -1) {
       event = new MouseEvent(event);
     } else {
       event = new Event(event);
@@ -553,7 +560,7 @@ XDom.last = function(target){
   }
 };
 
-XDom.getChildren = function(target){
+XDom.getChildren = function(target, childrenSelector){
   var _el = XDom.resolve(target);
   var rslt = [];
   for(var i=0;i<_el.length;i++){
@@ -566,7 +573,9 @@ XDom.getChildren = function(target){
         for(var k=0;k<startIdx;k++){
           if(child === rslt[k]){ duplicate = true; break; }
         }
-        if(!duplicate) rslt.push(el.children[j]);
+        if(!duplicate) {
+          if(!childrenSelector || (childrenSelector && child.matches(childrenSelector))) rslt.push(child);
+        }
       }
     }
   }
