@@ -76,7 +76,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
   jsh.XDom.on(document, 'focusin', function(e){
     //If a dialog is open, make sure focus is on an element in the top dialog
-      var newobj = document.activeElement;
+    var newobj = document.activeElement;
     var topDialog = jsh.xDialog.length && jsh.xDialog[0].obj;
     if(newobj && topDialog){
       if(!topDialog.contains(newobj)){

@@ -668,31 +668,34 @@ exports = module.exports = function(jsh){
   XExt.getMargin = function(ctrl){
     ctrl = jsh.parseJQueryElements(ctrl, 'XExt.getMargin');
     var xdctrl = XDom(ctrl);
+    var xdctrlStyles = xdctrl.style.calc;
     return {
-      top: parseInt(xdctrl.style.calc.marginTop),
-      right: parseInt(xdctrl.style.calc.marginRight),
-      bottom: parseInt(xdctrl.style.calc.marginBottom),
-      left: parseInt(xdctrl.style.calc.marginLeft)
+      top: parseInt(xdctrlStyles.marginTop),
+      right: parseInt(xdctrlStyles.marginRight),
+      bottom: parseInt(xdctrlStyles.marginBottom),
+      left: parseInt(xdctrlStyles.marginLeft)
     };
   };
   XExt.getPadding = function(ctrl){
     ctrl = jsh.parseJQueryElements(ctrl, 'XExt.getPadding');
     var xdctrl = XDom(ctrl);
+    var xdctrlStyles = xdctrl.style.calc;
     return {
-      top: parseInt(xdctrl.style.calc.paddingTop),
-      right: parseInt(xdctrl.style.calc.paddingRight),
-      bottom: parseInt(xdctrl.style.calc.paddingBottom),
-      left: parseInt(xdctrl.style.calc.paddingLeft)
+      top: parseInt(xdctrlStyles.paddingTop),
+      right: parseInt(xdctrlStyles.paddingRight),
+      bottom: parseInt(xdctrlStyles.paddingBottom),
+      left: parseInt(xdctrlStyles.paddingLeft)
     };
   };
   XExt.getBorder = function(ctrl){
     ctrl = jsh.parseJQueryElements(ctrl, 'XExt.getBorder');
     var xdctrl = XDom(ctrl);
+    var xdctrlStyles = xdctrl.style.calc;
     return {
-      top: parseInt(xdctrl.style.calc.borderTopWidth),
-      right: parseInt(xdctrl.style.calc.borderRightWidth),
-      bottom: parseInt(xdctrl.style.calc.borderBottomWidth),
-      left: parseInt(xdctrl.style.calc.borderLeftWidth)
+      top: parseInt(xdctrlStyles.borderTopWidth),
+      right: parseInt(xdctrlStyles.borderRightWidth),
+      bottom: parseInt(xdctrlStyles.borderBottomWidth),
+      left: parseInt(xdctrlStyles.borderLeftWidth)
     };
   };
   XExt.xejs = {
@@ -859,9 +862,9 @@ exports = module.exports = function(jsh){
     var orig_height = elem.calc.heightToBorder();
     var xdParent = elem.parent();
     if(!xdParent.class.contains(id + '_container')){
-      var wraper = XDom.renderOne('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
-      xdParent.selectOne().append(wraper);
-      wraper.appendChild(elem.selectOne());
+      var wrapper = XDom.renderOne('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
+      xdParent.selectOne().append(wrapper);
+      wrapper.appendChild(elem.selectOne());
     }
     window.CKEDITOR.replace(id, _.extend({ height: orig_height },config));
     if(cb) cb();
@@ -884,9 +887,9 @@ exports = module.exports = function(jsh){
     var orig_height = elem.calc.heightToBorder();
     var xdParent = elem.parent();
     if(!xdParent.class.contains(id + '_container')){
-      var wraper = XDom.renderOne('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
-      xdParent.selectOne().append(wraper);
-      wraper.appendChild(elem.selectOne());
+      var wrapper = XDom.renderOne('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
+      xdParent.selectOne().append(wrapper);
+      wrapper.appendChild(elem.selectOne());
     }
     config = config || {};
     config.selector = '#' + id;
@@ -980,8 +983,7 @@ exports = module.exports = function(jsh){
     if (name[0] == '#') name = name.substring(1);
     var xdobj = XDom(jsh.xdroot, 'a[name="' + name + '"]');
     if (xdobj.length == 0) return;
-    var elem = xdobj.selectOne();
-    window.scrollTo(0, XDom.calc.top(elem));
+    window.scrollTo(0, xdobj.calc.top());
   };
   XExt.getURLObj = function (url) {
     var a = document.createElement('a');
@@ -2955,15 +2957,12 @@ exports = module.exports = function(jsh){
       var sel = window.getSelection();
       if(!sel || !sel.rangeCount) return false;
       var rstart = sel.getRangeAt(0);
-      if(obj == rstart.startContainer) return true;
-      var contains = function(el_container, el_target){
-        if(el_container === el_target) return false;
-        var curElement = el_target;
-        while(curElement.parentNode != el_container && curElement.parentNode)
-          curElement = curElement.parentNode;
-        return curElement.parentNode === el_container;
-      };
-      return contains(obj,rstart.startContainer);
+      var curElement = rstart.startContainer;
+      while(curElement){
+        if(curElement === obj) return true;
+        curElement = curElement.parentNode;
+      }
+      return false;
     }
     else throw new Error('Inserting text into contenteditable not supported.');
   };
