@@ -856,9 +856,9 @@ exports = module.exports = function(jsh){
     var orig_height = elem.calc.heightToBorder();
     var xdParent = elem.parent();
     if(!xdParent.class.contains(id + '_container')){
-      var wraper = XDom.renderOne('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
-      xdParent.selectOne().append(wraper);
-      wraper.appendChild(elem.selectOne());
+      var wrapper = XDom.renderOne('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
+      xdParent.selectOne().append(wrapper);
+      wrapper.appendChild(elem.selectOne());
     }
     window.CKEDITOR.replace(id, _.extend({ height: orig_height },config));
     if(cb) cb();
@@ -881,9 +881,9 @@ exports = module.exports = function(jsh){
     var orig_height = elem.calc.heightToBorder();
     var xdParent = elem.parent();
     if(!xdParent.class.contains(id + '_container')){
-      var wraper = XDom.renderOne('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
-      xdParent.selectOne().append(wraper);
-      wraper.appendChild(elem.selectOne());
+      var wrapper = XDom.renderOne('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
+      xdParent.selectOne().append(wrapper);
+      wrapper.appendChild(elem.selectOne());
     }
     config = config || {};
     config.selector = '#' + id;
