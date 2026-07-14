@@ -180,6 +180,7 @@ exports = module.exports = function(jsh){
         xdpaddle.style.top = tgttop+'px';
         xdpaddle.style.left = tgtleft+'px';
         xdpaddle.style.width = tgtwidth+'px';
+        animatePosition = false;
         //console.log('Setting ' + JSON.stringify(cssParams));
       }
 
