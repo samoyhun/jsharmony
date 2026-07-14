@@ -408,7 +408,7 @@ jsHarmony.prototype.mouseDrag = function(mouseDragObj, e){
 jsHarmony.prototype.mouseDragEnd = function(mouseDragObj, e){
   var _this = this;
   if(!mouseDragObj) return;
-  XDom.remove(this.xdroot.select('.xdrag'));
+  XDom(this.xdroot, '.xdrag').remove();
   var targetObj = null;
   this.xdroot.select('.xdrop').forEach(function(el){
     if(_this.XExt.isMouseWithin(el)){
@@ -425,8 +425,7 @@ jsHarmony.prototype.hideContextMenu = function(){
     this.xContextMenuVisible = false;
     this.xContextMenuItem = undefined;
     this.xContextMenuItemData = undefined;
-    //XDom(this.xdroot, '.xcontext_menu').style.display = false; // TODO: In review, discuss wich is prefered (note this function is called on every click)
-    XDom.style.display(this.xdroot.select('.xcontext_menu'), false);
+    XDom(this.xdroot, '.xcontext_menu').style.display = false;
   }
 };
 
