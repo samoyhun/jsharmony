@@ -1474,7 +1474,7 @@ exports = module.exports = function(jsh){
       else if(targetAnchor[1]=='full') xdTargetObj.class.add('xdragfull');
     });
     //On Drop
-    jsh.on('jsh_mouseDragEnd.jsh_tree_'+treeid, function(event, mouseDragObj, targetObj, origEvent){
+    jsh.on('jsh_mouseDragEnd.jsh_tree_'+treeid,function(event, mouseDragObj, targetObj, origEvent){
       XDom(xdctrl, '.xdragtarget').class.remove('xdragtarget');
       if(!targetObj) return;
       if(XDom.getData(targetObj, 'id')==XDom.getData(mouseDragObj, 'id')) return;
