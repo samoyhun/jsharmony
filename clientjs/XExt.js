@@ -299,8 +299,7 @@ exports = module.exports = function(jsh){
       if(onrender){
         var f = (new Function('context_item', 'data', onrender));
         var frslt = f.call(obj, context_item, data);
-        if(frslt !== false) xdobj.style.display = true;
-        else xdobj.style.display = false;
+        xdobj.style.display = (frslt !== false);
       }
     });
 
@@ -855,9 +854,10 @@ exports = module.exports = function(jsh){
     if(!elem.length){ return XExt.Alert('Cound not initialize editor on '+id+': form control with that id not found'); }
     var orig_width = elem.calc.widthToBorder();
     var orig_height = elem.calc.heightToBorder();
-    if(!elem.parent().class.contains(id + '_container')){
+    var xdParent = elem.parent();
+    if(!xdParent.class.contains(id + '_container')){
       var wraper = XDom.renderOne('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
-      elem.parent().selectOne().append(wraper);
+      xdParent.selectOne().append(wraper);
       wraper.appendChild(elem.selectOne());
     }
     window.CKEDITOR.replace(id, _.extend({ height: orig_height },config));
@@ -879,9 +879,10 @@ exports = module.exports = function(jsh){
     if(!elem.length){ return XExt.Alert('Cound not initialize editor on '+id+': form control with that id not found'); }
     var orig_width = elem.calc.widthToBorder();
     var orig_height = elem.calc.heightToBorder();
-    if(!elem.parent().class.contains(id + '_container')){
+    var xdParent = elem.parent();
+    if(!xdParent.class.contains(id + '_container')){
       var wraper = XDom.renderOne('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
-      elem.parent().selectOne().append(wraper);
+      xdParent.selectOne().append(wraper);
       wraper.appendChild(elem.selectOne());
     }
     config = config || {};
@@ -1438,7 +1439,7 @@ exports = module.exports = function(jsh){
               var nowTime = new Date().getTime();
               if(!hoverBorderStart) hoverBorderStart = nowTime;
               if((nowTime-hoverBorderStart)>300){
-                xdctrl.selectOne().scrollTop = (xdctrl.selectOne().scrollTop + 15);
+                xdctrl.selectOne().scrollTop += 15;
               }
             }, 100);
           }
@@ -1562,7 +1563,7 @@ exports = module.exports = function(jsh){
     }
     if (jsh.xdroot.select(menuid).length) {
       if(contextMenuOptions && contextMenuOptions.hideIfOpen){
-        if(jsh.xdroot.select(menuid).filter(XDom.isVisible)){
+        if(XDom(jsh.xdroot, menuid).isVisible()){
           XExt.HideContextMenu();
           return false;
         }
@@ -1696,7 +1697,7 @@ exports = module.exports = function(jsh){
   XExt.TreeExpandToSelected = function (ctrl) {
     var toptree = XDom(ctrl).parent('.xform_ctrl.tree');
     var rslt = [];
-    toptree.select('.tree_item.selected').forEach(function(el) {
+    toptree.select('.tree_item.selected').forEach(function(el){
       var xdParent = XDom(el).parent();
       while (xdParent.length && (xdParent.selectOne() != toptree.selectOne())) {
         XExt.TreeExpandNode(toptree.selectOne(), xdParent.data.id);
