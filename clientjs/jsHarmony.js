@@ -36,7 +36,7 @@ var XDom = require('./XDom.js');
 var XExt = require('./XExt.js');
 var XAPI = require('./XAPI.js');
 var XFormat = require('./XFormat.js');
-var XValidate = require('jsharmony-validate');
+var XValidate = require('./XValidate.js');
 var XSearch = require('./XSearch.js');
 var XPayment = require('./XPayment.js');
 var XBarcode = require('./XBarcode.js');
@@ -408,7 +408,7 @@ jsHarmony.prototype.mouseDrag = function(mouseDragObj, e){
 jsHarmony.prototype.mouseDragEnd = function(mouseDragObj, e){
   var _this = this;
   if(!mouseDragObj) return;
-  XDom.remove(this.xdroot.select('.xdrag'));
+  XDom(this.xdroot, '.xdrag').remove();
   var targetObj = null;
   this.xdroot.select('.xdrop').forEach(function(el){
     if(_this.XExt.isMouseWithin(el)){
@@ -425,8 +425,7 @@ jsHarmony.prototype.hideContextMenu = function(){
     this.xContextMenuVisible = false;
     this.xContextMenuItem = undefined;
     this.xContextMenuItemData = undefined;
-    //XDom(this.xdroot, '.xcontext_menu').style.display = false; // TODO: In review, discuss wich is prefered (note this function is called on every click)
-    XDom.style.display(this.xdroot.select('.xcontext_menu'), false);
+    XDom(this.xdroot, '.xcontext_menu').style.display = false;
   }
 };
 
@@ -622,6 +621,15 @@ jsHarmony.prototype.runGlobalsMonitor = function(){
   },1000);
 };
 // TODO: Alter prototypes below for XDom implementation
+jsHarmony.prototype.parseJQueryElements = function(obj, method) {
+  if (obj && obj.jquery) {
+    console.warn('Depreciated: '+method+' received a jquery object. Please pass a dom element.');
+    return obj.filter(function() {return jsHarmony.XDom.isElement(this);}).get(0);
+  } else {
+    return obj;
+  }
+};
+
 jsHarmony.prototype.on = function(){ $(this).on.apply($(this), arguments); };
 jsHarmony.prototype.off = function(){ $(this).off.apply($(this), arguments); };
 jsHarmony.prototype.trigger = function(){ $(this).trigger.apply($(this), arguments); };

@@ -48,10 +48,7 @@ exports = module.exports = function(jsh){
   };
 
   XExt.RenderLOV = function (_data, ctrl, LOV) {
-    if (ctrl && ctrl.jquery) {
-      console.warn('Depreciated: XExt.RenderLOV received a jquery object. Please pass a dom element.');
-      ctrl = ctrl.filter(function() {return jsh.XDom.isElement(this);}).get(0);
-    }
+    ctrl = jsh.parseJQueryElements(ctrl, 'XExt.RenderLOV');
     jsh.XDom.content.replace(ctrl, jsh.ejs.render('\
       <% for(var i=0;i<data.length;i++){ %>\
       <option value="<%=data[i][jsh.uimap.code_val]%>"><%=data[i][jsh.uimap.code_txt]%></option>\
@@ -61,10 +58,7 @@ exports = module.exports = function(jsh){
   };
 
   XExt.RenderParentLOV = function (_data, ctrl, parentvals, LOV, field, plural) {
-    if (ctrl && ctrl.jquery) {
-      console.warn('Depreciated: XExt.RenderParentLOV received a jquery object. Please pass a dom element.');
-      ctrl = ctrl.filter(function() {return jsh.XDom.isElement(this);}).get(0);
-    }
+    ctrl = jsh.parseJQueryElements(ctrl, 'XExt.RenderParentLOV');
     //Get Previous Value
     var prevval = _data[field.name];
     if (prevval == null) prevval = '';
@@ -103,34 +97,30 @@ exports = module.exports = function(jsh){
     if (lov_matches > 0) ctrl.value = prevval;
   };
 
-  XExt.TagBox_Refresh = function(xdctrl, xdbaseinputctrl){
-    //TODO: Remove jQuery when all calls of TagBox_Refresh nolonger pass jQuery
-    if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
-    if(xdbaseinputctrl && xdbaseinputctrl.jquery) xdbaseinputctrl = XDom(xdbaseinputctrl[0]);
-    //TODO: Remove jQuery when all calls of TagBox_Refresh nolonger pass jQuery
-    XDom.remove(xdctrl.select('span'));
-    XExt.TagBox_AddTags(xdctrl, xdbaseinputctrl, xdbaseinputctrl.value.split(','));
+  XExt.TagBox_Refresh = function(ctrl, baseinputctrl){
+    ctrl = jsh.parseJQueryElements(ctrl,'XExt.TagBox_Refresh');
+    baseinputctrl = jsh.parseJQueryElements(baseinputctrl,'XExt.TagBox_Refresh');
+    XDom(ctrl, 'span').remove();
+    XExt.TagBox_AddTags(ctrl, baseinputctrl, XDom(baseinputctrl).value.split(','));
   };
 
-  XExt.TagBox_Save = function(xdctrl, xdbaseinputctrl){
-    //TODO: Remove jQuery when all calls of TagBox_Save nolonger pass jQuery
-    if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
-    if(xdbaseinputctrl && xdbaseinputctrl.jquery) xdbaseinputctrl = XDom(xdbaseinputctrl[0]);
-    //TODO: Remove jQuery when all calls of TagBox_Save nolonger pass jQuery
+  XExt.TagBox_Save = function(ctrl, baseinputctrl){
+    ctrl = jsh.parseJQueryElements(ctrl,'XExt.TagBox_Save');
+    baseinputctrl = jsh.parseJQueryElements(baseinputctrl,'XExt.TagBox_Save');
     var tags = [];
-    xdctrl.children.select().forEach(function(el){
-      if(el.tagName == 'SPAN') tags.push(XDom.getData(el, 'val'));
-    });
-    var prevval = xdbaseinputctrl.value;
-    xdbaseinputctrl.value = tags.join(', ');
-    if(xdbaseinputctrl.value!=prevval) xdbaseinputctrl.emit('input');
+    XDom(ctrl).getChildren('span').select().forEach(function(el){ tags.push(XDom(el).data.val); });
+    var xdBaseInputCtrl = XDom(baseinputctrl);
+    var prevval = xdBaseInputCtrl.value;
+    xdBaseInputCtrl.value = tags.join(', ');
+    if(xdBaseInputCtrl.value!=prevval) xdBaseInputCtrl.emit('input');
   };
 
-  XExt.TagBox_Focus = function(xdctrl, onFocus){
+  XExt.TagBox_Focus = function(ctrl, onFocus){
+    var xdctrl = XDom(ctrl);
     xdctrl.on('click_remove', function(e){
       onFocus.call(this, e.detail);
     });
-    XDom.on(xdctrl.select('.xtag_input'), 'focus', function(e){
+    XDom(xdctrl, '.xtag_input').on('focus', function(e){
       onFocus.call(this, e);
     });
     xdctrl.on('click', function(e){
@@ -138,39 +128,39 @@ exports = module.exports = function(jsh){
     });
   };
 
-  XExt.TagBox_AddTags = function(xdctrl, xdbaseinputctrl, new_tags){
-    //TODO: Remove jQuery when all calls of TagBox_AddTags nolonger pass jQuery
-    if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
-    if(xdbaseinputctrl && xdbaseinputctrl.jquery) xdbaseinputctrl = XDom(xdbaseinputctrl[0]);
-    //TODO: Remove jQuery when all calls of TagBox_AddTags nolonger pass jQuery
-
+  XExt.TagBox_AddTags = function(ctrl, baseinputctrl, new_tags){
+    ctrl = jsh.parseJQueryElements(ctrl,'XExt.TagBox_AddTags');
+    baseinputctrl = jsh.parseJQueryElements(baseinputctrl,'XExt.TagBox_AddTags');
+    var xdctrl = XDom(ctrl);
     var addTag = function(val){
       val = val.trim();
       if(!val.length) return;
 
-      var xdnew = XDom(XDom.renderOne('<span class="notextselect">'+XExt.escapeHTML(val)+'	&#8203;<div class="xtag_remove xtag_focusable">✕</div></span>'));
+      var newSpan = XDom.renderOne('<span class="notextselect">'+XExt.escapeHTML(val)+'	&#8203;<div class="xtag_remove xtag_focusable">✕</div></span>');
+      var xdnew = XDom(newSpan);
       xdnew.data.val = val;
-      XDom.insertBefore(xdctrl, xdnew.selectOne(), xdctrl.selectOne('.xtag_input'));
 
-      XDom.on(xdnew.select('.xtag_remove'), 'click', function(e){
+      xdctrl.insertBefore(newSpan, xdctrl.selectOne('.xtag_input'));
+
+      XDom(xdnew, '.xtag_remove').on('click', function(e){
         if(xdctrl.class.contains('uneditable')) return;
         xdctrl.emit('click_remove', e);
-        // if(e.isPropagationStopped()||e.isImmediatePropagationStopped()) return; // TODO: Discuss replacement of isPropagationStopped & isImmediatePropagationStopped in review
-        XDom.blur(xdctrl.select('.xtag_input'));
+        XDom(xdctrl, '.xtag_input').blur();
         XDom(this).parent('span').remove();
-        XExt.TagBox_Save(xdctrl, xdbaseinputctrl);
+        XExt.TagBox_Save(ctrl, baseinputctrl);
       });
     };
 
     _.each(new_tags, function(tag){ addTag(tag); });
-    XExt.TagBox_Save(xdctrl, xdbaseinputctrl);
+    XExt.TagBox_Save(ctrl, baseinputctrl);
   };
 
-  XExt.TagBox_Render = function(xdctrl, xdbaseinputctrl){
-    //TODO: Remove jQuery when all calls of TagBox_Render nolonger pass jQuery
-    if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
-    if(xdbaseinputctrl && xdbaseinputctrl.jquery) xdbaseinputctrl = XDom(xdbaseinputctrl[0]);
-    //TODO: Remove jQuery when all calls of TagBox_Render nolonger pass jQuery
+  XExt.TagBox_Render = function(ctrl, baseinputctrl){
+    ctrl = jsh.parseJQueryElements(ctrl,'XExt.TagBox_Render');
+    baseinputctrl = jsh.parseJQueryElements(baseinputctrl,'XExt.TagBox_Render');
+    var xdctrl = XDom(ctrl);
+    var xdbaseinputctrl = XDom(baseinputctrl);
+
     xdbaseinputctrl.style.display = false;
     xdctrl.content.clear();
 
@@ -193,7 +183,7 @@ exports = module.exports = function(jsh){
     xdinput.on('input keyup', function(e){
       var xdthis = XDom(this);
       var val = xdthis.value;
-      if(val.indexOf(',')>=0){ xdthis.value = ''; XExt.TagBox_AddTags(xdctrl, xdbaseinputctrl, val.split(',')); }
+      if(val.indexOf(',')>=0){ xdthis.value = ''; XExt.TagBox_AddTags(ctrl, baseinputctrl, val.split(',')); }
       xdthis.attr.size = Math.round((xdthis.value||' ').toString().length/.87);
     });
 
@@ -236,13 +226,14 @@ exports = module.exports = function(jsh){
         if(xdobj.previousSibling().length && (cursorpos==0)){
           handled = true;
           xdobj.previousSibling().remove();
-          XExt.TagBox_Save(xdctrl, xdbaseinputctrl);
+          XExt.TagBox_Save(ctrl, baseinputctrl);
         }
       }
       else if(e.which==13){ //Backspace
-        var val = XDom.getValue(this);
-        XDom.setValue(this, '');
-        XExt.TagBox_AddTags(xdctrl, xdbaseinputctrl, [val]);
+        var xdthis = XDom(this);
+        var val = xdthis.value;
+        xdthis.value = '';
+        XExt.TagBox_AddTags(ctrl, baseinputctrl, [val]);
       }
       if(handled){
         e.preventDefault();
@@ -252,17 +243,18 @@ exports = module.exports = function(jsh){
     });
 
     xdinput.on('focus', function(){
-      XDom.class.remove(this, 'inactive');
+      XDom(this).class.remove('inactive');
     });
 
     xdinput.on('focusout', function(){
       if(isMovingInput) return;
+      var xdthis = XDom(this);
       if(!xdctrl.class.contains('uneditable')){
-        var val = XDom.getValue(this);
-        XDom.setValue(this, '');
-        XExt.TagBox_AddTags(xdctrl, xdbaseinputctrl, [val]);
+        var val = xdthis.value;
+        xdthis.value = '';
+        XExt.TagBox_AddTags(ctrl, baseinputctrl, [val]);
       }
-      XDom.class.add(this, 'inactive');
+      xdthis.class.add('inactive');
     });
   };
 
@@ -274,7 +266,7 @@ exports = module.exports = function(jsh){
   };
 
   XExt.HideContextMenu = function () {
-    XDom.style.display(jsh.xdroot.select('.xcontext_menu'), false);
+    XDom(jsh.xdroot, '.xcontext_menu').style.display = false;
   };
 
   XExt.ShowContextMenu = function (selector, context_item, data, options){
@@ -300,14 +292,14 @@ exports = module.exports = function(jsh){
     if (xtop < 0) xtop = 0;
     if (xleft < 0) xleft = 0;
 
-    xdSelector.children.filter(function(el){return (el.nodeName.toLowerCase()=='a');}).select().forEach(function(el){
+    xdSelector.getChildren('a').select().forEach(function(el){
       var obj = el;
-      var onrender = XDom.getData(obj, 'onrender');
+      var xdobj = XDom(obj);
+      var onrender = xdobj.data.onrender;
       if(onrender){
         var f = (new Function('context_item', 'data', onrender));
         var frslt = f.call(obj, context_item, data);
-        if(frslt !== false) XDom.style.display(el, true);
-        else XDom.style.display(el, false);
+        xdobj.style.display = (frslt !== false);
       }
     });
 
@@ -862,9 +854,10 @@ exports = module.exports = function(jsh){
     if(!elem.length){ return XExt.Alert('Cound not initialize editor on '+id+': form control with that id not found'); }
     var orig_width = elem.calc.widthToBorder();
     var orig_height = elem.calc.heightToBorder();
-    if(!elem.parent().class.contains(id + '_container')){
+    var xdParent = elem.parent();
+    if(!xdParent.class.contains(id + '_container')){
       var wraper = XDom.renderOne('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
-      elem.parent().selectOne().append(wraper);
+      xdParent.selectOne().append(wraper);
       wraper.appendChild(elem.selectOne());
     }
     window.CKEDITOR.replace(id, _.extend({ height: orig_height },config));
@@ -886,9 +879,10 @@ exports = module.exports = function(jsh){
     if(!elem.length){ return XExt.Alert('Cound not initialize editor on '+id+': form control with that id not found'); }
     var orig_width = elem.calc.widthToBorder();
     var orig_height = elem.calc.heightToBorder();
-    if(!elem.parent().class.contains(id + '_container')){
+    var xdParent = elem.parent();
+    if(!xdParent.class.contains(id + '_container')){
       var wraper = XDom.renderOne('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
-      elem.parent().selectOne().append(wraper);
+      xdParent.selectOne().append(wraper);
       wraper.appendChild(elem.selectOne());
     }
     config = config || {};
@@ -992,7 +986,8 @@ exports = module.exports = function(jsh){
     a.href = url;
     return a;
   };
-  XExt.aPhoneCheck = function (xdobj, caption) {
+  XExt.aPhoneCheck = function (obj, caption) {
+    var xdobj = XDom(obj);
     var val = xdobj.value;
     if (val && (val == '1' || !val.match(/[0123456789]/))) {
       xdobj.class.add('xinputerror');
@@ -1198,11 +1193,9 @@ exports = module.exports = function(jsh){
     this.LazyRender = false;
   }
 
-  XExt.TreeRender = function (xdctrl, LOV, field) {
-    //TODO: remove below when all calls of TreeRender no-longer pass jQuery
-    if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
-    //TODO: remove above when all calls of TreeRender no-longer pass jQuery
-    var ctrl = xdctrl.selectOne();
+  XExt.TreeRender = function (ctrl, LOV, field) {
+    ctrl = jsh.parseJQueryElements(ctrl,'XExt.TreeRender');
+    var xdctrl = XDom(ctrl);
     //Create Cache of Opened Nodes
     var firstRender = !xdctrl.children.length;
     var expanded_nodes = XExt.TreeGetExpandedNodes(ctrl);
@@ -1278,10 +1271,11 @@ exports = module.exports = function(jsh){
       _.each(node.Children, function(child){ childrenHtml += XExt.TreeRenderNode(ctrl, child, controlparams); });
       xdthis.class.remove('tree_render_lazy');
       xdthis.off('tree_render_lazy', renderLazy);
-      xdthis.nextSibling('.children').content.append(childrenHtml);
-      XDom.on(xdthis.nextSibling('.children').select('.tree_render_lazy'), 'tree_render_lazy', renderLazy);
+      var xdSibChildren = xdthis.nextSibling('.children');
+      xdSibChildren.content.append(childrenHtml);
+      XDom(xdSibChildren, '.tree_render_lazy').on('tree_render_lazy', renderLazy);
     }
-    XDom.on(xdctrl.select('.tree_render_lazy'), 'tree_render_lazy', renderLazy);
+    XDom(xdctrl, '.tree_render_lazy').on('tree_render_lazy', renderLazy);
     xdctrl.on('tree_path', function(e){
       var treePathInfo = e.detail;
       if(treePathInfo){
@@ -1302,15 +1296,16 @@ exports = module.exports = function(jsh){
     });
 
     if(firstRender){
-      if (controlparams.expand_all) XExt.TreeExpandAll(xdctrl);
+      if (controlparams.expand_all) XExt.TreeExpandAll(ctrl);
       else if (controlparams.expand_to_selected) XExt.TreeExpandToSelected(ctrl);
     }
-    if(controlparams.ondrop) XExt.TreeEnableDrop(xdctrl, controlparams.ondrop, controlparams.drag_anchor_settings);
-    if(controlparams.onmove) XExt.TreeEnableDrag(xdctrl, controlparams.onmove, controlparams.drag_anchor_settings);
+    if(controlparams.ondrop) XExt.TreeEnableDrop(ctrl, controlparams.ondrop, controlparams.drag_anchor_settings);
+    if(controlparams.onmove) XExt.TreeEnableDrag(ctrl, controlparams.onmove, controlparams.drag_anchor_settings);
   };
 
   //ondrop(dropval, anchor, e)
-  XExt.TreeEnableDrop = function (xdctrl, ondrop, drag_anchor_settings) {
+  XExt.TreeEnableDrop = function (ctrl, ondrop, drag_anchor_settings) {
+    var xdctrl = XDom(ctrl);
     var _treeitems = xdctrl.select('a.tree_item');
     _.each(_treeitems, function(obj){
       var xdobj = XDom(obj);
@@ -1337,7 +1332,7 @@ exports = module.exports = function(jsh){
       });
       xdobj.on('dragover', function(e){
         var targetAnchor = XExt.getObjectAnchors(this, jsh.mouseX, jsh.mouseY, drag_anchor_settings);
-  
+
         xdobj.class.remove('xdragtop');
         xdobj.class.remove('xdragbottom');
         xdobj.class.remove('xdragfull');
@@ -1345,11 +1340,11 @@ exports = module.exports = function(jsh){
         xdobj.class.remove('xdragright');
         if(targetAnchor[0]=='left') xdobj.class.add('xdragleft');
         else if(targetAnchor[0]=='right') xdobj.class.add('xdragright');
-  
+
         if(targetAnchor[1]=='top') xdobj.class.add('xdragtop');
         else if(targetAnchor[1]=='bottom') xdobj.class.add('xdragbottom');
         else if(targetAnchor[1]=='full') xdobj.class.add('xdragfull');
-  
+
         e.preventDefault();
         e.stopPropagation();
       });
@@ -1363,7 +1358,7 @@ exports = module.exports = function(jsh){
         xdobj.class.remove('xdragright');
         e.preventDefault();
         e.stopPropagation();
-  
+
         var targetObjVal = xdobj.data.value;
         var targetAnchor = XExt.getObjectAnchors(this, jsh.mouseX, jsh.mouseY, drag_anchor_settings);
         if(ondrop) ondrop(targetObjVal, targetAnchor, e);
@@ -1376,17 +1371,19 @@ exports = module.exports = function(jsh){
   };
 
   //onmove(dragval, dropval, anchor, e)
-  XExt.TreeEnableDrag = function (xdctrl, onmove, drag_anchor_settings) {
+  XExt.TreeEnableDrag = function (ctrl, onmove, drag_anchor_settings) {
+    var xdctrl = XDom(ctrl);
     var mouseDownTimer = null;
     var hoverBorderTimer = null;
+    var xdTreeItem = XDom(xdctrl, 'a.tree_item');
     //Set up drop points
-    XDom.class.add(xdctrl.select('a.tree_item'), 'xdrop');
+    xdTreeItem.class.add('xdrop');
     //Check if the target can be used as a drop point
     function mouseCanDrop(target){
       return true;
     }
     //Start drag operation
-    XDom.on(xdctrl.select('a.tree_item'), 'mousedown', function(e){
+    xdTreeItem.on('mousedown', function(e){
       if (e.which == 1) {//left mouse button
         var obj = this;
         if(XExt.isMouseWithin(XDom(obj).parent().selectOne('.glyph'))) return;
@@ -1398,7 +1395,7 @@ exports = module.exports = function(jsh){
         }, 250);
       }
     });
-    XDom.on(xdctrl.select('a.tree_item'), 'mouseup', function(e){
+    xdTreeItem.on('mouseup', function(e){
       if(mouseDownTimer) window.clearTimeout(mouseDownTimer);
       if(hoverBorderTimer) window.clearTimeout(hoverBorderTimer);
       mouseDownTimer = null;
@@ -1409,13 +1406,13 @@ exports = module.exports = function(jsh){
     jsh.off('.jsh_tree_'+treeid);
     var hoverBorderStart = 0;
     jsh.on('jsh_mouseDrag.jsh_tree_'+treeid, function(event, mouseDragObj, targetObj, origEvent){
-      var dragTarget = xdctrl.select('.xdragtarget');
-      XDom.class.remove(dragTarget, 'xdragtarget');
-      XDom.class.remove(dragTarget, 'xdragtop');
-      XDom.class.remove(dragTarget, 'xdragbottom');
-      XDom.class.remove(dragTarget, 'xdragfull');
-      XDom.class.remove(dragTarget, 'xdragleft');
-      XDom.class.remove(dragTarget, 'xdragright');
+      var xdDragTarget = XDom(xdctrl, '.xdragtarget');
+      xdDragTarget.class.remove('xdragtarget');
+      xdDragTarget.class.remove('xdragtop');
+      xdDragTarget.class.remove('xdragbottom');
+      xdDragTarget.class.remove('xdragfull');
+      xdDragTarget.class.remove('xdragleft');
+      xdDragTarget.class.remove('xdragright');
       //Check if mouse is hovering over tree border
       var offset = {top: xdctrl.calc.top(), left: xdctrl.calc.left() };
       var w = xdctrl.calc.widthToBorder();
@@ -1442,7 +1439,7 @@ exports = module.exports = function(jsh){
               var nowTime = new Date().getTime();
               if(!hoverBorderStart) hoverBorderStart = nowTime;
               if((nowTime-hoverBorderStart)>300){
-                xdctrl.selectOne().scrollTop = (xdctrl.selectOne().scrollTop + 15);
+                xdctrl.selectOne().scrollTop += 15;
               }
             }, 100);
           }
@@ -1475,7 +1472,7 @@ exports = module.exports = function(jsh){
     });
     //On Drop
     jsh.on('jsh_mouseDragEnd.jsh_tree_'+treeid, function(event, mouseDragObj, targetObj, origEvent){
-      XDom.class.remove(xdctrl.select('.xdragtarget'), 'xdragtarget');
+      XDom(xdctrl, '.xdragtarget').class.remove('xdragtarget');
       if(!targetObj) return;
       if(XDom.getData(targetObj, 'id')==XDom.getData(mouseDragObj, 'id')) return;
       var targetObjId = XDom.getData(targetObj, 'id');
@@ -1508,7 +1505,7 @@ exports = module.exports = function(jsh){
       return rslt;
     };
     var rslt = jsh.ejs.render('\
-      <a href="#" class="tree_item tree_item_<%=n.ID%> <%=(n.Children.length && (n.LazyRender&&!n.Expanded)?"tree_render_lazy":"")%> <%=(n.Children.length==0?"nochildren":"")%> <%=(n.Expanded?"expanded":"")%> <%=(n.Selected?"selected":"")%>" data-id="<%=n.ID%>" data-value="<%=n.Value%>" onclick=\'<%-instance%>.XExt.TreeSelectNode(this,<%-JSON.stringify(n.Value)%>,{ source: "click" }); return false;\' oncontextmenu=\'return <%-instance%>.XExt.TreeItemContextMenu(this,<%-JSON.stringify(n.ID)%>);\'><div class="glyph" href="#" onclick=\'<%-instance%>.XExt.CancelBubble(arguments[0]); <%-instance%>.XExt.TreeToggleNode(<%-instance%>.XDom(this).parent(".xform_ctrl.tree"),<%-JSON.stringify(n.ID)%>); return false;\'><%-(n.Expanded?"&#x25e2;":"&#x25b7;")%></div><% if(n.Icon){ %><img class="icon" src="<%-jsh._PUBLICURL%>images/icon_<%=n.Icon%>.png" /><% } %><span>'+item_dropdown_html+'<%-getNodeContent()%></span></a>\
+      <a href="#" class="tree_item tree_item_<%=n.ID%> <%=(n.Children.length && (n.LazyRender&&!n.Expanded)?"tree_render_lazy":"")%> <%=(n.Children.length==0?"nochildren":"")%> <%=(n.Expanded?"expanded":"")%> <%=(n.Selected?"selected":"")%>" data-id="<%=n.ID%>" data-value="<%=n.Value%>" onclick=\'<%-instance%>.XExt.TreeSelectNode(this,<%-JSON.stringify(n.Value)%>,{ source: "click" }); return false;\' oncontextmenu=\'return <%-instance%>.XExt.TreeItemContextMenu(this,<%-JSON.stringify(n.ID)%>);\'><div class="glyph" href="#" onclick=\'<%-instance%>.XExt.CancelBubble(arguments[0]); <%-instance%>.XExt.TreeToggleNode(<%-instance%>.XDom(this).parent(".xform_ctrl.tree").selectOne(),<%-JSON.stringify(n.ID)%>); return false;\'><%-(n.Expanded?"&#x25e2;":"&#x25b7;")%></div><% if(n.Icon){ %><img class="icon" src="<%-jsh._PUBLICURL%>images/icon_<%=n.Icon%>.png" /><% } %><span>'+item_dropdown_html+'<%-getNodeContent()%></span></a>\
       <div class="children <%=(n.Expanded?"expanded":"")%> tree_item_<%=n.ID%>" data-id="<%=n.ID%>" data-value="<%=n.Value%>"><%-children%></div>',
     { n: n, children: children, jsh: jsh, instance: jsh.getInstance(), getNodeContent: getNodeContent }
     );
@@ -1566,7 +1563,7 @@ exports = module.exports = function(jsh){
     }
     if (jsh.xdroot.select(menuid).length) {
       if(contextMenuOptions && contextMenuOptions.hideIfOpen){
-        if(jsh.xdroot.select(menuid).filter(XDom.isVisible)){
+        if(XDom(jsh.xdroot, menuid).isVisible()){
           XExt.HideContextMenu();
           return false;
         }
@@ -1602,9 +1599,7 @@ exports = module.exports = function(jsh){
   };
 
   XExt.TreeSelectNode = function (ctrl, nodevalue, options) {
-    // TODO: Remove below when all calls of TreeSelectNode no-longer pass jQuery
-    if(ctrl && ctrl.jquery) ctrl = ctrl[0];
-    // TODO: Remove above when all calls of TreeSelectNode no-longer pass jQuery
+    ctrl = jsh.parseJQueryElements(ctrl,'XExt.TreeSelectNode');
     if(!options) options = { triggerChange: true, source: '' };
     if(!('triggerChange' in options)) options.triggerChange = true;
 
@@ -1645,7 +1640,7 @@ exports = module.exports = function(jsh){
     if (xdtree.class.contains('uneditable')) return;
 
     //Deselect previously selected value
-    XDom.class.remove(xdtree.select('.selected'), 'selected');
+    XDom(xdtree, '.selected').class.remove('selected');
 
     var nodeid = undefined;
     if(nodevalue){
@@ -1658,13 +1653,13 @@ exports = module.exports = function(jsh){
         var treePathInfo = { value: nodevalue };
         xdtree.emit('tree_path', treePathInfo);
         _.each(treePathInfo.path, function(node){
-          var xdtreenode = xdtree.select('.tree_item_'+node.ID);
-          if(XDom.class.contains(xdtreenode, 'tree_render_lazy')) XDom.emit(xdtreenode, 'tree_render_lazy');
+          var xdtreenode = XDom(xdtree, '.tree_item_'+node.ID);
+          if(xdtreenode.class.contains('tree_render_lazy')) xdtreenode.emit('tree_render_lazy');
         });
         findNode();
         if(typeof nodeid == 'undefined') return;
       }
-      XDom.class.add(xdtree.select('.tree_item.tree_item_' + nodeid), 'selected');
+      XDom(xdtree, '.tree_item.tree_item_' + nodeid).class.add('selected');
       if (field && field.controlparams) {
         if (field.controlparams.expand_to_selected) XExt.TreeExpandToSelected(ctrl);
       }
@@ -1677,58 +1672,57 @@ exports = module.exports = function(jsh){
     if((typeof nodeid !== 'undefined') && xdtree.data.onselected) { var rslt = (new Function('nodeid', xdtree.data.onselected)); rslt.call(ctrl, nodeid); }
   };
 
-  XExt.TreeToggleNode = function (xdctrl, nodeid) {
-    xdctrl = xdctrl.parent('.xform_ctrl.tree');
-    if (XDom.class.contains(xdctrl.select('.children.tree_item_' + nodeid), 'expanded'))
-      XExt.TreeCollapseNode(xdctrl, nodeid);
+  XExt.TreeToggleNode = function (ctrl, nodeid) {
+    var xdctrl = XDom(ctrl).parent('.xform_ctrl.tree');
+    if (XDom(xdctrl, '.children.tree_item_' + nodeid).class.contains('expanded'))
+      XExt.TreeCollapseNode(xdctrl.selectOne(), nodeid);
     else
-      XExt.TreeExpandNode(xdctrl, nodeid);
+      XExt.TreeExpandNode(xdctrl.selectOne(), nodeid);
   };
 
-  XExt.TreeCollapseNode = function (xdctrl, nodeid) {
-    xdctrl = xdctrl.parent('.xform_ctrl.tree');
-    XDom.class.remove(xdctrl.select('.tree_item_' + nodeid), 'expanded');
-    XDom.content.replace(xdctrl.select('.tree_item.tree_item_' + nodeid + ' > .glyph'), '&#x25b7;');
+  XExt.TreeCollapseNode = function (ctrl, nodeid) {
+    var xdctrl = XDom(ctrl).parent('.xform_ctrl.tree');
+    XDom(xdctrl, '.tree_item_' + nodeid).class.remove('expanded');
+    XDom(xdctrl, '.tree_item.tree_item_' + nodeid + ' > .glyph').content.replace('&#x25b7;');
   };
 
-  XExt.TreeExpandNode = function (xdctrl, nodeid) {
-    xdctrl = xdctrl.parent('.xform_ctrl.tree');
+  XExt.TreeExpandNode = function (ctrl, nodeid) {
+    var xdctrl = XDom(ctrl).parent('.xform_ctrl.tree');
     var xdTreenode = XDom(xdctrl, '.tree_item_' + nodeid);
     if(xdTreenode.class.contains('tree_render_lazy')) xdTreenode.emit('tree_render_lazy');
     xdTreenode.class.add('expanded');
-    XDom.content.replace(xdctrl.select('.tree_item.tree_item_' + nodeid + ' > .glyph'), '&#x25e2;');
+    XDom(xdctrl, '.tree_item.tree_item_' + nodeid + ' > .glyph').content.replace('&#x25e2;');
   };
 
   XExt.TreeExpandToSelected = function (ctrl) {
     var toptree = XDom(ctrl).parent('.xform_ctrl.tree');
     var rslt = [];
-    toptree.select('.tree_item.selected').forEach(function(el) {
+    toptree.select('.tree_item.selected').forEach(function(el){
       var xdParent = XDom(el).parent();
       while (xdParent.length && (xdParent.selectOne() != toptree.selectOne())) {
-        XExt.TreeExpandNode(toptree, xdParent.data.id);
+        XExt.TreeExpandNode(toptree.selectOne(), xdParent.data.id);
         xdParent = xdParent.parent();
       }
     });
     return rslt;
   };
-  XExt.TreeExpandAll = function (xdctrl) {
-    //TODO: remove below when all calls of TreeRender no-longer pass jQuery
-    if(xdctrl && xdctrl.jquery) xdctrl = XDom(xdctrl[0]);
-    //TODO: remove above when all calls of TreeRender no-longer pass jQuery
-    xdctrl = xdctrl.parent('.xform_ctrl.tree');
+  XExt.TreeExpandAll = function (ctrl) {
+    ctrl = jsh.parseJQueryElements(ctrl,'XExt.TreeExpandAll');
+    var xdctrl = XDom(ctrl).parent('.xform_ctrl.tree');
+    var xdTreeItem = XDom(xdctrl, '.tree_item');
     if(!xdctrl.select('.tree_render_lazy').length){
-      XDom.class.add(xdctrl.select('.tree_item'), 'expanded');
-      XDom.class.add(xdctrl.select('.children'), 'expanded');
-      XDom.content.replace(xdctrl.select('.glyph'), '&#x25e2;');
+      xdTreeItem.class.add('expanded');
+      XDom(xdctrl, '.children').class.add('expanded');
+      XDom(xdctrl, '.glyph').content.replace('&#x25e2;');
     }
     else{
-      var unexpanded = XDom.omit(xdctrl.select('.tree_item'), function(el){return XDom.class.contains(el, 'expanded');});
+      var unexpanded = xdTreeItem.omit(function(el){return XDom.class.contains(el, 'expanded');});
       var i = 0;
       while(unexpanded.length){
         i++;
         if(i>1000)break;
-        unexpanded.forEach(function(el){ XExt.TreeExpandNode(xdctrl, XDom.getAttribute(el, 'data-id')); });
-        unexpanded = XDom.omit(xdctrl.select('.tree_item'), function(el){return XDom.class.contains(el, 'expanded');});
+        unexpanded.select().forEach(function(el){ XExt.TreeExpandNode(xdctrl.selectOne(), XDom.getAttribute(el, 'data-id')); });
+        unexpanded = xdTreeItem.omit(function(el){return XDom.class.contains(el, 'expanded');});
       }
     }
   };
@@ -1862,7 +1856,7 @@ exports = module.exports = function(jsh){
       if(xdialog.onDestroy) xdialog.onDestroy();
     });
     jsh.xDialog = [];
-    XDom.remove(jsh.xdDialogBlock.select('.xdialogbox'));
+    XDom(jsh.xdDialogBlock, '.xdialogbox').remove();
     jsh.xdDialogBlock.style.display = false;
   };
 
@@ -1914,7 +1908,7 @@ exports = module.exports = function(jsh){
    * @returns {XDom} An XDom wrapped template
    */
   XExt.renderTemplate = function (sel) {
-    var tmpl = XDom.innerHTML(jsh.xdDialogBlock.select(sel));
+    var tmpl = XDom(jsh.xdDialogBlock, sel).innerHTML;
     var container = document.createElement('div');
     container.innerHTML = tmpl||'';
     if(container.children.length != 1) return XDom(container);
@@ -1940,27 +1934,29 @@ exports = module.exports = function(jsh){
     var alertBox = xdobj.selectOne();
     var xDialogObj = {
       obj: alertBox,
-      onDestroy: function(){ XDom.remove(alertBox); },
+      onDestroy: function(){ xdobj.remove(); },
     };
     jsh.xDialog.unshift(xDialogObj);
-    XDom.setAttribute(xdobj, 'style', options.style);
+    xdobj.attr.style = options.style;
     xdobj.style.zIndex = jsh.xDialog.length;
     var oldactive = document.activeElement;
-    XDom.blur(oldactive);
-    XDom.content.replace(xdobj.select('.xalertmessage'), msg);
+    XDom(oldactive).blur();
+    XDom(xdobj, '.xalertmessage').content.replace(msg);
     var isClosing = false;
     var acceptfunc = function(){
       isClosing = true;
       XExt.dialogButtonFunc(alertBox, oldactive, onAccept, { onCompleteImmediate: options.onAcceptImmediate })();
     };
-    XDom.on(xdobj.select('input'), 'click', acceptfunc);
-    XDom.on(xdobj.select('input'), 'keydown', function (e) { if (e.keyCode == 27) { acceptfunc(); } });
+    var xdInput = XDom(xdobj, 'input');
+    xdInput.on('click', acceptfunc);
+    xdInput.on('keydown', function (e) { if (e.keyCode == 27) { acceptfunc(); } });
 
+    var xdBtnOK = XDom(xdobj, 'input.button_ok');
     if (options.button_ok_caption){
-      XDom.style.display(xdobj.select('input.button_ok'), true);
-      XDom.setValue(xdobj.select('input.button_ok'), options.button_ok_caption);
+      xdBtnOK.style.display = true;
+      xdBtnOK.value = options.button_ok_caption;
     }
-    else XDom.style.display(xdobj.select('input.button_ok'), false);
+    else xdBtnOK.style.display = false;
 
     xdobj.on('acceptDialog', acceptfunc);
     
@@ -1969,7 +1965,7 @@ exports = module.exports = function(jsh){
     jsh.xdDialogBlock.style.display = true;
     jsh.XWindowResize();
     if (!XExt.isIOS()) {
-      XDom.focus(xdobj.select('input'));
+      xdInput.focus();
     }
     if(options.autohide) setTimeout(function(){ if(!isClosing) acceptfunc(); }, options.autohide);
   };
@@ -1996,44 +1992,44 @@ exports = module.exports = function(jsh){
     //if (window.confirm(msg)) { if (onYes) onYes(); }
     //if (onNo) onNo();
     var oldactive = document.activeElement;
-    XDom.blur(oldactive);
+    XDom(oldactive).blur();
 
     var xdobj = XExt.renderTemplate('script.template_xconfirmbox');
     var confirmBox = xdobj.selectOne();
 
     var xDialogObj = {
       obj: confirmBox,
-      onDestroy: function(){ XDom.remove(confirmBox); },
+      onDestroy: function(){ xdobj.remove(); },
     };
     jsh.xDialog.unshift(xDialogObj);
     xdobj.style.zIndex = jsh.xDialog.length;
 
     // prep content, values, and handlers for confirm box
-    XDom.content.replace(xdobj.select('.xconfirmmessage'), msg);
+    XDom(xdobj, '.xconfirmmessage').content.replace(msg);
     var cancelfunc = XExt.dialogButtonFunc(confirmBox, oldactive, (options.onCancel ? options.onCancel : onNo));
     var acceptfunc = XExt.dialogButtonFunc(confirmBox, oldactive, onYes);
-    var btnOk = xdobj.select('input.button_ok');
-    var btnNo = xdobj.select('input.button_no');
-    var btnCancel = xdobj.select('input.button_cancel');
+    var xdBtnOK = XDom(xdobj, 'input.button_ok');
+    var xdBtnNo = XDom(xdobj, 'input.button_no');
+    var xdBtnCancel = XDom(xdobj, 'input.button_cancel');
     if(options.onCancel){
-      XDom.style.display(btnCancel, true);
-      XDom.on(btnCancel, 'click', XExt.dialogButtonFunc(confirmBox, oldactive, options.onCancel));
+      xdBtnCancel.style.display = true;
+      xdBtnCancel.on('click', XExt.dialogButtonFunc(confirmBox, oldactive, options.onCancel));
     }
-    else XDom.style.display(btnCancel, false);
-    if (options.button_ok_caption) XDom.setValue(btnOk, options.button_ok_caption);
-    if (options.button_no_caption) XDom.setValue(btnNo, options.button_no_caption);
-    if (options.button_cancel_caption) XDom.setValue(btnCancel, options.button_cancel_caption);
+    else xdBtnCancel.style.display = false;
+    if (options.button_ok_caption) xdBtnOK.value = options.button_ok_caption;
+    if (options.button_no_caption) xdBtnNo.value = options.button_no_caption;
+    if (options.button_cancel_caption) xdBtnCancel.value = options.button_cancel_caption;
     xdobj.on('acceptDialog', acceptfunc);
     xdobj.on('cancelDialog', cancelfunc);
-    XDom.on(btnOk, 'click', acceptfunc);
-    XDom.on(btnNo, 'click', XExt.dialogButtonFunc(confirmBox, oldactive, onNo));
-    XDom.on(xdobj.select('input'), 'keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
+    xdBtnOK.on('click', acceptfunc);
+    xdBtnNo.on('click', XExt.dialogButtonFunc(confirmBox, oldactive, onNo));
+    XDom(xdobj, 'input').on('keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
     
     jsh.xdDialogBlock.selectOne().appendChild(confirmBox);
     xdobj.style.display = true;
     jsh.xdDialogBlock.style.display = true;
     jsh.XWindowResize();
-    if (!XExt.isIOS()) XDom.focus(btnOk);
+    if (!XExt.isIOS()) xdBtnOK.focus();
   };
 
   XExt.stringify = function (origvalue, replacer, space) {
@@ -2077,31 +2073,32 @@ exports = module.exports = function(jsh){
 
     var xDialogObj = {
       obj: promptBox,
-      onDestroy: function(){ XDom.remove(promptBox); },
+      onDestroy: function(){ xdobj.remove(); },
     };
     jsh.xDialog.unshift(xDialogObj);
     xdobj.style.zIndex = jsh.xDialog.length;
     
     var oldactive = document.activeElement;
-    XDom.blur(oldactive);
-    XDom.content.replace(xdobj.select('.xpromptmessage'), msg);
-    XDom.setValue(xdobj.select('.xpromptfield'), dflt);
+    XDom(oldactive).blur();
+    XDom(xdobj, '.xpromptmessage').content.replace(msg);
+    var xdPromptField = XDom(xdobj, '.xpromptfield');
+    xdPromptField.value = dflt;
     var cancelfunc = XExt.dialogButtonFunc(promptBox, oldactive, function () { if (onComplete) onComplete(null); });
-    var acceptfunc = XExt.dialogButtonFunc(promptBox, oldactive, function () { if (onComplete) onComplete(XDom.getValue(xdobj.select('.xpromptfield'))); });
-    XDom.on(xdobj.select('input.button_ok'), 'click', acceptfunc);
-    XDom.on(xdobj.select('input.button_cancel'), 'click', cancelfunc);
+    var acceptfunc = XExt.dialogButtonFunc(promptBox, oldactive, function () { if (onComplete) onComplete(xdPromptField.value); });
+    XDom(xdobj, 'input.button_ok').on('click', acceptfunc);
+    XDom(xdobj, 'input.button_cancel').on('click', cancelfunc);
 
     xdobj.on('acceptDialog', acceptfunc);
     xdobj.on('cancelDialog', cancelfunc);
 
-    XDom.on(xdobj.select('input'), 'keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
-    XDom.on(xdobj.select('.xpromptfield'), 'keydown', function (e) { if (e.keyCode == 13) { acceptfunc(); } });
+    XDom(xdobj, 'input').on('keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
+    xdPromptField.on('keydown', function (e) { if (e.keyCode == 13) { acceptfunc(); } });
     
     jsh.xdDialogBlock.selectOne().appendChild(promptBox);
     xdobj.style.display = true;
     jsh.xdDialogBlock.style.display = true;
     jsh.XWindowResize();
-    XDom.focus(xdobj.select('.xpromptfield'));
+    xdPromptField.focus();
   };
 
   //html - HTML or Element
@@ -2118,8 +2115,7 @@ exports = module.exports = function(jsh){
     }
     else {
       reuse = true;
-      customPrompt = html;
-      if(html && html.jquery) customPrompt = html[0]; // TODO: Remove when all calls of CustomPrompt no longer pass html as JQuery
+      customPrompt = jsh.parseJQueryElements(html,'XExt.CustomPrompt');
       if(!customPrompt) customPrompt = document.createElement('div');
       for(var i=0;i<jsh.xDialog.length;i++){
         if(jsh.xDialog[i].obj == customPrompt){
@@ -2153,7 +2149,7 @@ exports = module.exports = function(jsh){
     xdobj.style.zIndex = jsh.xDialog.length;
 
     var oldactive = document.activeElement;
-    XDom.blur(oldactive);
+    XDom(oldactive).blur();
     oldactive = options.restoreFocus ? oldactive : undefined;
 
     var cancelDialogFunc = function(_onClosed){
@@ -2198,27 +2194,28 @@ exports = module.exports = function(jsh){
         }
       },
       function(){
-        bindDialogHandler(xdobj.select('input.button_ok'), 'click', function(){ acceptfunc(); });
-        bindDialogHandler(xdobj.select('input.button_cancel'), 'click', function(){ cancelfunc(); });
+        bindDialogHandler(XDom(xdobj, 'input.button_ok'), 'click', function(){ acceptfunc(); });
+        bindDialogHandler(XDom(xdobj, 'input.button_cancel'), 'click', function(){ cancelfunc(); });
         bindDialogHandler(xdobj, 'acceptDialog', function(){ acceptfunc(); });
         bindDialogHandler(xdobj, 'cancelDialog', function(){ cancelfunc(); });
-        bindDialogHandler(xdobj.select('input, textarea, select'), 'keydown', function (e) {
+        bindDialogHandler(XDom(xdobj, 'input, textarea, select'), 'keydown', function (e) {
           if (options.specialKeys.escape && (e.keyCode == 27)) { e.preventDefault(); e.stopImmediatePropagation(); cancelfunc(); }
         });
-        bindDialogHandler(xdobj.select('input:not([type="checkbox"]):not([type="button"])'), 'keydown', function (e) {
+        bindDialogHandler(XDom(xdobj, 'input:not([type="checkbox"]):not([type="button"])'), 'keydown', function (e) {
           if (options.specialKeys.enter && (e.keyCode == 13)) { e.preventDefault(); e.stopImmediatePropagation(); acceptfunc(); }
         });
 
         if(options.backgroundClose){
           
           bindDialogHandler(jsh.xdDialogBlock, 'mousedown', function(e){
-            if(!(XDom.class.contains(e.target, 'xdialogoverlay') || XDom.class.contains(e.target,'xdialogblock'))) return;
+            var xdTarget = XDom(e.target);
+            if(!(xdTarget.class.contains('xdialogoverlay') || xdTarget.class.contains('xdialogblock'))) return;
             var mouseDownTime = new Date().getTime();
             jsh.xdDialogBlock.on('mouseup', (function mouseUpHandler(e){
-              XDom.off(jsh.xdDialogBlock, 'mouseup', mouseUpHandler);
+              jsh.xdDialogBlock.off('mouseup', mouseUpHandler);
               var mouseUpTime = new Date().getTime();
               if((mouseUpTime - mouseDownTime) > 5000) return;
-              if(!(XDom.class.contains(e.target, 'xdialogoverlay') || XDom.class.contains(e.target,'xdialogblock'))) return;
+              if(!(xdTarget.class.contains('xdialogoverlay') || xdTarget.class.contains('xdialogblock'))) return;
               if(jsh.xDialog.length && (jsh.xDialog[0].obj==customPrompt)){ e.preventDefault(); e.stopImmediatePropagation(); cancelfunc(); }
             }));
           });
@@ -2230,8 +2227,9 @@ exports = module.exports = function(jsh){
         jsh.XWindowResize();
         setTimeout(function(){
           jsh.XWindowResize();
-          if(xdobj.select('.default_focus').length) XDom.focus(xdobj.select('.default_focus'));
-          else XDom.focus(xdobj.select('input,textarea,select').filter(XDom.isVisible)[0]);
+          var xdDefaultFocus = XDom(xdobj, '.default_focus');
+          if(xdDefaultFocus.length) xdDefaultFocus.focus();
+          else XDom(xdobj, 'input,textarea,select').filter(XDom.isVisible).first().focus();
         }, 1);
       }
     );
@@ -2239,12 +2237,12 @@ exports = module.exports = function(jsh){
 
   XExt.AcceptDialog = function(){
     if(!jsh.xDialog.length) throw new Error('No dialog currently active');
-    XDom.emit(jsh.xDialog[0].obj, 'acceptDialog');
+    XDom(jsh.xDialog[0].obj).emit('acceptDialog');
   };
 
   XExt.CancelDialog = function(){
     if(!jsh.xDialog.length) throw new Error('No dialog currently active');
-    XDom.emit(jsh.xDialog[0].obj, 'cancelDialog');
+    XDom(jsh.xDialog[0].obj).emit('cancelDialog');
   };
 
   XExt.ZoomEdit = function (val, caption, options, onAccept, onCancel) {
@@ -2256,37 +2254,37 @@ exports = module.exports = function(jsh){
 
     var xDialogObj = {
       obj: textZoomBox,
-      onDestroy: function(){ XDom.remove(textZoomBox); },
+      onDestroy: function(){ xdobj.remove(); },
     };
     jsh.xDialog.unshift(xDialogObj);
     xdobj.style.zIndex = jsh.xDialog.length;
     
     var oldactive = document.activeElement;
-    XDom.blur(oldactive);
-    XDom.content.replace(xdobj.select('.xtextzoommessage'), caption);
-    var textZoomField = xdobj.select('.xtextzoomfield');
-    XDom.setValue(textZoomField, val);
+    XDom(oldactive).blur();
+    XDom(xdobj, '.xtextzoommessage').content.replace(caption);
+    var xdTextZoomField = XDom(xdobj, '.xtextzoomfield');
+    xdTextZoomField.value = val;
     
     
     if(options.readonly) {
-      XDom.setAttribute(textZoomField, 'readonly', 'readonly');
-      XDom.class.remove(textZoomField, 'editable');
-      XDom.class.add(textZoomField, 'uneditable');
+      xdTextZoomField.attr.readonly = 'readonly';
+      xdTextZoomField.class.remove('editable');
+      xdTextZoomField.class.add('uneditable');
     }
     else {
-      XDom.class.remove(textZoomField, 'uneditable');
-      XDom.class.add(textZoomField, 'editable');
+      xdTextZoomField.class.remove('uneditable');
+      xdTextZoomField.class.add('editable');
     }
     var cancelfunc = XExt.dialogButtonFunc(textZoomBox, oldactive, function () { if (onCancel) onCancel(); });
-    var acceptfunc = XExt.dialogButtonFunc(textZoomBox, oldactive, function () { if (onAccept) onAccept(XDom.getValue(textZoomField)); });
-    XDom.on(xdobj.select('input.button_ok'), 'click', acceptfunc);
-    XDom.on(xdobj.select('input.button_cancel'), 'click', cancelfunc);
-    XDom.on(xdobj.select('input'), 'keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
+    var acceptfunc = XExt.dialogButtonFunc(textZoomBox, oldactive, function () { if (onAccept) onAccept(xdTextZoomField.value); });
+    XDom(xdobj, 'input.button_ok').on('click', acceptfunc);
+    XDom(xdobj, 'input.button_cancel').on('click', cancelfunc);
+    XDom(xdobj, 'input').on('keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
     jsh.xdDialogBlock.selectOne().appendChild(textZoomBox);
     xdobj.style.display = true;
     jsh.xdDialogBlock.style.display = true;
     jsh.XWindowResize();
-    XDom.focus(textZoomField);
+    xdTextZoomField.focus();
   };
 
   XExt.ShowHints = function (lov, caption, options, onInsert, onCancel) {
@@ -2297,27 +2295,28 @@ exports = module.exports = function(jsh){
 
     var xDialogObj = {
       obj: hintsBox,
-      onDestroy: function(){ XDom.remove(hintsBox); },
+      onDestroy: function(){ xdobj.remove(); },
     };
     jsh.xDialog.unshift(xDialogObj);
     xdobj.style.zIndex = jsh.xDialog.length;
 
     var oldactive = document.activeElement;
-    XDom.blur(oldactive);
-    XDom.content.replace(xdobj.select('.xhintsmessage'), caption);
+    XDom(oldactive).blur();
+    XDom(xdobj, '.xhintsmessage').content.replace(caption);
 
-    var hintsListing = hintsBox.selectOne('.xhints_listing');
-    var tmplRow = XDom.innerHTML(jsh.xdDialogBlock.select('script.xhints_rowtemplate'));
+    var hintsListing = xdobj.selectOne('.xhints_listing');
+    var tmplRow = XDom(jsh.xdDialogBlock, 'script.xhints_rowtemplate').innerHTML;
     
     if(_.isArray(lov)) _.each(lov, function(item){
       var xdRow = XDom(XDom.render(tmplRow));
-      XDom.setValue(xdRow.select('input'), item[jsh.uimap.code_val]);
-      XDom.content.replace(xdRow.select('span'), item[jsh.uimap.code_txt]);
-      if(options.readonly) XDom.remove(xdRow.select('input'));
+      var xdRowInput = XDom(xdRow, 'input');
+      xdRowInput.value = item[jsh.uimap.code_val];
+      XDom(xdRow, 'span').content.replace(item[jsh.uimap.code_txt]);
+      if(options.readonly) xdRowInput.remove();
       hintsListing.append(xdRow.selectOne());
     });
 
-    if(options.readonly) XDom.style.display(xdobj.select('input.button_ok,input[type="checkbox"]'), false);
+    if(options.readonly) XDom(xdobj, 'input.button_ok,input[type="checkbox"]').style.display = false;
 
     var getValues = function(){
       var rslt = [];
@@ -2326,17 +2325,18 @@ exports = module.exports = function(jsh){
     };
     var cancelfunc = XExt.dialogButtonFunc(hintsBox, oldactive, function () { if (onCancel) onCancel(); });
     var insertfunc = XExt.dialogButtonFunc(hintsBox, oldactive, function () { if (onInsert) onInsert(getValues()); });
-    XDom.on(xdobj.select('input.button_ok'), 'click', function(){
+    XDom(xdobj, 'input.button_ok').on('click', function(){
       if(!getValues().length) return XExt.Alert('Please select one or more values to insert');
       insertfunc();
     });
-    XDom.on(xdobj.select('input.button_cancel'), 'click', cancelfunc);
-    XDom.on(xdobj.select('input'), 'keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
+    XDom(xdobj, 'input.button_cancel').on('click', cancelfunc);
+    var xdInput = XDom(xdobj, 'input');
+    xdInput.on('keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
     jsh.xdDialogBlock.selectOne().appendChild(hintsBox);
     xdobj.style.display = true;
     jsh.xdDialogBlock.style.display = true;
     jsh.XWindowResize();
-    XDom.focus(xdobj.selectOne('input'));
+    xdInput.first().focus();
   };
 
   var popupData = {};
@@ -2370,8 +2370,9 @@ exports = module.exports = function(jsh){
     var title = options.title;
     var parentobj = options.parentobj;
     var obj = options.obj;
+    var xdobj = XDom(obj);
 
-    var parentmodelid = XDom.getData(obj, 'model');
+    var parentmodelid = xdobj.data.model;
     var parentmodelclass = parentmodelid;
     var parentfield = null;
     var parentmodel = null;
@@ -2400,14 +2401,14 @@ exports = module.exports = function(jsh){
     XExt.execif(parentfield && parentfield.controlparams && parentfield.controlparams.onpopup,
       function (f) { parentfield.controlparams.onpopup(modelid, parentmodelid, fieldname, f); },
       function () {
-        var code_val = XDom.getData(obj, 'code_val');
+        var code_val = xdobj.data.code_val;
         if (code_val) popupData[modelid].code_val = code_val;
         var xgrid = xmodel.controller.grid;
         var xform = xmodel.controller.form;
         if(xgrid){
           xgrid.RowCount = 0;
           if (xgrid.Prop) xgrid.Prop.Enabled = true;
-          XDom.content.clear(jsh.xdroot.select(xgrid.PlaceholderID));
+          XDom(jsh.xdroot, xgrid.PlaceholderID).content.clear();
         }
         if(xform && xform.Prop){ xform.Prop.Enabled = true; }
         var orig_jsh_ignorefocusHandler = jsh.ignorefocusHandler;
@@ -2416,9 +2417,8 @@ exports = module.exports = function(jsh){
           if (options.OnPopupOpen) if(options.OnPopupOpen(popupData[modelid])===false) return;
           numOpens++;
           if(xgrid && (numOpens==1)) xgrid.Select();
-          if (XDom.isVisible(jsh.xdroot.selectOne(POPUP_CONTAINER + ' .xsearch_value'))){
-            XDom.focus(jsh.xdroot.selectOne(POPUP_CONTAINER + ' .xsearch_value'));
-          }
+          var xdSearchVal = XDom(jsh.xdroot, POPUP_CONTAINER + ' .xsearch_value');
+          if (xdSearchVal.isVisible()) xdSearchVal.first().focus();
           else if (XDom(jsh.xdroot, POPUP_CONTAINER).select('td a').length) XDom.focus(XDom(jsh.xdroot, POPUP_CONTAINER).selectOne('td a'));
           //else jsh.$root(POPUP_CONTAINER).$find('input,select,textarea').first().focus();
 
@@ -2427,7 +2427,7 @@ exports = module.exports = function(jsh){
         var onClosed = function () {
           if (parentobj && (typeof popupData[modelid].result !== 'undefined')) {
             if(parentmodel && parentfield && parentfield.name) parentmodel.set(parentfield.name, popupData[modelid].result, null);
-            else parentobj.setValue(popupData[modelid].result);
+            else parentobj.value = popupData[modelid].result;
             if (popupData[modelid].resultrow && parentfield && parentfield.controlparams && parentfield.controlparams.popup_copy_results) {
               for (var fname in parentfield.controlparams.popup_copy_results) {
                 parentmodel.set(fname, popupData[modelid].resultrow[parentfield.controlparams.popup_copy_results[fname]], null);
@@ -2454,13 +2454,14 @@ exports = module.exports = function(jsh){
         if(!xdPopup.length) {
           xdPopup = XExt.renderTemplate('script.template_popupbox');
           xdPopup.selectOne('.xpopupbox_content').appendChild(jsh.xdroot.selectOne(POPUP_CONTAINER));
-          XDom.on(xdPopup.select('a.xpopupbox_header_close'), 'click', function(){ XExt.CancelDialog(); });
+          XDom(xdPopup, 'a.xpopupbox_header_close').on('click', function(){ XExt.CancelDialog(); });
         }
 
         jsh.refreshBodyHead(xdPopup.select('.xbodyhead'));
-        XDom.content.replaceText(xdPopup.select('.xpopupbox_header_title'), title);
-        if(panelWidth) XDom.setStyle(xdPopup.select('.xpopupbox_content'), 'width', panelWidth);
-        if(panelHeight) XDom.setStyle(xdPopup.select('.xpopupbox_content'), 'min-height', panelHeight);
+        XDom(xdPopup, '.xpopupbox_header_title').content.replaceText(title);
+        var xdPopContext = XDom(xdPopup, '.xpopupbox_content');
+        if(panelWidth) xdPopContext.style.width = panelWidth;
+        if(panelHeight) xdPopContext.style.minHeight = panelHeight;
         XExt.CustomPrompt(null, xdPopup.selectOne(), onInit, null, null, onClosed, {backgroundClose: true});
       });
   };
@@ -2493,13 +2494,11 @@ exports = module.exports = function(jsh){
   };
 
   XExt.AlertFocus = function (ctrl, msg) {
-    XExt.Alert(msg, function () { ctrl.focus(); XDom.emit(ctrl, 'select'); });
+    XExt.Alert(msg, function () { ctrl.focus(); XDom(ctrl).emit('select'); });
   };
 
   XExt.getModelId = function (obj) {
-    // TODO: remove below when all calls of getModelId nolonger pass jQuery
-    if(obj && obj.jquery) obj = obj[0];
-    // TODO: remove above when all calls of getModelId nolonger pass jQuery
+    obj = jsh.parseJQueryElements(obj,'XExt.getModelId');
     var xdobj = XDom(obj);
     var xid = xdobj.parent('.xtbl').data.id;
     if (!xid) xid = xdobj.parent('.xform').data.id;
@@ -2953,7 +2952,7 @@ exports = module.exports = function(jsh){
       var sel = window.getSelection();
       if(!sel || !sel.rangeCount) return false;
       var rstart = sel.getRangeAt(0);
-      if(xdobj.selectOne() == rstart.startContainer) return true;
+      if(obj == rstart.startContainer) return true;
 
       return XExt.contains(xdobj.selectOne(),rstart.startContainer);
     }
@@ -3010,9 +3009,8 @@ exports = module.exports = function(jsh){
     if(cond()) return f();
     setTimeout(function(){ XExt.waitUntil(cond, f, cancel, timeout); }, timeout);
   };
-  XExt.scrollIntoView = function(xdcontainer, pos, h){
-    if(!xdcontainer.length) return;
-    var container = xdcontainer.selectOne();
+  XExt.scrollIntoView = function(container, pos, h){
+    if(!container) return;
     var sTop = container.scrollTop;
     var sLeft = container.scrollLeft;
     var cW = container.clientWidth;
@@ -3035,16 +3033,16 @@ exports = module.exports = function(jsh){
       container.scrollTop = pos.top;
     }
   };
-  XExt.scrollObjIntoView = function(xdcontainer, xdobj){
-    // TODO: Remove below when all calls of scrollObjIntoView no longer pass jQuery
-    if(xdcontainer && xdcontainer.jquery) xdcontainer = XDom(xdcontainer[0]);
-    if(xdobj && xdobj.jquery) xdobj = XDom(xdobj[0]);
-    // TODO: Remove above when all calls of scrollObjIntoView no longer pass jQuery
+  XExt.scrollObjIntoView = function(container, obj){
+    container = jsh.parseJQueryElements(container, 'XExt.scrollObjIntoView');
+    obj = jsh.parseJQueryElements(obj, 'XExt.scrollObjIntoView');
+    var xdcontainer = XDom(container);
+    var xdobj = XDom(obj);
     var objpos = {top: xdobj.calc.top(), left: xdobj.calc.left()};
     var containerpos = {top: xdcontainer.calc.top(), left: xdcontainer.calc.left()};
     objpos.top -= containerpos.top - xdcontainer.selectOne().scrollTop;
     objpos.left -= containerpos.left - xdcontainer.selectOne().scrollLeft;
-    XExt.scrollIntoView(xdcontainer, objpos, xdobj.calc.height());
+    XExt.scrollIntoView(container, objpos, xdobj.calc.height());
   };
   //Check if the mouse is within the target element
   XExt.isMouseWithin = function(elem) {
@@ -3088,8 +3086,9 @@ exports = module.exports = function(jsh){
 
     return rslt;
   };
-  XExt.bindDragSource = function(xdobj){
+  XExt.bindDragSource = function(obj){
     var mouseDownTimer = null;
+    var xdobj = XDom(obj);
     xdobj.on('mousedown', function(e){
       if (e.which == 1) {//left mouse button
         var obj = this;
