@@ -3,7 +3,7 @@ var assert = require('assert');
 
 function isEmpty(obj) {
   for(var key in obj) {
-    if(obj.hasOwnProperty(key))
+    if(Object.prototypehasOwnProperty.call(obj, key))
       return false;
   }
   return true;
