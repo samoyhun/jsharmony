@@ -114,6 +114,7 @@ var Selector = function(){
     append: XDom.content.append.bind(XDom, this),
     prepend: XDom.content.prepend.bind(XDom, this),
     replace: XDom.content.replace.bind(XDom, this),
+    replaceText: XDom.content.replaceText.bind(XDom, this),
     clear: XDom.content.clear.bind(XDom, this),
   };
   _this.attr = new Proxy({}, {
@@ -433,8 +434,10 @@ XDom.off = function(target, eventType, handler, eventOptions){
 
 XDom.emit = function(target, event, data){
   if (typeof(event) == 'string') {
-    if(data) event = new CustomEvent(event, {detail: data}); // TODO: Discuss CustomEvent Usage
-    // it seems only a MouseEvent will trigger a checkbox to change value
+    // Note: it seems only a MouseEvent will trigger a checkbox to change value
+    if(data){
+      event = new CustomEvent(event, {detail: data});
+    }
     else if (['click', 'dblclick', 'mouseup', 'mousedown'].indexOf(event) != -1) {
       event = new MouseEvent(event);
     } else {
@@ -571,8 +574,7 @@ XDom.getChildren = function(target, childrenSelector){
           if(child === rslt[k]){ duplicate = true; break; }
         }
         if(!duplicate) {
-          if(!childrenSelector) rslt.push(child);
-          else if(child.matches(childrenSelector)) rslt.push(child);
+          if(!childrenSelector || (childrenSelector && child.matches(childrenSelector))) rslt.push(child);
         }
       }
     }

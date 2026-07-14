@@ -39,10 +39,7 @@ exports = module.exports = function(jsh){
 
   XExtXModel.GetRowID = function (modelid,obj){
     modelid = jsh.XExt.resolveModelID(modelid);
-    if (obj && obj.jquery) {
-      console.warn('Depreciated: XModel.GetRowID received a jquery object. Please pass a dom element.');
-      obj = obj.filter(function() {return jsh.XDom.isElement(this);}).get(0);
-    }
+    obj = jsh.parseJQueryElements(obj, 'XModel.GetRowID');
     var xmodel = jsh.XModels[modelid];
     var rslt = -1;
     if(jsh.XDom.class.contains(obj, 'row_independent')){ /* Do nothing */ }
@@ -95,8 +92,7 @@ exports = module.exports = function(jsh){
           if (isGrid) lovselector = '.' + _LOV + '.xelem' + xmodel.class;
           var ctrl = jsh.XDom.selectOne(lovselector, parentobj);
           if (('control' in this.Fields[_LOV]) && (this.Fields[_LOV].control == 'tree'))
-            // TODO: TreeRender takes a jquery
-            jsh.XExt.TreeRender($(ctrl), this._LOVs[_LOV], this.Fields[_LOV]);
+            jsh.XExt.TreeRender(ctrl, this._LOVs[_LOV], this.Fields[_LOV]);
           else if ('lovparent' in this.Fields[_LOV])
             jsh.XExt.RenderParentLOV(_this, ctrl, [_this[this.Fields[_LOV].lovparent]], this._LOVs[_LOV], this.Fields[_LOV], false);
           else if ('lovparents' in this.Fields[_LOV]) {
@@ -113,8 +109,7 @@ exports = module.exports = function(jsh){
       //Put data into the form
       _.each(this.Fields, function (field) {
         if(field.control=='tagbox'){
-          // TODO: TagBox_Render takes two jquery
-          jsh.XExt.TagBox_Render($(jsh.XDom(parentobj, '.'+field.name+'_editor.xtagbox'+'.xelem'+xmodel.class).select()), $(jsh.XDom(parentobj, '.'+field.name+'.xelem'+xmodel.class).select()));
+          jsh.XExt.TagBox_Render(jsh.XDom(parentobj, '.'+field.name+'_editor.xtagbox'+'.xelem'+xmodel.class).select(), jsh.XDom(parentobj, '.'+field.name+'.xelem'+xmodel.class).select());
         }
         XExtXModel.RenderField(_this, parentobj, modelid, field);
       });
@@ -324,8 +319,7 @@ exports = module.exports = function(jsh){
     }
     else if (('control' in field) && (field.control == 'tagbox')) {
       xdCtrl.value = val;
-      // TODO: XExt.TagBox_Refresh takes two jquery
-      jsh.XExt.TagBox_Refresh($(jsh.XDom(parentobj, '.'+field.name+'_editor.xtagbox'+'.xelem'+xmodel.class).selectOne()), $(xdCtrl.select()));
+      jsh.XExt.TagBox_Refresh(jsh.XDom(parentobj, '.'+field.name+'_editor.xtagbox'+'.xelem'+xmodel.class).selectOne(), xdCtrl.select());
     }
     else{
       xdCtrl.value = val;
@@ -360,8 +354,8 @@ exports = module.exports = function(jsh){
     if(is_editable && xdCtrl.class.contains('readonly')) is_editable = false;
     if(is_editable && isGrid && xdCtrl.parent('tr.xrow').class.contains('readonly')) is_editable = false;
 
-    if (is_editable && !xdCtrl.class.contains('editable')) { jsh.XPage.Enable(xdCtrl, field); }
-    else if (!is_editable && !xdCtrl.class.contains('uneditable')) { jsh.XPage.Disable(xdCtrl, field, show_lookup_when_readonly); }
+    if (is_editable && !xdCtrl.class.contains('editable')) { jsh.XPage.Enable(xdCtrl.select(), field); }
+    else if (!is_editable && !xdCtrl.class.contains('uneditable')) { jsh.XPage.Disable(xdCtrl.select(), field, show_lookup_when_readonly); }
 
     return xdCtrl.selectOne();
   };
@@ -612,10 +606,7 @@ exports = module.exports = function(jsh){
   XExtXModel.BindLOV = function (modelid) {
     modelid = jsh.XExt.resolveModelID(modelid);
     return function (xform, parentobj) {
-      if (parentobj && parentobj.jquery) {
-        console.warn('Depreciated: XModel.BindLOV received a jquery object. Please pass a dom element.');
-        parentobj = parentobj.filter(function() {return jsh.XDom.isElement(this);}).get(0);
-      }
+      parentobj = jsh.parseJQueryElements(parentobj, 'XModel.BindLOV');
       if (!parentobj) parentobj = jsh.xdroot.selectOne();
       var xmodel = jsh.XModels[modelid];
       if(!xmodel) return;

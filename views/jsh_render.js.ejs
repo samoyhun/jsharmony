@@ -18,7 +18,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 */
 (function(jsh){
   var $ = jsh.$;
-  var jQuery = $;
+  //var jQuery = $;
   var _ = jsh._;
   var ejs = jsh.ejs;
   var async = jsh.async;
@@ -72,20 +72,21 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     window.onpopstate = function(event) { jsh.XPage.handlePopState(event); };
   }
 
-  $(window).focus(function(){ jsh.FocusHandler(); });
+  jsh.XDom.on(window, 'focus', function(){ jsh.FocusHandler(); });
 
-  $(document).focusin(function(e){
+  jsh.XDom.on(document, 'focusin', function(e){
     //If a dialog is open, make sure focus is on an element in the top dialog
-    if(jsh.xDialog.length){
       var newobj = document.activeElement;
-      if(newobj && !($(newobj).closest(jsh.xDialog[0].obj).length)){
-        window.setTimeout(function(){ $(jsh.xDialog[0].obj).find('input:visible').first().focus(); },1);
+    var topDialog = jsh.xDialog.length && jsh.xDialog[0].obj;
+    if(newobj && topDialog){
+      if(!topDialog.contains(newobj)){
+        window.setTimeout(function(){ jsh.XDom(topDialog, 'input').filter(jsh.XDom.isVisible).first().focus(); },1);
       }
       return;
     }
   });
 
-  $(document).focusout(function(){ jsh.FocusHandler(); });
+  jsh.XDom.on(document, 'focusout', function(){ jsh.FocusHandler(); });
 
   jsh.FocusHandler = function(immediate){
     var focusHandlers = jsh.getFocusHandlers(jsh.getTopDialogContainer());
@@ -121,9 +122,11 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       //Do not reload if performing a refresh, and the model is the same as the previous model
       if(options.onRefreshNoChange && jsh.cur_model && model && (JSON.stringify(model)==JSON.stringify(jsh.cur_model))){ options.onRefreshNoChange(); return; }
 
-      jsh.prev_title = jsh.$root('.xform_title').html();
+      var xform_title = jsh.XDom(jsh.xdroot, '.xform_title').selectOne();
+      jsh.prev_title = xform_title && xform_title.innerHTML;
       if(!jsh.prev_title) jsh.prev_title = '';
-      jsh.prev_bcrumbs = jsh.$root('div.bcrumbs').html();
+      var div_bcrumbs = jsh.XDom(jsh.xdroot, 'div.bcrumbs').selectOne();
+      jsh.prev_bcrumbs = div_bcrumbs && div_bcrumbs.innerHTML;
       if(!jsh.prev_bcrumbs) jsh.prev_bcrumbs = '';
 
       //Update tab in state, if applicable
@@ -145,7 +148,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
           if(tabsChanged){
             //Recalculate jsh.state
             jsh.state.GET.tabs = JSON.stringify(tabs);
-            jsh.state.QS = '?'+$.param(jsh.state.GET);
+            jsh.state.QS = '?'+jsh.XExt.escapeQuery(jsh.state.GET);
             jsh.state.fullurl = jsh.state.fullpath + jsh.state.QS + jsh.state.hash;
           }
         }
@@ -160,7 +163,8 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       jsh.XBase = {};
       var ejsrslt = jsh.Render(model);
       //console.log(ejsrslt); //Show Full Source
-      jsh.$root('.xbody').html('');
+      var xdxbody = jsh.XDom(jsh.xdroot, '.xbody');
+      xdxbody.content.clear();
       jsh.XPage.Destroy();
 
       //Initialize GET/forcequery
@@ -189,35 +193,38 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       if(ejsrslt.indexOf(jsh.CODE_EJSPREPEND)>=0) ejsrslt = ejsrslt.replace(jsh.CODE_EJSPREPEND,ejsprepend)
       else ejsrslt = ejsprepend + ejsrslt;
       //console.log(ejsrslt); //Debug EJS output
+      // TODO: jquery html insertion
       jsh.$root('.xbody').html(ejsrslt);
-      var body_class = XExt.escapeCSSClass('xbody_'+jsh.state.modelid);
-      if(model._basemodel) body_class += ' ' + XExt.escapeCSSClass('xbody_'+ model._basemodel);
-      var prevClasses = XExt.getClasses(jsh.xdroot.selectOne('.xbody'));
+      //xdxbody.content.replace(ejsrslt);
+      var prevClasses = XExt.getClasses(xdxbody.selectOne());
       for(var i=0;i<prevClasses.length;i++){
         if(XExt.beginsWith(prevClasses[i], 'xbody_')){
-          jsh.$root('.xbody').removeClass(prevClasses[i]);
+          xdxbody.class.remove(prevClasses[i]);
         }
       }
-      jsh.$root('.xbody').addClass(body_class);
+      if(model._basemodel) xdxbody.class.add(XExt.escapeCSSClass('xbody_'+ model._basemodel));
+      xdxbody.class.add(XExt.escapeCSSClass('xbody_'+jsh.state.modelid));
       //Handle Title
       if(!model.toptitle) model.toptitle = '';
       var orig_title = XExt.unescapeEJS(model.toptitle);
       if (orig_title.indexOf('<#') < 0){
         jsh.XPage.UpdateTitle({ resolveEJS: false });
       }
-      else if(jsh.prev_title_src == model.toptitle) jsh.$root('.xform_title').html(jsh.prev_title);
-      else jsh.$root('.xform_title').html('&nbsp;');
+      else if(jsh.prev_title_src == model.toptitle) jsh.XDom(jsh.xdroot, '.xform_title').content.replace(jsh.prev_title);
+      else jsh.XDom(jsh.xdroot, '.xform_title').content.replace('&nbsp;');
       jsh.prev_title_src = model.toptitle;
     
       //Handle breadcrumbs
-      jsh.orig_bcrumbs = XExt.unescapeEJS(jsh.$root('div.bcrumbs').html());
-      if (jsh.orig_bcrumbs.indexOf('<#') < 0) jsh.$root('div.bcrumbs').html(jsh.orig_bcrumbs);
-      else if(jsh.prev_bcrumbs_src == jsh.orig_bcrumbs) jsh.$root('div.bcrumbs').html(jsh.prev_bcrumbs);
-      else jsh.$root('div.bcrumbs').html('&nbsp;'); 
+      var div_bcrumbs = jsh.XDom(jsh.xdroot, 'div.bcrumbs').selectOne()
+      jsh.orig_bcrumbs = XExt.unescapeEJS(div_bcrumbs && div_bcrumbs.innerHTML);
+      if (jsh.orig_bcrumbs.indexOf('<#') < 0) jsh.XDom(jsh.xdroot, 'div.bcrumbs').content.replace(jsh.orig_bcrumbs);
+      else if(jsh.prev_bcrumbs_src == jsh.orig_bcrumbs) jsh.XDom(jsh.xdroot, 'div.bcrumbs').content.replace(jsh.prev_bcrumbs);
+      else jsh.XDom(jsh.xdroot, 'div.bcrumbs').content.replace('&nbsp;'); 
       jsh.prev_bcrumbs_src = jsh.orig_bcrumbs;
 
-      jsh.$root('.toplink_help').not('.static').attr('href',model.helpurl);
-      jsh.$root('.toplink_help').not('.static').attr('onclick','return (function(){'+XExt.getJSLocals(model.id)+model.helpurl_onclick+'}).call(this);');
+      var xdtoplink_help = jsh.XDom(jsh.xdroot, '.toplink_help').filter(function(el) {return !jsh.XDom.class.contains(el, 'static');});
+      xdtoplink_help.attr.href = model.helpurl;
+      xdtoplink_help.attr.onclick = 'return (function(){'+XExt.getJSLocals(model.id)+model.helpurl_onclick+'}).call(this);';
       if(model.menu){ jsh.XMenu.Select(model.menu); }
       jsh.ResetLinks();
       jsh.trigger('jsh_ready');
@@ -245,13 +252,11 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
   }
 
   jsh.ResetLinks = function(rootobj){
-    var jroot = (rootobj ? $(rootobj) : jsh.root);
-    jroot.find('a').each(function(i,obj){
-      var jobj = $(obj);
-      if(jobj.attr('onclick')) return;
-      if(jobj.closest('.mce-content-body,[contenteditable],.htmlarea_container').length) return;
-      if(jobj.attr('target')) return;
-      jobj.attr('onclick','return <%-req.jshsite.instance%>.Navigate(this);');
+    _.forEach(jsh.XDom(rootobj || jsh.xdroot, 'a').select(), function(obj,i){
+      if(jsh.XDom.getAttribute(obj, 'onclick')) return;
+      if(jsh.XDom.parent(obj, '.mce-content-body,[contenteditable],.htmlarea_container')) return;
+      if(jsh.XDom.getAttribute(obj, 'target')) return;
+      jsh.XDom.setAttribute('onclick','return <%-req.jshsite.instance%>.Navigate(this);');
     });
   }
 
@@ -435,7 +440,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
   jsh.Error = function(num,txt){
     console.log('Error #'+num+': '+txt);
-    jsh.$root('.xbody').html('<h3>Error #'+num+': '+txt+'</h3>');
+    jsh.XDom(jsh.xdroot, '.xbody').content.replace('<h3>Error #'+num+': '+txt+'</h3>');
   }
 
   //Array of source HTML
@@ -445,7 +450,8 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
   jsh.XPage.bindEvents();
   jsh.trigger('jsh_render_init');
 
-  $(document).ready(function(){
+  //$(document).ready(function(){
+  jsh.XDom.on(document, 'DOMContentLoaded', function(){
     jsh.title_html = "\r\n"+'<h1 style="display:inline-block;" class="xform_title">&nbsp;</h1>' + "\r\n";
     jsh.state = jsh.GetState();
     if(!jsh.state) return;
