@@ -102,6 +102,18 @@ Many callbacks and other interface methods formally took jquery wrapped sets. Th
 
 ```XExt.TagBox_Render(*ctrl*, *baseinputctrl*)```
 
+#### XExt.getMargin(first argument)
+
+```XExt.getMargin(*ctrl*)```
+
+#### XExt.getPadding(first argument)
+
+```XExt.getPadding(*ctrl*)```
+
+#### XExt.getBorder(first argument)
+
+```XExt.getBorder(*ctrl*)```
+
 #### XExt.aPhoneCheck(first argument)
 
 ```XExt.aPhoneCheck(*obj*, caption)```
@@ -274,3 +286,5 @@ After:
 #### XExt.renderTemplate
 
 the `XExt.renderTemplate` function is added to return an XDom selector containing a template element specified by the `sel` parameter
+
+TODO: in jsHarmony Factory add `43px` to the in-line `width` style to account for `box-sizing: border-box;` change to all xdialogbox containers (only if an in-line style exists)

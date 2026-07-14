@@ -154,7 +154,7 @@ var jsHarmony = function(options){
   this.is_browse = false;
   this.init_complete = false;
   this.delete_target = null;
-  this.xfileupload_xdctrl = null;
+  this.xfileupload_ctrl = null;
   this.bcrumbs = {};
   this.orig_bcrumbs = '';
   this.jsproxy_hooks = {};
@@ -165,7 +165,6 @@ var jsHarmony = function(options){
 
   this._instanceClass = this.XExt.escapeCSSClass(this._instance);
   this.root = $(document);
-  this.XDroot = XDom(document);
   this.xdroot = XDom(document);
   this.xdDialogBlock = null;
   this.globalsMonitorCache = {};
@@ -276,8 +275,11 @@ jsHarmony.prototype.loadScript = function(url, cb){
 
 jsHarmony.prototype.BindEvents = function(){
   var _this = this;
-  $(document).ready(function(){ _this.Init(); });             // TODO: DOMContentLoaded != on.('ready')
-  $(document).ready(function () { _this.XWindowResize(); });  // TODO: DOMContentLoaded != on.('ready')
+  XDom(document).on('DOMContentLoaded', function(){ _this.Init(); });
+  XDom(document).on('DOMContentLoaded', function(){ _this.XWindowResize(); });
+  // TODO: In review discuss: while above works, below is more safe (just in case DOMContentLoaded event fires before this handler is attached to the doc) read jQuery for more info...
+  // (document.readyState !== 'loading') ? _this.Init() : XDom(document).on('DOMContentLoaded', function(){ _this.Init(); });
+  // (document.readyState !== 'loading') ? _this.XWindowResize() : XDom(document).on('DOMContentLoaded', function(){ _this.XWindowResize(); });
   XDom.on(window, 'load', function () { _this.XWindowResize(); });
   XDom.on(window, 'resize', function () { _this.XWindowResize(); });
   XDom.on(window, 'scroll', function () { _this.XWindowResize('scroll'); });
@@ -458,8 +460,8 @@ jsHarmony.prototype.InitDialogs = function () {
 };
 jsHarmony.prototype.InitControls = function() {
   var _this = this;
-  XDom('.xtabcontrol').omit(function(el){return XDom.class.contains(el, '.initialized');}).select().forEach(function(el){ _this.XExt.bindTabControl(el); });
-  XDom('.xaccordiontab').omit(function(el){return XDom.class.contains(el, '.initialized');}).select().forEach(function(el){ _this.XExt.bindAccordion(el); });
+  XDom('.xtabcontrol').omit(function(el){return XDom.class.contains(el, 'initialized');}).select().forEach(function(el){ _this.XExt.bindTabControl(el); });
+  XDom('.xaccordiontab').omit(function(el){return XDom.class.contains(el, 'initialized');}).select().forEach(function(el){ _this.XExt.bindAccordion(el); });
 };
 jsHarmony.prototype.refreshBodyHead = function(_el){
   if(!_el) _el = this.xdroot.select('.xbodyhead');
@@ -581,7 +583,7 @@ jsHarmony.prototype.InitFileUpload = function () {
 
 jsHarmony.prototype.requireHTML5 = function(){
   var _this = this;
-  $(document).ready(function() { // TODO: DOMContentLoaded != on.('ready')
+  XDom(document).on('DOMContentLoaded', function() { // TODO: Change if needed from result of discussion above
     if (!document.createElement('canvas').getContext) {
       var content = '\
       <div class="browser_upgrade_msg xdialogbox" style="height: 165px; text-align: center; width: 450px;">\
@@ -620,7 +622,7 @@ jsHarmony.prototype.runGlobalsMonitor = function(){
     _this.runGlobalsMonitor();
   },1000);
 };
-// TODO: Alter prototypes below for XDom implementation
+
 jsHarmony.prototype.parseJQueryElements = function(obj, method) {
   if (obj && obj.jquery) {
     console.warn('Depreciated: '+method+' received a jquery object. Please pass a dom element.');
@@ -629,7 +631,7 @@ jsHarmony.prototype.parseJQueryElements = function(obj, method) {
     return obj;
   }
 };
-
+// TODO: Alter prototypes below for XDom implementation (discuss in review)
 jsHarmony.prototype.on = function(){ $(this).on.apply($(this), arguments); };
 jsHarmony.prototype.off = function(){ $(this).off.apply($(this), arguments); };
 jsHarmony.prototype.trigger = function(){ $(this).trigger.apply($(this), arguments); };

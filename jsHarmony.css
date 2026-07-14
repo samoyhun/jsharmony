@@ -1058,6 +1058,7 @@ DIALOG BOXES
   -moz-border-radius: 5px;
   overflow:auto;
   max-height: calc(100vh - 26px);
+  box-sizing: border-box;
 }
 <%-jshElementSelector%>.xdialogblock .xloadingcontainer,
 <%-jshElementSelector%>.xdialogblock .xalertbox,
@@ -1088,27 +1089,27 @@ DIALOG BOXES
   text-align:left;
 }
 <%-jshElementSelector%>.xdialogblock .xalertbox {
-	width:370px;
+	width:413px;
 	min-height:60px;
 	text-align:left;
 }
 <%-jshElementSelector%>.xdialogblock .xconfirmbox {
-	width:370px;
+	width:413px;
 	min-height:60px;
 	text-align:center;
 }
 <%-jshElementSelector%>.xdialogblock .xpromptbox {
-	width:310px;
+	width:353px;
 	min-height:60px;
 	text-align:left;
 }
 <%-jshElementSelector%>.xdialogblock .xtextzoombox {
-	width:510px;
+	width:553px;
 	min-height:60px;
 	text-align:left;
 }
 <%-jshElementSelector%>.xdialogblock .xhintsbox {
-	width:510px;
+	width:553px;
 	min-height:60px;
 	text-align:left;
 }

@@ -17,8 +17,6 @@ You should have received a copy of the GNU Lesser General Public License
 along with this package.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-var $ = require('./jquery-1.11.2');
-$.fn.$find = function(){ return $.fn.find.apply(this, arguments); };
 var _ = require('lodash');
 
 exports = module.exports = function(jsh){
@@ -285,9 +283,8 @@ exports = module.exports = function(jsh){
     if ((xtop + dheight) > wheight) xtop = wheight - dheight;
     if ((xleft + dwidth) > wwidth) xleft = wwidth - dwidth;
     var offsetParent = xdSelector.selectOne().offsetParent;
-    var offset = {top: XDom.calc.top(offsetParent), left: XDom.calc.left(offsetParent)};
-    xtop -= offset.top - 1;
-    xleft -= offset.left - 1;
+    xtop -= XDom.calc.top(offsetParent) - 1;
+    xleft -= XDom.calc.left(offsetParent) - 1;
 
     if (xtop < 0) xtop = 0;
     if (xleft < 0) xleft = 0;
@@ -668,28 +665,34 @@ exports = module.exports = function(jsh){
     while (rslt.length < length) rslt = padding + rslt;
     return rslt;
   };
-  XExt.getMargin = function(jctrl){
+  XExt.getMargin = function(ctrl){
+    ctrl = jsh.parseJQueryElements(ctrl, 'XExt.getMargin');
+    var xdctrl = XDom(ctrl);
     return {
-      top: parseInt(jctrl.css('margin-top')),
-      right: parseInt(jctrl.css('margin-right')),
-      bottom: parseInt(jctrl.css('margin-bottom')),
-      left: parseInt(jctrl.css('margin-left'))
+      top: parseInt(xdctrl.style.calc.marginTop),
+      right: parseInt(xdctrl.style.calc.marginRight),
+      bottom: parseInt(xdctrl.style.calc.marginBottom),
+      left: parseInt(xdctrl.style.calc.marginLeft)
     };
   };
-  XExt.getPadding = function(jctrl){
+  XExt.getPadding = function(ctrl){
+    ctrl = jsh.parseJQueryElements(ctrl, 'XExt.getPadding');
+    var xdctrl = XDom(ctrl);
     return {
-      top: parseInt(jctrl.css('padding-top')),
-      right: parseInt(jctrl.css('padding-right')),
-      bottom: parseInt(jctrl.css('padding-bottom')),
-      left: parseInt(jctrl.css('padding-left'))
+      top: parseInt(xdctrl.style.calc.paddingTop),
+      right: parseInt(xdctrl.style.calc.paddingRight),
+      bottom: parseInt(xdctrl.style.calc.paddingBottom),
+      left: parseInt(xdctrl.style.calc.paddingLeft)
     };
   };
-  XExt.getBorder = function(jctrl){
+  XExt.getBorder = function(ctrl){
+    ctrl = jsh.parseJQueryElements(ctrl, 'XExt.getBorder');
+    var xdctrl = XDom(ctrl);
     return {
-      top: parseInt(jctrl.css('border-top-width')),
-      right: parseInt(jctrl.css('border-right-width')),
-      bottom: parseInt(jctrl.css('border-bottom-width')),
-      left: parseInt(jctrl.css('border-left-width'))
+      top: parseInt(xdctrl.style.calc.borderTopWidth),
+      right: parseInt(xdctrl.style.calc.borderRightWidth),
+      bottom: parseInt(xdctrl.style.calc.borderBottomWidth),
+      left: parseInt(xdctrl.style.calc.borderLeftWidth)
     };
   };
   XExt.xejs = {
@@ -850,7 +853,7 @@ exports = module.exports = function(jsh){
     if (window.CKEDITOR.instances[id]){ if(cb) cb(); return; }
     
     var elem = XDom(jsh.xdroot, '#'+id);
-    if(!elem.length) elem = XDom(jsh.$root, '.'+id);
+    if(!elem.length) elem = XDom(jsh.xdroot, '.'+id);
     if(!elem.length){ return XExt.Alert('Cound not initialize editor on '+id+': form control with that id not found'); }
     var orig_width = elem.calc.widthToBorder();
     var orig_height = elem.calc.heightToBorder();
@@ -975,11 +978,10 @@ exports = module.exports = function(jsh){
   XExt.jumpAnchor = function (name) {
     if (!name) return;
     if (name[0] == '#') name = name.substring(1);
-    var jobj = jsh.$root('a[name=' + name + ']');
-    if (jobj.size() == 0) return;
-    var elem = jobj.get(0);
-    var elemoff = $(elem).offset();
-    window.scrollTo(0, elemoff.top);
+    var xdobj = XDom(jsh.xdroot, 'a[name="' + name + '"]');
+    if (xdobj.length == 0) return;
+    var elem = xdobj.selectOne();
+    window.scrollTo(0, XDom.calc.top(elem));
   };
   XExt.getURLObj = function (url) {
     var a = document.createElement('a');
@@ -1414,11 +1416,12 @@ exports = module.exports = function(jsh){
       xdDragTarget.class.remove('xdragleft');
       xdDragTarget.class.remove('xdragright');
       //Check if mouse is hovering over tree border
-      var offset = {top: xdctrl.calc.top(), left: xdctrl.calc.left() };
+      var offsetTop = xdctrl.calc.top();
+      var offsetLeft = xdctrl.calc.left();
       var w = xdctrl.calc.widthToBorder();
       var h = xdctrl.calc.heightToBorder();
-      if ((jsh.mouseX >= offset.left) && (jsh.mouseX <= (offset.left + w))) {
-        if ((jsh.mouseY >= offset.top) && (jsh.mouseY <= (offset.top + 15))){
+      if ((jsh.mouseX >= offsetLeft) && (jsh.mouseX <= (offsetLeft + w))) {
+        if ((jsh.mouseY >= offsetTop) && (jsh.mouseY <= (offsetTop + 15))){
           //Hovering over top
           if(!hoverBorderTimer){
             hoverBorderStart = 0;
@@ -1431,7 +1434,7 @@ exports = module.exports = function(jsh){
             }, 100);
           }
         }
-        else if((jsh.mouseY <= (offset.top + h)) && (jsh.mouseY >= (offset.top + h - 15))){
+        else if((jsh.mouseY <= (offsetTop + h)) && (jsh.mouseY >= (offsetTop + h - 15))){
           //Hovering over bottom
           if(!hoverBorderTimer){
             hoverBorderStart = 0;
@@ -1471,7 +1474,7 @@ exports = module.exports = function(jsh){
       else if(targetAnchor[1]=='full') xdTargetObj.class.add('xdragfull');
     });
     //On Drop
-    jsh.on('jsh_mouseDragEnd.jsh_tree_'+treeid, function(event, mouseDragObj, targetObj, origEvent){
+    jsh.on('jsh_mouseDragEnd.jsh_tree_'+treeid,function(event, mouseDragObj, targetObj, origEvent){
       XDom(xdctrl, '.xdragtarget').class.remove('xdragtarget');
       if(!targetObj) return;
       if(XDom.getData(targetObj, 'id')==XDom.getData(mouseDragObj, 'id')) return;
@@ -1496,7 +1499,7 @@ exports = module.exports = function(jsh){
     }
     var item_dropdown_html = '';
     if(controlparams && controlparams.item_dropdown){
-      item_dropdown_html = '<div class="tree_item_dropdown_container"><div class="tree_item_dropdown"  data-value="<%=n.Value%>" onclick=\'<%-instance%>.XExt.TreeItemContextMenu(this,<%-JSON.stringify(n.ID)%>,{ top: <%-instance%>.$(this).offset().top+<%-instance%>.$(this).outerHeight()-1, left: <%-instance%>.$(this).offset().left, hideIfOpen: true });event.preventDefault();event.stopPropagation();event.stopImmediatePropagation(); return false;\'>'+XExt.escapeHTML(controlparams.item_dropdown.caption || 'Actions')+'</div></div>';
+      item_dropdown_html = '<div class="tree_item_dropdown_container"><div class="tree_item_dropdown"  data-value="<%=n.Value%>" onclick=\'<%-instance%>.XExt.TreeItemContextMenu(this,<%-JSON.stringify(n.ID)%>,{ top: <%-instance%>.XDom.calc.top(this)+<%-instance%>.XDom.calc.heightToBorder(this)-1, left: <%-instance%>.XDom.calc.left(this), hideIfOpen: true });event.preventDefault();event.stopPropagation();event.stopImmediatePropagation(); return false;\'>'+XExt.escapeHTML(controlparams.item_dropdown.caption || 'Actions')+'</div></div>';
     }
     var getNodeContent = function(){
       var rslt = XExt.escapeHTML(n.Text);
@@ -2808,7 +2811,7 @@ exports = module.exports = function(jsh){
       dfltwindowParams.height = default_popup_size[1];
     }
     if (!windowParams) windowParams = {};
-    if (querystringParams) url += '?' + $.param(querystringParams);
+    if (querystringParams) url += '?' + XExt.escapeQuery(querystringParams);
     var windowstr = '';
     for (var p in dfltwindowParams) { if (!(p in windowParams)) windowParams[p] = dfltwindowParams[p]; }
     for (var windowParam in windowParams) { windowstr += ',' + windowParam + '=' + windowParams[windowParam]; }
@@ -2953,8 +2956,14 @@ exports = module.exports = function(jsh){
       if(!sel || !sel.rangeCount) return false;
       var rstart = sel.getRangeAt(0);
       if(obj == rstart.startContainer) return true;
-
-      return XExt.contains(xdobj.selectOne(),rstart.startContainer);
+      var contains = function(el_container, el_target){
+        if(el_container === el_target) return false;
+        var curElement = el_target;
+        while(curElement.parentNode != el_container && curElement.parentNode)
+          curElement = curElement.parentNode;
+        return curElement.parentNode === el_container;
+      };
+      return contains(obj,rstart.startContainer);
     }
     else throw new Error('Inserting text into contenteditable not supported.');
   };
@@ -3051,13 +3060,14 @@ exports = module.exports = function(jsh){
   //Check if the x,y coordinate is within the element
   XExt.isPointWithin = function(elem, x, y) {
     var xdobj = XDom(elem);
-    var offset = {top: xdobj.calc.top(), left: xdobj.calc.left()};
+    var offsetTop = xdobj.calc.top();
+    var offsetLeft = xdobj.calc.left()
     var w = xdobj.calc.widthToBorder();
     var h = xdobj.calc.heightToBorder();
-    if (x < offset.left) return false;
-    if (x > (offset.left + w)) return false;
-    if (y < offset.top) return false;
-    if (y > (offset.top + h)) return false;
+    if (x < offsetLeft) return false;
+    if (x > (offsetLeft + w)) return false;
+    if (y < offsetTop) return false;
+    if (y > (offsetTop + h)) return false;
     return true;
   };
   XExt.getObjectAnchors = function(elem, x, y, options) {
@@ -3066,13 +3076,13 @@ exports = module.exports = function(jsh){
     var anchors = {};
     for(var i=0;i<options.anchors.length;i++) anchors[options.anchors[i]] = 1;
     var xdobj = XDom(elem);
-    var offset = {top: xdobj.calc.top(), left: xdobj.calc.left()};
+    var offsetTop = xdobj.calc.top();
     var w = xdobj.widthToMargin();
     var h = xdobj.heightToMargin();
-    var fph = Math.abs(((h>0)?((y-offset.top)/h):0) - 0.5);
+    var fph = Math.abs(((h>0)?((y-offsetTop)/h):0) - 0.5);
   
-    var lp = ((w>0)?((x-offset.left)/w):0) - 0.5;
-    var tp = ((h>0)?((y-offset.top)/h):0) - 0.5;
+    var lp = ((w>0)?((x-xdobj.calc.left())/w):0) - 0.5;
+    var tp = ((h>0)?((y-offsetTop)/h):0) - 0.5;
     var rslt = ['',''];
 
     if(lp < 0){ if(anchors.left) rslt[0] = 'left'; }
