@@ -320,10 +320,19 @@ XDom.class = {
 };
 
 XDom.render = function(html){
+  if(!html) return null;
+  if(html instanceof Element) return html;
+  html = html.toString();
   var container = document.createElement('template');
   container.innerHTML = html;
   // childNodes is a live NodeList, if we return it directly, it will likely have surprising results as nodes are moved elsewhere.
-  return Array.prototype.slice.call(container.content.childNodes);
+  if(container.content.childNodes.length == 1){
+    return container.content.childNodes[0];
+  }
+  else if(container.content.childNodes.length > 1){
+    return Array.prototype.slice.call(container.content.childNodes);
+  }
+  return null;
 };
 
 XDom.renderText = function(txt){
@@ -332,14 +341,6 @@ XDom.renderText = function(txt){
   // childNodes is a live NodeList, if we return it directly, it will likely have surprising results as nodes are moved elsewhere.
   return Array.prototype.slice.call(container.childNodes);
   
-};
-
-XDom.renderOne = function(html){
-  var _el = XDom.render((html||'').trim());
-  for(var i=0;i<_el.length;i++){
-    if(_el[i].nodeType == Node.ELEMENT_NODE) return _el[i];
-  }
-  return document.createElement('div');
 };
 
 XDom.content = {
@@ -450,6 +451,22 @@ XDom.emit = function(target, event, data){
     }
   });
 };
+
+XDom.onPageLoad = function(event){
+  var execComplete = false;
+  var exec = function(){
+    if(execComplete) return;
+    execComplete = true;
+    event();
+  }
+  if(document.readyState == 'complete'){
+    setTimeout(execComplete, 0);
+  }
+  else {
+    document.addEventListener('DOMContentLoaded', execComplete);
+    window.addEventListener('load', execComplete);
+  }
+}
 
 XDom.getValue = function(target){
   var _el = XDom.resolve(target);

@@ -134,7 +134,7 @@ exports = module.exports = function(jsh){
       val = val.trim();
       if(!val.length) return;
 
-      var newSpan = XDom.renderOne('<span class="notextselect">'+XExt.escapeHTML(val)+'	&#8203;<div class="xtag_remove xtag_focusable">✕</div></span>');
+      var newSpan = XDom.render('<span class="notextselect">'+XExt.escapeHTML(val)+'	&#8203;<div class="xtag_remove xtag_focusable">✕</div></span>');
       var xdnew = XDom(newSpan);
       xdnew.data.val = val;
 
@@ -862,7 +862,7 @@ exports = module.exports = function(jsh){
     var orig_height = elem.calc.heightToBorder();
     var xdParent = elem.parent();
     if(!xdParent.class.contains(id + '_container')){
-      var wrapper = XDom.renderOne('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
+      var wrapper = XDom.render('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
       xdParent.selectOne().append(wrapper);
       wrapper.appendChild(elem.selectOne());
     }
@@ -887,7 +887,7 @@ exports = module.exports = function(jsh){
     var orig_height = elem.calc.heightToBorder();
     var xdParent = elem.parent();
     if(!xdParent.class.contains(id + '_container')){
-      var wrapper = XDom.renderOne('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
+      var wrapper = XDom.render('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
       xdParent.selectOne().append(wrapper);
       wrapper.appendChild(elem.selectOne());
     }
@@ -2116,7 +2116,14 @@ exports = module.exports = function(jsh){
     var customPrompt = null;
     //Classes - default_focus, button_ok, button_cancel
     if(_.isString(html)){
-      customPrompt = XDom.renderOne(html);
+      var _el = XDom.render(html.trim());
+      var customPrompt = null;
+      for(var i=0;i<_el.length;i++){
+        if(_el[i].nodeType == Node.ELEMENT_NODE){
+          customPrompt = _el[i];
+        }
+      }
+      if(!customPrompt) customPrompt = document.createElement('div');
     }
     else {
       reuse = true;
@@ -3143,7 +3150,7 @@ exports = module.exports = function(jsh){
     var downArrow = '&#xE313;';
     var xdobj = XDom(obj);
     var xdbody = xdobj.nextSibling('.xaccordionbody');
-    var state = XDom.renderOne('<span class="material-icons xaccordionstate"></span>');
+    var state = XDom.render('<span class="material-icons xaccordionstate"></span>');
     var xdState = XDom(state);
     obj.appendChild(state);
 

@@ -234,21 +234,20 @@ jsHarmony.prototype.getFileProxy = function(){
 
 jsHarmony.prototype.postFileProxy = function(url, params){
   var _this = this;
-  var xdForm_container = XDom('#'+_this.getInstance()+'_xfileform_container');
-  xdForm_container.content.clear();
-  var form = XDom.renderOne('<form method="post" id="'+_this.getInstance()+'_xfileform"></form>');
-  var xdForm = XDom(form);
-  xdForm_container.selectOne().appendChild(form);
+  var xdform_container = XDom('#'+_this.getInstance()+'_xfileform_container');
+  xdform_container.content.clear();
+  var form = XDom.render('<form method="post" id="'+_this.getInstance()+'_xfileform"></form>');
   form.action = url;
   form.target = _this.getInstance()+'_xfileproxy';
   for(var key in params){
-    var input = XDom.renderOne('<input type="hidden" />');
+    var input = XDom.render('<input type="hidden" />');
     input.name = key;
     input.value = (params[key]||'').toString();
     form.appendChild(input);
   }
-  xdForm.emit('submit');
-  xdForm.remove();
+  xdform_container.content.append(form);
+  XDom.emit(form, 'submit');
+  XDom.remove(form);
 };
 
 jsHarmony.prototype.loadScript = function(url, cb){
@@ -275,24 +274,11 @@ jsHarmony.prototype.loadScript = function(url, cb){
 
 jsHarmony.prototype.BindEvents = function(){
   var _this = this;
-  XDom(document).on('DOMContentLoaded', function(){ _this.Init(); });
-  XDom(document).on('DOMContentLoaded', function(){ _this.XWindowResize(); });
-  // TODO: In review discuss: while above works, below is more safe (just in case DOMContentLoaded event fires before this handler is attached to the doc) read jQuery for more info...
-  // (document.readyState !== 'loading') ? _this.Init() : XDom(document).on('DOMContentLoaded', function(){ _this.Init(); });
-  // (document.readyState !== 'loading') ? _this.XWindowResize() : XDom(document).on('DOMContentLoaded', function(){ _this.XWindowResize(); });
-  XDom.on(window, 'load', function () { _this.XWindowResize(); });
-  XDom.on(window, 'resize', function () { _this.XWindowResize(); });
-  XDom.on(window, 'scroll', function () { _this.XWindowResize('scroll'); });
-  window.addEventListener('message', function(event){ _this.Message((event.data || '').toString()); });
-  window.setInterval(function(){
-    var newWindowSize = {
-      width: window.innerWidth,
-      height: window.innerHeight,
-    };
-    if((newWindowSize.width != _this.lastWindowSize.width) || (newWindowSize.height != _this.lastWindowSize.height)){ _this.XWindowResize(); }
-    _this.lastWindowSize = newWindowSize;
-  }, 500);
-  XDom.on(document, 'keydown', function (e) {
+  XDom.onPageLoad(function(){
+    _this.Init();
+    _this.XWindowResize();
+  });
+  XDom(document).on('keydown', function (e) {
     var handled = false;
     if (_this.XPage.CustomShortcutKeys) {
       for(var i=0;i<_this.XPage.CustomShortcutKeys.length;i++){
@@ -308,14 +294,26 @@ jsHarmony.prototype.BindEvents = function(){
       e.stopImmediatePropagation();
     }
   });
+  var xdWin = XDom(window);
+  xdWin.on('load', function () { _this.XWindowResize(); });
+  xdWin.on('resize', function () { _this.XWindowResize(); });
+  xdWin.on('scroll', function () { _this.XWindowResize('scroll'); });
+  xdWin.on('message', function(event){ _this.Message((event.data || '').toString()); });
+  window.setInterval(function(){
+    var newWindowSize = {
+      width: window.innerWidth,
+      height: window.innerHeight,
+    };
+    if((newWindowSize.width != _this.lastWindowSize.width) || (newWindowSize.height != _this.lastWindowSize.height)){ _this.XWindowResize(); }
+    _this.lastWindowSize = newWindowSize;
+  }, 500);
+
 };
 
 jsHarmony.prototype.Init = function(){
   var _this = this;
   // TODO: Remove below when jsh.root is nolonger in use
   if(_this.root.$find('body').length) _this.root = _this.root.$find('body');
-  if(_this.XExt.isMobile()) _this.root.$find('.xmain').addClass('xmain_mobile');
-  // TODO: Remove above when jsh.root is nolonger in use
   if(_this.xdroot.select('body').length) _this.xdroot = XDom(_this.xdroot, 'body');
   if(_this.XExt.isMobile()) XDom.class.add(_this.xdroot.select('.xmain'), 'xmain_mobile');
   _this.InitFileUpload();
@@ -375,15 +373,14 @@ jsHarmony.prototype.mouseDragBegin = function(mouseDragObj, mouseCanDrop, e){
   if(!mouseDragObj) return;
   _this.mouseDragObj = mouseDragObj;
   _this.mouseCanDrop = mouseCanDrop;
-  var clone = XDom.renderOne(mouseDragObj.outerHTML);
-  var xdClone = XDom(clone);
+  var xdClone = XDom(XDom.render(mouseDragObj.outerHTML));
   xdClone.style.position =  'absolute';
   xdClone.style.zIndex = 99998;
   xdClone.style.left = _this.mouseX;
   xdClone.style.top = _this.mouseY;
   xdClone.class.add('xdrag');
   xdClone.class.remove('xdrop');
-  _this.xdroot.content.prepend(xdClone.outerHTML);
+  _this.xdroot.content.prepend(xdClone);
 
   _this.trigger('jsh_mouseDragBegin', [mouseDragObj, e]);
 };
@@ -392,9 +389,9 @@ jsHarmony.prototype.mouseDrag = function(mouseDragObj, e){
   var _this = this;
   if(!mouseDragObj) return;
   
-  var clone = XDom(_this.xdroot, '.xdrag');
-  clone.style.left = _this.mouseX;
-  clone.style.top = _this.mouseY;
+  var xdclone = XDom(_this.xdroot, '.xdrag');
+  xdclone.style.left = _this.mouseX;
+  xdclone.style.top = _this.mouseY;
   var targetObj = null;
   _this.xdroot.select('.xdrop').forEach(function(el){
     if(_this.XExt.isMouseWithin(el)){
