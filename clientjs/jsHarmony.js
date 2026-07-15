@@ -315,7 +315,7 @@ jsHarmony.prototype.Init = function(){
   // TODO: Remove below when jsh.root is nolonger in use
   if(_this.root.$find('body').length) _this.root = _this.root.$find('body');
   if(_this.xdroot.select('body').length) _this.xdroot = XDom(_this.xdroot, 'body');
-  if(_this.XExt.isMobile()) XDom.class.add(_this.xdroot.select('.xmain'), 'xmain_mobile');
+  if(_this.XExt.isMobile()) XDom(_this.xdroot, '.xmain').class.add('xmain_mobile');
   _this.InitFileUpload();
   this.imageLoader = new this.XImageLoader();
   this.imageLoader.loadqueue = new Array(
@@ -336,15 +336,16 @@ jsHarmony.prototype.Init = function(){
   if(!this.xDialogLoader) this.xDialogLoader = new this.XLoader('.xdialogblock.jsHarmonyElement_'+_this._instanceClass+' .xdialogloadingblock');
   this.xLoader.onSquashedClick.push(function(e){ _this.lastSquashedActionTime = Date.now(); });
   this.xDebugConsole = new this.XDebugConsole();
-  XDom.on(document, 'mousemove', function (e) {
+  var xdDoc = XDom(document);
+  xdDoc.on('mousemove', function (e) {
     _this.mouseX = e.pageX;
     _this.mouseY = e.pageY;
     if(_this.mouseDragObj) _this.mouseDrag(_this.mouseDragObj, e);
   });
-  XDom.on(document, 'mousedown', function (e) {
+  xdDoc.on('mousedown', function (e) {
     _this.mouseDown = true;
   });
-  XDom.on(document, 'mouseup', function (e) {
+  xdDoc.on('mouseup', function (e) {
     _this.mouseDown = false;
     if(_this.mouseDragObj){
       _this.mouseDragEnd(_this.mouseDragObj, e);
@@ -353,10 +354,10 @@ jsHarmony.prototype.Init = function(){
       e.stopPropagation();
     }
   });
-  XDom.on(document, 'mouseleave', function (e) {
+  xdDoc.on('mouseleave', function (e) {
     _this.mouseDown = false;
   });
-  XDom.on(this.xdroot.select('a'), 'click', function () {
+  XDom(this.xdroot, 'a').on('click', function () {
     _this.last_clicked_time = Date.now();
     _this.last_clicked = XDom(this);
   });
@@ -380,7 +381,7 @@ jsHarmony.prototype.mouseDragBegin = function(mouseDragObj, mouseCanDrop, e){
   xdClone.style.top = _this.mouseY;
   xdClone.class.add('xdrag');
   xdClone.class.remove('xdrop');
-  _this.xdroot.content.prepend(xdClone);
+  _this.xdroot.content.prepend(xdClone.outerHTML);
 
   _this.trigger('jsh_mouseDragBegin', [mouseDragObj, e]);
 };
@@ -389,14 +390,22 @@ jsHarmony.prototype.mouseDrag = function(mouseDragObj, e){
   var _this = this;
   if(!mouseDragObj) return;
   
-  var xdclone = XDom(_this.xdroot, '.xdrag');
-  xdclone.style.left = _this.mouseX;
-  xdclone.style.top = _this.mouseY;
+  var xdClone = XDom(_this.xdroot, '.xdrag');
+  xdClone.style.left = _this.mouseX+'px';
+  xdClone.style.top = _this.mouseY+'px';
   var targetObj = null;
   _this.xdroot.select('.xdrop').forEach(function(el){
     if(_this.XExt.isMouseWithin(el)){
       if(!_this.mouseCanDrop || _this.mouseCanDrop(el)){
-        if(!targetObj || XExt.contains(targetObj, this)) targetObj = el;
+        var contains = function(tgt_obj, container_obj){
+          var curElement = tgt_obj;
+          while(curElement){
+            if(curElement === container_obj) return true;
+            curElement = curElement.parentNode;
+          }
+          return false;
+        }
+        if(!targetObj || contains(targetObj, this)) targetObj = el;
       }
     }
   });
@@ -580,7 +589,7 @@ jsHarmony.prototype.InitFileUpload = function () {
 
 jsHarmony.prototype.requireHTML5 = function(){
   var _this = this;
-  XDom(document).on('DOMContentLoaded', function() { // TODO: Change if needed from result of discussion above
+  XDom.onPageLoad(function(){
     if (!document.createElement('canvas').getContext) {
       var content = '\
       <div class="browser_upgrade_msg xdialogbox" style="height: 165px; text-align: center; width: 450px;">\

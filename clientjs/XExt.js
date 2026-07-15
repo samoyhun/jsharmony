@@ -2950,15 +2950,6 @@ exports = module.exports = function(jsh){
     }
     else throw new Error('Inserting text into contenteditable not supported.');
   };
-  XExt.contains = function(el_container, el_target){ // TODO: Check CanIUse 'contains' in CodeReview
-    if(el_container.children && el_container.children.length){
-      for(var i=0; i<el_container.children.length; i++){
-        if(el_container.children[i] == el_target) return true;
-        if(XExt.contains(el_container.children[i], el_target)) return true;
-      }
-    }
-    return false;
-  };
   XExt.selectionIsChildOf = function(xdobj){
     if(window.getSelection){
       var sel = window.getSelection();
@@ -3083,8 +3074,8 @@ exports = module.exports = function(jsh){
     for(var i=0;i<options.anchors.length;i++) anchors[options.anchors[i]] = 1;
     var xdobj = XDom(elem);
     var offsetTop = xdobj.calc.top();
-    var w = xdobj.widthToMargin();
-    var h = xdobj.heightToMargin();
+    var w = xdobj.calc.widthToMargin();
+    var h = xdobj.calc.heightToMargin();
     var fph = Math.abs(((h>0)?((y-offsetTop)/h):0) - 0.5);
   
     var lp = ((w>0)?((x-xdobj.calc.left())/w):0) - 0.5;

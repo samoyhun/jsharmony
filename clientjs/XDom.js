@@ -326,10 +326,7 @@ XDom.render = function(html){
   var container = document.createElement('template');
   container.innerHTML = html;
   // childNodes is a live NodeList, if we return it directly, it will likely have surprising results as nodes are moved elsewhere.
-  if(container.content.childNodes.length == 1){
-    return container.content.childNodes[0];
-  }
-  else if(container.content.childNodes.length > 1){
+  if(container.content.childNodes.length >= 1){
     return Array.prototype.slice.call(container.content.childNodes);
   }
   return null;
@@ -463,8 +460,8 @@ XDom.onPageLoad = function(event){
     setTimeout(execComplete, 0);
   }
   else {
-    document.addEventListener('DOMContentLoaded', execComplete);
-    window.addEventListener('load', execComplete);
+    document.addEventListener('DOMContentLoaded', exec);
+    window.addEventListener('load', exec);
   }
 }
 
