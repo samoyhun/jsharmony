@@ -326,7 +326,10 @@ XDom.render = function(html){
   var container = document.createElement('template');
   container.innerHTML = html;
   // childNodes is a live NodeList, if we return it directly, it will likely have surprising results as nodes are moved elsewhere.
-  if(container.content.childNodes.length >= 1){
+  if(container.content.childNodes.length == 1){
+    return container.content.childNodes[0];
+  }
+  else if(container.content.childNodes.length > 1){
     return Array.prototype.slice.call(container.content.childNodes);
   }
   return null;
@@ -408,23 +411,23 @@ XDom.setAttribute = function(target, prop, val){
   });
 };
 
-XDom.on = function(target, eventType, handler, eventOptions){
-  var _eventTypes = eventType.split(' ');
+XDom.on = function(target, _eventName, handler, eventOptions){
+  var eventNames = _eventName.split(' ');
   _.each(XDom.resolve(target), function(el){
     if(el && el.addEventListener){
-      _.each(_eventTypes, function(et) {
-        el.addEventListener(et, handler, eventOptions);
+      _.each(eventNames, function(eventName) {
+        el.addEventListener(eventName, handler, eventOptions);
       });
     }
   });
 };
 
-XDom.off = function(target, eventType, handler, eventOptions){
-  var _eventTypes = eventType.split(' ');
+XDom.off = function(target, _eventName, handler, eventOptions){
+  var eventNames = _eventName.split(' ');
   _.each(XDom.resolve(target), function(el){
     if(el && el.removeEventListener){
-      _.each(_eventTypes, function(et) {
-        el.removeEventListener(et, handler, eventOptions);
+      _.each(eventNames, function(eventName) {
+        el.removeEventListener(eventName, handler, eventOptions);
       });
     }
   });
@@ -455,15 +458,15 @@ XDom.onPageLoad = function(event){
     if(execComplete) return;
     execComplete = true;
     event();
-  };
+  }
   if(document.readyState == 'complete'){
-    setTimeout(execComplete, 0);
+    setTimeout(exec, 0);
   }
   else {
     document.addEventListener('DOMContentLoaded', exec);
     window.addEventListener('load', exec);
   }
-};
+}
 
 XDom.getValue = function(target){
   var _el = XDom.resolve(target);

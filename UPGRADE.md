@@ -287,7 +287,8 @@ After:
 
 the `XExt.renderTemplate` function is added to return an XDom selector containing a template element specified by the `sel` parameter
 
-TODO: in jsHarmony Factory add `43px` to the in-line `width` style to account for `box-sizing: border-box;` change to all xdialogbox containers (only if an in-line style exists)
+#### CustomPrompt
+Add `43px` to the in-line `width` style to account for `box-sizing: border-box;` change to all xdialogbox containers (only if an in-line style exists)
 
 #### XExt.getFileProxy
 

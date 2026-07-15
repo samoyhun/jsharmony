@@ -2141,7 +2141,7 @@ exports = module.exports = function(jsh){
       options = options || { recycle: false };
       // We always remove handlers even if reuse is false. This is to remove handlers applied beyond the obj (xdialogblock)
       xDialogObj.handlers.forEach(function(obj) {
-        XDom.off(obj.target, obj.eventType, obj.handler);
+        XDom.off(obj.target, obj.eventName, obj.handler);
       });
       if(!options.recycle){
         if(reuse) XDom.style.display(customPrompt, false);
@@ -2190,9 +2190,9 @@ exports = module.exports = function(jsh){
       if (onAccept) return onAccept(function () { acceptfunc_aftervalidate(_onClosed); });
       else acceptfunc_aftervalidate(_onClosed);
     };
-    var bindDialogHandler = xDialogObj.bindDialogHandler = function bindDialogHandler(tgt, evtName, handler){
-      XDom.on(tgt, evtName, handler);
-      if(reuse) xDialogObj.handlers.push({target: tgt, eventType: evtName, handler: handler});
+    var bindDialogHandler = xDialogObj.bindDialogHandler = function bindDialogHandler(tgt, eventName, handler){
+      XDom.on(tgt, eventName, handler);
+      if(reuse) xDialogObj.handlers.push({target: tgt, eventName: eventName, handler: handler});
     };
     XExt.execif(true,
       function(done){

@@ -69,7 +69,7 @@ var jsHarmony = function(options){
     _this.XExt.trigger(_this.onMessage, data);
     _this.trigger('jsh_message', data);
   };
-  this.eventManager = {}; /*{eventType1: [handlers, ...], eventType2: [handlers, ...], ...}*/
+  this.events = {}; /*{event1: [handlers, ...], event2: [handlers, ...], ...}*/
   this.onInit = null; //function(){};
 
   //Options
@@ -381,7 +381,7 @@ jsHarmony.prototype.mouseDragBegin = function(mouseDragObj, mouseCanDrop, e){
   xdClone.style.top = _this.mouseY;
   xdClone.class.add('xdrag');
   xdClone.class.remove('xdrop');
-  _this.xdroot.content.prepend(xdClone.outerHTML);
+  _this.xdroot.content.prepend(xdClone);
 
   _this.trigger('jsh_mouseDragBegin', [mouseDragObj, e]);
 };
@@ -637,23 +637,23 @@ jsHarmony.prototype.parseJQueryElements = function(obj, method) {
     return obj;
   }
 };
-jsHarmony.prototype.on = function(eventType, handler){
-  if(!eventType || !_.isString(eventType)) return;
-  if(!handler) handler = function(){};
-  if(this.eventManager[eventType] === undefined) this.eventManager[eventType] = [];
-  this.eventManager[eventType].push(handler);
+jsHarmony.prototype.on = function(eventName, handler){
+  if(!eventName || !handler) return;
+  if(!this.events[eventName]) this.events[eventName] = [];
+  this.events[eventName].push(handler);
 };
-jsHarmony.prototype.off = function(eventType){
-  if(!eventType || !_.isString(eventType)) return;
-  if(this.eventManager[eventType] === undefined) return;
-  this.eventManager[eventType] = [];
+jsHarmony.prototype.off = function(eventName, handler){
+  if(!eventName || !this.events[eventName]) return;
+  if(handler) {
+    xxxxxxxxxxxxxxxxxxxxxx  splice ===
+  }
+  else {
+    this.events[eventName] = [];
+  }
 };
-jsHarmony.prototype.trigger = function(eventType){
-  if(!eventType || !_.isString(eventType)) return;
-  var events = this.eventManager[eventType];
-  if(events === undefined || !events.length) return;
-  for(var i=0; i<events.length; i++)
-    events[i]();
+jsHarmony.prototype.trigger = function(eventName){
+  if(!eventName || !this.events[eventName]) return;
+  XExt.trigger.apply(null, [this.events[eventName]].concat(Array.prototype.slice.call(arguments, 1)));
 };
 
 var instances = [];
