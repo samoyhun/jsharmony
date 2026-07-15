@@ -69,7 +69,7 @@ var jsHarmony = function(options){
     _this.XExt.trigger(_this.onMessage, data);
     _this.trigger('jsh_message', data);
   };
-
+  this.eventManager = {}; /*{eventType1: [handlers, ...], eventType2: [handlers, ...], ...}*/
   this.onInit = null; //function(){};
 
   //Options
@@ -404,7 +404,7 @@ jsHarmony.prototype.mouseDrag = function(mouseDragObj, e){
             curElement = curElement.parentNode;
           }
           return false;
-        }
+        };
         if(!targetObj || contains(targetObj, this)) targetObj = el;
       }
     }
@@ -637,10 +637,24 @@ jsHarmony.prototype.parseJQueryElements = function(obj, method) {
     return obj;
   }
 };
-// TODO: Alter prototypes below for XDom implementation (discuss in review)
-jsHarmony.prototype.on = function(){ $(this).on.apply($(this), arguments); };
-jsHarmony.prototype.off = function(){ $(this).off.apply($(this), arguments); };
-jsHarmony.prototype.trigger = function(){ $(this).trigger.apply($(this), arguments); };
+jsHarmony.prototype.on = function(eventType, handler){
+  if(!eventType || !_.isString(eventType)) return;
+  if(!handler) handler = function(){};
+  if(this.eventManager[eventType] === undefined) this.eventManager[eventType] = [];
+  this.eventManager[eventType].push(handler);
+};
+jsHarmony.prototype.off = function(eventType){
+  if(!eventType || !_.isString(eventType)) return;
+  if(this.eventManager[eventType] === undefined) return;
+  this.eventManager[eventType] = [];
+};
+jsHarmony.prototype.trigger = function(eventType){
+  if(!eventType || !_.isString(eventType)) return;
+  var events = this.eventManager[eventType];
+  if(events === undefined || !events.length) return;
+  for(var i=0; i<events.length; i++)
+    events[i]();
+};
 
 var instances = [];
 if(global.jsHarmony) instances = global.jsHarmony.Instances;

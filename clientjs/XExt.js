@@ -2117,7 +2117,6 @@ exports = module.exports = function(jsh){
     //Classes - default_focus, button_ok, button_cancel
     if(_.isString(html)){
       var _el = XDom.render(html.trim());
-      var customPrompt = null;
       for(var i=0;i<_el.length;i++){
         if(_el[i].nodeType == Node.ELEMENT_NODE){
           customPrompt = _el[i];
@@ -2129,11 +2128,11 @@ exports = module.exports = function(jsh){
       reuse = true;
       customPrompt = jsh.parseJQueryElements(html,'XExt.CustomPrompt');
       if(!customPrompt) customPrompt = document.createElement('div');
-      for(var i=0;i<jsh.xDialog.length;i++){
-        if(jsh.xDialog[i].obj == customPrompt){
-          if(jsh.xDialog[i].onDestroy) jsh.xDialog[i].onDestroy({ recycle: true });
-          jsh.xDialog.splice(i, 1);
-          i--;
+      for(var j=0;j<jsh.xDialog.length;j++){
+        if(jsh.xDialog[j].obj == customPrompt){
+          if(jsh.xDialog[j].onDestroy) jsh.xDialog[j].onDestroy({ recycle: true });
+          jsh.xDialog.splice(j, 1);
+          j--;
         }
       }
     }
@@ -2950,7 +2949,7 @@ exports = module.exports = function(jsh){
     }
     else throw new Error('Inserting text into contenteditable not supported.');
   };
-  XExt.selectionIsChildOf = function(xdobj){
+  XExt.selectionIsChildOf = function(obj){
     if(window.getSelection){
       var sel = window.getSelection();
       if(!sel || !sel.rangeCount) return false;
@@ -3058,7 +3057,7 @@ exports = module.exports = function(jsh){
   XExt.isPointWithin = function(elem, x, y) {
     var xdobj = XDom(elem);
     var offsetTop = xdobj.calc.top();
-    var offsetLeft = xdobj.calc.left()
+    var offsetLeft = xdobj.calc.left();
     var w = xdobj.calc.widthToBorder();
     var h = xdobj.calc.heightToBorder();
     if (x < offsetLeft) return false;
