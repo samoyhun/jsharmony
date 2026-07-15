@@ -18,11 +18,10 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 var $ = require('./jquery-1.11.2');
-$.fn.$find = function(){ return $.fn.find.apply(this, arguments); };
 var _ = require('lodash');
 
 exports = module.exports = function(jsh){
-
+  var XDom = jsh.XDom;
   function XBarcode(_Template, _Params) {
     this.Template = _Template;
     this.Server = jsh.globalparams.barcode_server;
@@ -47,11 +46,12 @@ exports = module.exports = function(jsh){
   XBarcode.prototype.Print = function (_Params, onComplete, onFail) {
     var params = {};
     if (_Params) params = _.extend(this.Params, _Params);
-    var url = this.Server + '/print/' + this.Template + '/?' + $.param(params);
+    var url = this.Server + '/print/' + this.Template + '/?' + jsh.XExt.escapeQuery(params);
     XBarcode_ClearLoadEvents();
     XBarcode_SetLoadEvents(onFail);
     
     jsh.xLoader.StartLoading(jsh.xfileuploadLoader);
+    // TODO: Replace with new ajax equivalent
     $.ajax({
       cache: false,
       url: url,
@@ -77,7 +77,7 @@ exports = module.exports = function(jsh){
     });
   };
 
-  XBarcode.EnableScanner = function (jobj, onBarcodeEnd, options){
+  XBarcode.EnableScanner = function (obj, onBarcodeEnd, options){
     options = _.extend({
       onBarcodeReady: null, // function(){}  Ready for input
       onBarcodeStart: null, // function(e){}  (May be fired multiple times, per start key)
@@ -89,7 +89,8 @@ exports = module.exports = function(jsh){
       onKey: null,     // function(e, isScanning){}
       destroyHandler: null, // [] Array of function(){}
     }, options);
-    if (typeof jobj.data('keydown_focus') !== 'undefined') return;
+    var xdobj = XDom(obj);
+    if (typeof xdobj.data.keydown_focus !== 'undefined') return;
     var isScanning = false;
     var scanTimer = null;
     var AUTOENDSCAN_TIMEOUT = 500;
@@ -99,13 +100,13 @@ exports = module.exports = function(jsh){
       scanTimer = null;
       if(isScanning){
         isScanning = false;
-        if (onBarcodeEnd) onBarcodeEnd.call(jobj[0]);
+        if (onBarcodeEnd) onBarcodeEnd.call(obj);
       }
       if(options.onBarcodeReady) options.onBarcodeReady();
     };
-    jobj.data('keydown_focus', '');
+    xdobj.data.keydown_focus = '';
 
-    jobj.on('keydown.xbarcode', function (e) {
+    var onKeyDown = function (e) {
       function keyMatches(keyInfo){
         keyInfo = keyInfo.toString();
         if(keyInfo){
@@ -174,17 +175,20 @@ exports = module.exports = function(jsh){
         clearTimeout(scanTimer);
         scanTimer = setTimeout(autoEndScan, AUTOENDSCAN_TIMEOUT);
       }
-      jobj.data('keydown_focus','1');
-    });
-    jobj.on('blur.xbarcode', function (e) { jobj.data('keydown_focus',''); });
-    jobj.on('keyup.xbarcode', function (e) {
-      if (jobj.data('keydown_focus') != '1') return;
-    });
+      xdobj.data.keydown_focus = '1';
+    };
+    xdobj.on('keydown.xbarcode', onKeyDown);
+    var onBlur = function (e) { xdobj.data.keydown_focus = ''; };
+    xdobj.on('blur.xbarcode', onBlur);
+    var onKeyup = function (e) { if (xdobj.data.keydown_focus != '1') return; };
+    xdobj.on('keyup.xbarcode', onKeyup);
     if(options.onBarcodeReady) options.onBarcodeReady();
     if(options.destroyHandler) options.destroyHandler.push(function(){
       clearTimeout(scanTimer);
-      jobj.off('.xbarcode');
-      jobj.removeData('keydown_focus');
+      xdobj.off('keydown.xbarcode', onKeyDown);
+      xdobj.off('blur.xbarcode', onBlur);
+      xdobj.off('keyup.xbarcode', onKeyup);
+      xdobj.data.keydown_focus = undefined;
       scanTimer = null;
     });
   };

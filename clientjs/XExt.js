@@ -3051,7 +3051,7 @@ exports = module.exports = function(jsh){
   XExt.isPointWithin = function(elem, x, y) {
     var xdobj = XDom(elem);
     var offsetTop = xdobj.calc.top();
-    var offsetLeft = xdobj.calc.left()
+    var offsetLeft = xdobj.calc.left();
     var w = xdobj.calc.widthToBorder();
     var h = xdobj.calc.heightToBorder();
     if (x < offsetLeft) return false;
