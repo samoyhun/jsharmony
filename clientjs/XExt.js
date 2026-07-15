@@ -2949,6 +2949,15 @@ exports = module.exports = function(jsh){
     }
     else throw new Error('Inserting text into contenteditable not supported.');
   };
+  XExt.isChildOf = function(tgt_obj, container_obj){
+    if(tgt_obj === container_obj) return false;
+    var curElement = tgt_obj;
+    while(curElement){
+      if(curElement === container_obj) return true;
+      curElement = curElement.parentNode;
+    }
+    return false;
+  };
   XExt.selectionIsChildOf = function(obj){
     if(window.getSelection){
       var sel = window.getSelection();

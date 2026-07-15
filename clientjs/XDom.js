@@ -322,6 +322,8 @@ XDom.class = {
 XDom.render = function(html){
   if(!html) return null;
   if(html instanceof Element) return html;
+  //TODO: allow for rendering when passing XDom obj: 
+  //if(html instanceof Selector) XDom.resolve(html) ...
   html = html.toString();
   var container = document.createElement('template');
   container.innerHTML = html;
@@ -346,17 +348,17 @@ XDom.renderText = function(txt){
 XDom.content = {
   append: function(target, val){
     _.each(XDom.resolve(target), function(el){
-      if(el && el.append) el.append.apply(el, XDom.render(val));
+      if(el && el.append) el.append.apply(el, [].concat(XDom.render(val)));
     });
   },
   prepend: function(target, val){
     _.each(XDom.resolve(target), function(el){
-      if(el && el.prepend) el.prepend.apply(el, XDom.render(val));
+      if(el && el.prepend) el.prepend.apply(el, [].concat(XDom.render(val)));
     });
   },
   replace: function(target, val){
     _.each(XDom.resolve(target), function(el){
-      if(el && el.replaceChildren) el.replaceChildren.apply(el, XDom.render(val));
+      if(el && el.replaceChildren) el.replaceChildren.apply(el, [].concat(XDom.render(val)));
     });
   },
   replaceText: function(target, val){

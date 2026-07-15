@@ -374,14 +374,15 @@ jsHarmony.prototype.mouseDragBegin = function(mouseDragObj, mouseCanDrop, e){
   if(!mouseDragObj) return;
   _this.mouseDragObj = mouseDragObj;
   _this.mouseCanDrop = mouseCanDrop;
-  var xdClone = XDom(XDom.render(mouseDragObj.outerHTML));
+  var clone = XDom.render(mouseDragObj.outerHTML);
+  var xdClone = XDom(clone);
   xdClone.style.position =  'absolute';
   xdClone.style.zIndex = 99998;
-  xdClone.style.left = _this.mouseX;
-  xdClone.style.top = _this.mouseY;
+  xdClone.style.left = _this.mouseX+'px';
+  xdClone.style.top = _this.mouseY+'px';
   xdClone.class.add('xdrag');
   xdClone.class.remove('xdrop');
-  _this.xdroot.content.prepend(xdClone);
+  _this.xdroot.content.prepend(clone);
 
   _this.trigger('jsh_mouseDragBegin', [mouseDragObj, e]);
 };
@@ -397,15 +398,7 @@ jsHarmony.prototype.mouseDrag = function(mouseDragObj, e){
   _this.xdroot.select('.xdrop').forEach(function(el){
     if(_this.XExt.isMouseWithin(el)){
       if(!_this.mouseCanDrop || _this.mouseCanDrop(el)){
-        var contains = function(tgt_obj, container_obj){
-          var curElement = tgt_obj;
-          while(curElement){
-            if(curElement === container_obj) return true;
-            curElement = curElement.parentNode;
-          }
-          return false;
-        };
-        if(!targetObj || contains(targetObj, this)) targetObj = el;
+        if(!targetObj || _this.XExt.isChildOf(targetObj, this)) targetObj = el;
       }
     }
   });
@@ -421,7 +414,7 @@ jsHarmony.prototype.mouseDragEnd = function(mouseDragObj, e){
   this.xdroot.select('.xdrop').forEach(function(el){
     if(_this.XExt.isMouseWithin(el)){
       if(!_this.mouseCanDrop || _this.mouseCanDrop(el)){
-        if(!targetObj || XExt.contains(targetObj, el)) targetObj = el;
+        if(!targetObj || _this.XExt.isChildOf(targetObj, el)) targetObj = el;
       }
     }
   });
@@ -645,15 +638,20 @@ jsHarmony.prototype.on = function(eventName, handler){
 jsHarmony.prototype.off = function(eventName, handler){
   if(!eventName || !this.events[eventName]) return;
   if(handler) {
-    xxxxxxxxxxxxxxxxxxxxxx  splice ===
+    for(var i=0; i<this.events[eventName].length; i++){
+      if(this.events[eventName][i] === handler){
+        this.events[eventName].splice(i, 1);
+        i--;
+      }
+    }
   }
   else {
     this.events[eventName] = [];
   }
 };
-jsHarmony.prototype.trigger = function(eventName){
+jsHarmony.prototype.trigger = function(eventName /*, param1, param2 */){
   if(!eventName || !this.events[eventName]) return;
-  XExt.trigger.apply(null, [this.events[eventName]].concat(Array.prototype.slice.call(arguments, 1)));
+  this.XExt.trigger.apply(null, [this.events[eventName]].concat(Array.prototype.slice.call(arguments, 1)));
 };
 
 var instances = [];
