@@ -194,5 +194,29 @@ Before:
 After:
 ```jsh.XExt.escapeQuery({ data: JSON.stringify(execdata) })```
 
+#### $.ajax
 
+`XExt.Request` provides some of the same affordances. Use `.XExt.AppendUrlParamsCacheBust` for url-based unique param (cache: false in $.ajax), or `XExt.AppendUrlParams` without the uniq parameter.
 
+jQuery:
+```
+$.ajax({
+  type: 'GET',
+  cache: false,
+  url: url,
+  data: params,
+  dataType: 'json',
+  success: function(data){ ... },
+  error: function(data) { ... },
+});
+```
+
+XExt.Request:
+```
+jsh.XExt.Request(jsh.XExt.AppendUrlParamsCacheBust(url, params), {
+  method: 'GET',
+  cache: false,
+  success: function(data){ ... },
+  error: function(data) { ... },
+});
+```
