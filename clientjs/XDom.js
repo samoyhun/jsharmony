@@ -322,8 +322,14 @@ XDom.class = {
 XDom.render = function(html){
   if(!html) return null;
   if(html instanceof Element) return html;
-  //TODO: allow for rendering when passing XDom obj: 
-  //if(html instanceof Selector) XDom.resolve(html) ...
+  if(html instanceof Selector) {
+    if(!html.length) return null;
+    var _el = XDom.resolve(html);
+    html = '';
+    for(var i=0; i<_el.length; i++){
+      html += _el[i].outerHTML;
+    }
+  }
   html = html.toString();
   var container = document.createElement('template');
   container.innerHTML = html;

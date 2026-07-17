@@ -374,15 +374,14 @@ jsHarmony.prototype.mouseDragBegin = function(mouseDragObj, mouseCanDrop, e){
   if(!mouseDragObj) return;
   _this.mouseDragObj = mouseDragObj;
   _this.mouseCanDrop = mouseCanDrop;
-  var clone = XDom.render(mouseDragObj.outerHTML);
-  var xdClone = XDom(clone);
+  var xdClone = XDom(XDom.render(mouseDragObj.outerHTML));
   xdClone.style.position =  'absolute';
   xdClone.style.zIndex = 99998;
   xdClone.style.left = _this.mouseX+'px';
   xdClone.style.top = _this.mouseY+'px';
   xdClone.class.add('xdrag');
   xdClone.class.remove('xdrop');
-  _this.xdroot.content.prepend(clone);
+  _this.xdroot.content.prepend(xdClone);
 
   _this.trigger('jsh_mouseDragBegin', [mouseDragObj, e]);
 };
