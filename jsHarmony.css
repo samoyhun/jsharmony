@@ -634,6 +634,63 @@ BODY
 <%-rootcss%> .xtagbox.uneditable .xtag_remove {
   cursor: default;
 }
+
+<%-rootcss%> .datepicker {
+  position: absolute;
+  top: 600px;
+  left: 300px;
+  border: 1px solid #a1a1a1;
+  border-radius: 4px;
+  width: 250px;
+  padding: 4px;
+  text-align: center;
+  color: #454545;
+}
+<%-rootcss%> .datepicker a {
+  display: block;
+  text-align: center;
+  color: #454545;
+  font-weight: bold;
+  text-decoration: none;
+}
+<%-rootcss%> .datepicker table a {
+  border: 1px solid #dedede;
+  padding: 1px;
+  text-align: right;
+  color: #363895;
+}
+<%-rootcss%> .datepicker a:hover {
+  cursor: pointer;
+  text-decoration: none;
+}
+<%-rootcss%> .datepicker_header {
+  position: relative;
+  padding: 2px;
+  height: 30px;
+  display: flex;
+  border: 1px solid #a1a1a1;
+  border-radius: 4px;
+  font-weight: bold;
+  background-color: #dfdfe6;
+  align-items: center;
+}
+<%-rootcss%> .datepicker_nav {
+  flex: 1;
+}
+<%-rootcss%> .datepicker_mmyy {
+  flex: 3;
+}
+<%-rootcss%> .datepicker table {
+  table-layout: fixed;
+  width: 100%;
+}
+<%-rootcss%> .datepicker th {
+  padding: 7px 4px;
+}
+<%-rootcss%> .datepicker .selected {
+  border-color: #B4B4B4;
+  background-color: #DDDDDD;
+}
 <%-rootcss%> .xtag_input,
 <%-rootcss%> .xform .xtag_input,
 <%-rootcss%> .xtbl td .xtag_input {

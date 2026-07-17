@@ -256,6 +256,35 @@ exports = module.exports = function(jsh){
     });
   };
 
+  /***********************
+   * DATEPICKER RENDERING *
+   ***********************/
+  XExt.DatePickerRender = function(ctrl){
+    // use the same datepicker obj for all
+    // if(!datepicker) render one, append to body, add handlers
+    var today = new Date();
+    var day = today.getDate();      /* Numeric day of the month 1 - 31 */
+    var weekday = today.getDay();   /* Day of the week: Sunday - Saturday : 0 - 6 */
+    var year = today.getFullYear(); /* Numeric year: 2026 */
+    var month = today.getMonth();   /* Numeric month of the year 0 - 11 */
+    var firstDay = new Date(year, month, 1).getDay();
+    var totalDays = new Date(year, month + 1, 0).getDate();
+    var xdobj = XExt.renderTemplate('script.template_datepicker');
+    var xdTable = XDom(xdobj, 'tbody');
+    var xdCurrentTr = XDom(XDom.render('<tr></tr>'));
+    for(var i=0; i<firstDay; i++){ // Empty cells for beginning of month
+      xdCurrentTr.content.append('<td></td>');
+    }
+    for(var dayNum = 1; dayNum<=totalDays; dayNum++){
+      if((dayNum + firstDay - 1) % 7 === 0){
+        xdTable.content.append(xdCurrentTr);
+        xdCurrentTr = XDom(XDom.render('<tr></tr>'));
+      }
+      xdCurrentTr.content.append('<td><a>' + dayNum + '</a></td>');
+    }
+    if(xdCurrentTr.children.length > 0) xdTable.content.append(xdCurrentTr);
+    XDom('body').content.append(xdobj.outerHTML);
+  }
   XExt.CancelBubble = function (e) {
     if (!e) e = window.event;
     if (e.stopPropagation) e.stopPropagation();
