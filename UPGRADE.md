@@ -269,6 +269,16 @@ Before:
 After:
 ```jsh.XExt.escapeQuery({ data: JSON.stringify(execdata) })```
 
+#### $.contains
+
+the `XExt.isChildOf` function should behave similarly to `$.contains`
+
+Before:
+```$.contains(child_obj, parent_obj)```
+
+After:
+```jsh.XExt.isChildOf(child_obj, parent_obj)```
+
 #### XExt.jForEach Removed
 
 the following `.select().forEach(...)` will behave similarly to `XExt.jForEach`
