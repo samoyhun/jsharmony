@@ -466,7 +466,7 @@ XDom.onPageLoad = function(event){
     if(execComplete) return;
     execComplete = true;
     event();
-  }
+  };
   if(document.readyState == 'complete'){
     setTimeout(exec, 0);
   }
@@ -474,7 +474,7 @@ XDom.onPageLoad = function(event){
     document.addEventListener('DOMContentLoaded', exec);
     window.addEventListener('load', exec);
   }
-}
+};
 
 XDom.getValue = function(target){
   var _el = XDom.resolve(target);

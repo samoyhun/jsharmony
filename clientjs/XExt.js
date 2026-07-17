@@ -2185,12 +2185,7 @@ exports = module.exports = function(jsh){
     var customPrompt = null;
     //Classes - default_focus, button_ok, button_cancel
     if(_.isString(html)){
-      var _el = XDom.render(html.trim());
-      for(var i=0;i<_el.length;i++){
-        if(_el[i].nodeType == Node.ELEMENT_NODE){
-          customPrompt = _el[i];
-        }
-      }
+      customPrompt = XDom.render(html.trim());
       if(!customPrompt) customPrompt = document.createElement('div');
     }
     else {
