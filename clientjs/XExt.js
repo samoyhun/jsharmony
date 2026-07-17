@@ -256,34 +256,74 @@ exports = module.exports = function(jsh){
     });
   };
 
-  /***********************
+    /************************
    * DATEPICKER RENDERING *
-   ***********************/
-  XExt.DatePickerRender = function(ctrl){
-    // use the same datepicker obj for all
-    // if(!datepicker) render one, append to body, add handlers
-    var today = new Date();
-    var day = today.getDate();      /* Numeric day of the month 1 - 31 */
-    var weekday = today.getDay();   /* Day of the week: Sunday - Saturday : 0 - 6 */
-    var year = today.getFullYear(); /* Numeric year: 2026 */
-    var month = today.getMonth();   /* Numeric month of the year 0 - 11 */
+   ************************/
+  /**
+   * TODO: 
+   * consider passing only a string and options ie. XExt.DatePickerRender = function(date, options)
+   * place the datepicker above or below date control on click
+   * consider using event delegation for calender cells vs independed handlers (weigh pros/cons)
+   * add month and year changing on dropdown selections in datepicker header
+   * flesh out options (what options would we like to include)
+   * overlay click close (feels like a dialog...)
+   */
+  XExt.DatePickerRender = function(_year, _month, _day, options){
+    var date = (_year && _month) ? new Date(_year, _month, [_day]) : new Date();
+    if(!_.isNumber(date.getTime())) date = new Date();
+    var day = date.getDate();      /* Numeric day of the month 1 - 31 */
+    var weekday = date.getDay();   /* Day of the week: Sunday - Saturday : 0 - 6 */
+    var year = date.getFullYear(); /* Numeric year: 2026 */
+    var month = date.getMonth();   /* Numeric month of the year 0 - 11 */
     var firstDay = new Date(year, month, 1).getDay();
     var totalDays = new Date(year, month + 1, 0).getDate();
     var xdobj = XExt.renderTemplate('script.template_datepicker');
     var xdTable = XDom(xdobj, 'tbody');
     var xdCurrentTr = XDom(XDom.render('<tr></tr>'));
-    for(var i=0; i<firstDay; i++){ // Empty cells for beginning of month
+    //Append empty cells for beginning of month
+    for(var i=0; i<firstDay; i++){
       xdCurrentTr.content.append('<td></td>');
     }
+    //Fill out cells with dates
     for(var dayNum = 1; dayNum<=totalDays; dayNum++){
       if((dayNum + firstDay - 1) % 7 === 0){
         xdTable.content.append(xdCurrentTr);
         xdCurrentTr = XDom(XDom.render('<tr></tr>'));
       }
-      xdCurrentTr.content.append('<td><a>' + dayNum + '</a></td>');
+      var xdCell = XDom(XDom.render('<td><a class="entry">' + dayNum + '</a></td>'));
+      var xdEntry = XDom(xdCell, 'a.entry');
+      xdEntry.data.month = month;
+      xdEntry.data.year = year;
+      if(dayNum == day) xdEntry.class.add('selected');
+      xdCurrentTr.content.append(xdCell);
     }
+    //Append last incomplete row
     if(xdCurrentTr.children.length > 0) xdTable.content.append(xdCurrentTr);
-    XDom('body').content.append(xdobj.outerHTML);
+    XDom('body').content.append(xdobj);
+    XExt.DatePickerShow();
+    //Attach click handlers:
+    var xdDatePicker = XDom(jsh.xdroot, '.datepicker');
+    var xdEntries  = XDom(xdDatePicker, 'a.entry');
+    xdEntries.on('click', function(e){
+      var xdClicked = XDom(e.target);
+      console.log('This is the numeric day returned: ' + xdClicked.innerHTML);
+      console.log('This is the numeric month returned: ' + xdClicked.data.month);
+      console.log('This is the numeric year returned: ' + xdClicked.data.year);
+      xdEntries.class.remove('selected');
+      xdClicked.class.add('selected');
+      XExt.DatePickerHide();
+    });
+  }
+  XExt.DatePickerRemove = function(){
+    XDom(jsh.xdroot, '.datepicker').remove();
+  }
+  XExt.DatePickerHide = function(){
+    XDom(jsh.xdroot, '.datepicker').animate.opacity(false);
+  }
+  XExt.DatePickerShow = function(_year, _month, _day){
+    var xdDatePicker = XDom(jsh.xdroot, '.datepicker');
+    if(!xdDatePicker.length) XExt.DatePickerRender(_year, _month, _day);
+    else xdDatePicker.animate.opacity(true);
   }
   XExt.CancelBubble = function (e) {
     if (!e) e = window.event;
