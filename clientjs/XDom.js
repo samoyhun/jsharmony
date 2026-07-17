@@ -847,7 +847,7 @@ XDom.animate = function(target, props, duration, callback, ease) {
       if(duration > 0) {
         var startTime = document.timeline.currentTime;
         var endTime = startTime + duration;
-        var easeFunc = function(x){ return -(Math.cos(Math.PI * x) - 1) / 2;}; // swing
+        var easeFunc = function(x){ return -(Math.cos(Math.PI * x) - 1) / 2;}; // cosine
         if(ease === 'linear') easeFunc = function(x){return x};
         requestAnimationFrame(function(curTime){ step(curTime, el, elProps, startTime, endTime, elAnimateIdx, callback, easeFunc);});
       }
