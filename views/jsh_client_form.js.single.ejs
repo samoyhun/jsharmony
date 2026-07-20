@@ -97,8 +97,7 @@ _.each(model.fields,function(field){ if(XExt.hasAction(field.actions,'B') && !('
     jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.xtagbox_base').on('input keyup', function(){ if(!jsh.XDom.class.contains(this, 'editable')) return; xform.Data.OnControlUpdate(this); });
 
     <% _.each(model.fields,function(field){ if(!('control' in field) || !field.name) return; if((field.control=='date') && (XExt.hasAction(field.actions,'IU'))) {%>
-    // TODO: jquery datepicker
-    jsh.$root(".<%=field.name%>.xelem"+xmodel.class).datepicker({ changeMonth: true, changeYear: true, dateFormat: ('<%=(field.controlparams?field.controlparams.dateformat:'')%>'||jsh.DEFAULT_DATEFORMAT), onSelect: function(){ if(jsh.is_insert) return; xform.Data.OnControlUpdate(this); } });
+    jsh.XExt.DatePicker(jsh.xdroot.selectOne(".<%=field.name%>.xelem"+xmodel.class), { dateFormat: ('<%=(field.controlparams?field.controlparams.dateformat:'')%>'||jsh.DEFAULT_DATEFORMAT), onSelect: function(ctrl){ if(jsh.is_insert) return; xform.Data.OnControlUpdate(ctrl); } });
     <% } }); %>
 
     if(xmodel.unbound){

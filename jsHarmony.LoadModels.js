@@ -1710,7 +1710,7 @@ exports.ParseEntities = function () {
         if((field.control=='date') && (!field.controlparams || !('dateformat' in field.controlparams))){
           if(('format' in field) && _.isArray(field.format) && (field.format.length>=2) && (field.format[0]=='date')){
             if(!field.controlparams) field.controlparams = {};
-            field.controlparams.dateformat = _this.getDatepickerFormat(field.format[1], model.id + ' > ' + field.name);
+            field.controlparams.dateformat = field.format[1];
           }
         }
       }

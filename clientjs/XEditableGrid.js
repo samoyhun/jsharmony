@@ -116,10 +116,9 @@ exports = module.exports = function(jsh){
       var newrowid = -1;
       var oldobj = _this.CurrentCell;
       if (!oldobj) return; //Return if user was not previously in grid
-      // TODO: datepicker
-      if ($.datepicker && $.datepicker._datepickerShowing) {
+      if (jsh.XDom(jsh.xdroot, '.xdatepicker').isVisible()) {
         if (newobj == document.body) return;
-        else if (jsh.XDom.parent(newobj, '.ui-datepicker')) return;
+        else if (jsh.XDom.parent(newobj, '.xdatepicker')) return;
       }
       if (newobj) newrowid = jsh.XExt.XModel.GetRowID(_this.modelid, newobj);
       if (newrowid >= 0) return; //Return if current control is in grid
@@ -279,8 +278,7 @@ exports = module.exports = function(jsh){
         oldobj && oldobj.focus();
         window.setTimeout(function () {
           jsh.ignorefocusHandler = false;
-          // TODO: datepicker
-          if ($(oldobj).data('datepicker')) $(oldobj).datepicker('hide');
+          if (jsh.XDom(oldobj).data.datepicker) jsh.XExt.DatePickerHide();
         }, 1);
       }, 1);
       
@@ -364,20 +362,18 @@ exports = module.exports = function(jsh){
         jsh.XExt.TagBox_Focus(el.previousElementSibling, function(e){ return _this.SetFocus(el, e); });
       }
       if(_.includes(classList, 'editable')) if(_.includes(classList,'checkbox')) xdEl.on('click', function (e) { return _this.CheckboxUpdate(this, e); });
-      // TODO: datepicker
       if(_.includes(classList,'datepicker') && _.includes(classList,'editable')){
         var ctrl = el;
         var dateformat = jsh.DEFAULT_DATEFORMAT;
         var fname = jsh.XDom.getData(el, 'id');
         var xfield = xfields[fname];
         if (xfield && xfield.controlparams && xfield.controlparams.dateformat) dateformat = xfield.controlparams.dateformat;
-        $(el).datepicker({
-          changeMonth: true, changeYear: true, dateFormat: dateformat, duration: '', showAnim: '', onSelect: function () {
-            jsh.ignorefocusHandler = true;
-            window.setTimeout(function () {
-              window.setTimeout(function () { $(ctrl).next('.datepicker_handle').focus(); jsh.ignorefocusHandler = false; _this.ControlUpdate(ctrl); }, 1);
-            }, 1);
-          }
+        jsh.XExt.DatePicker(el, {dateFormat: dateformat, onSelect: function () {
+          jsh.ignorefocusHandler = true;
+          window.setTimeout(function () {
+            window.setTimeout(function () { jsh.XDom(ctrl).nextSibling('.datepicker_handle').focus(); jsh.ignorefocusHandler = false; _this.ControlUpdate(ctrl); }, 1);
+          }, 1);
+        }
         });
       }
     });
