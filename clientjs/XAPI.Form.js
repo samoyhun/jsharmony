@@ -47,16 +47,16 @@ exports = module.exports = function(jsh){
       if(jsh.xDialog.length) loader = jsh.xDialogLoader;
     }
     if(loader) loader.StartLoading(_this);
-    $.ajax({
-      type:ExecParams.method.toUpperCase(),
+    var method = ExecParams.method.toUpperCase();
+    if (method == 'GET') {
+      url = jsh.XExt.AppendUrlParamsCacheBust(url, ExecParams.post);
+    }
+    jsh.XExt.Request(url, {
+      method: method,
       cache: false,
-      url: url,
-      data: ExecParams.post,
-      async: ExecParams.async,
-      dataType: 'json',
-      xhrFields: {
-        withCredentials: true
-      },
+      body: method != 'GET' ? ExecParams.post : undefined,
+      async: ExecParams.async, // currently unsupported, but this should trigger an error if false so we can investigate where it is used.
+      credentials: 'include',
       success:function(rslt){
         if(loader) loader.StopLoading(_this);
         callback(null, rslt);

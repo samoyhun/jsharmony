@@ -368,12 +368,9 @@ exports = module.exports = function(jsh){
     }, params);
     if(!callback) callback = function(err, rslt){ };
 
-    $.ajax({
-      type:'GET',
+    jsh.XExt.Request(jsh.XExt.AppendUrlParamsCacheBust(jsh._BASEURL+'_d/'+this.modelid+'/', params), {
+      method: 'GET',
       cache: false,
-      url:jsh._BASEURL+'_d/'+this.modelid+'/',
-      data: params,
-      dataType: 'json',
       success: function(data){ callback(null, data); },
       error: function (data) { callback(data||{}, null); },
     });
