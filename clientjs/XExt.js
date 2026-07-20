@@ -751,7 +751,7 @@ exports = module.exports = function(jsh){
   // encode a value like jQuery.param
   XExt.escapeQuery = function(query) {
     function pair(key, value) {
-      return encodeURIComponent(key.toString()) + '=' + encodeURIComponent(value ? value.toString() : '');
+      return encodeURIComponent(key.toString()) + '=' + encodeURIComponent((value || typeof(value) == 'number') ? value.toString() : '');
     }
     function arrayValue(array, prefix) {
       return _.map(array, function(value, index) {
@@ -3344,6 +3344,59 @@ exports = module.exports = function(jsh){
     }
     if(fields && !fields[field_name]) return false;
     return true;
+  };
+
+  XExt.AppendUrlParams = function(url, params)  {
+    if (params) {
+      if (typeof(params) == 'object') {
+        params = XExt.escapeQuery(params);
+      }
+      if (params) {
+        url = url + ((url.indexOf('?') == -1) ? '?' : '&') + params;
+      }
+    }
+    return url;
+  };
+
+  XExt.AppendUrlParamsCacheBust = function(url, params) {
+    return XExt.AppendUrlParams(url, _.extend({_: Date.now()}, params));
+  };
+
+  XExt.Request = function(url, options) {
+    options = _.extend({headers: {}}, options);
+    if ('async' in options && options.async === false) throw new Error('sync Request is not supported');
+    if (options.dataType && options.dataType != 'json') throw new Error('Currently only JSON requests are supported.');
+
+    if (typeof(options.cache) === 'boolean') {
+      options.cache = options.cache ? 'default' : 'no-store';
+    }
+    if (typeof(options.body) == 'object') {
+      options.body = XExt.escapeQuery(options.body);
+    }
+    if (options.body && !options.headers['Content-Type']) {
+      options.headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
+    }
+    if (!options.headers['Accept']) {
+      options.headers['Accept'] = 'application/json, text/javascript, */*; q=0.01';
+    }
+
+    var request = fetch(url, options).then(function(response){
+      if (response.ok) {
+        return response.json().then(function(json) {
+          if (options.success) options.success(json);
+          return json;
+        });
+      } else {
+        return response.text().then(function(text) {
+          response.responseText = text;
+          if (options.error) options.error(response);
+          return response;
+        });
+      }
+    });
+    options.error && request.catch(options.error);
+    options.complete && request.finally(options.complete);
+    return request;
   };
 
   return XExt;
