@@ -1255,6 +1255,19 @@ var mocha = require('mocha');
       jqueryParam = "o%5Ba%5D=string&o%5Bb%5D=1&o%5Bc%5D%5B%5D=1&o%5Bc%5D%5B%5D=2";
       //jqueryParam = jsHarmony.jQuery.param(query); console.log(JSON.stringify(jqueryParam));
       assertEqual(XExt.escapeQuery(query), jqueryParam, 'encodes object of array');
+
+      query = {
+        "rowstart": 0,
+        "rowcount": 0,
+        "sort": "[]",
+        "searchjson": "",
+        "d": "{}",
+        "meta": 1,
+        "search": ""
+      }
+      jqueryParam = "rowstart=0&rowcount=0&sort=%5B%5D&searchjson=&d=%7B%7D&meta=1&search=";
+      //jqueryParam = jsHarmony.jQuery.param(query); console.log(JSON.stringify(jqueryParam));
+      assertEqual(XExt.escapeQuery(query), jqueryParam, 'encodes zeros');
     });
   });
 })();
