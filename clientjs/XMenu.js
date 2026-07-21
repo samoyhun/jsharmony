@@ -17,8 +17,6 @@ You should have received a copy of the GNU Lesser General Public License
 along with this package.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-var $ = require('./jquery-1.11.2');
-$.fn.$find = function(){ return $.fn.find.apply(this, arguments); };
 var _ = require('lodash');
 
 exports = module.exports = function(jsh){
@@ -110,8 +108,7 @@ exports = module.exports = function(jsh){
       XDom(jsh.xdroot, '.xmenu_more').on('click', function () {
         var xmenuside = XDom(jsh.xdroot, '.xmenuside');
         XDom(jsh.xdroot, '.xsubmenuside').style.display = false;
-        if (!xmenuside.isVisible()) xmenuside.style.display = true;
-        else xmenuside.style.display = false;
+        xmenuside.style.display = !xmenuside.isVisible();
         return false;
       });
       
@@ -160,28 +157,26 @@ exports = module.exports = function(jsh){
     }
     else{
       //Get target position
-      var tgtpos = {top: xdmenuitem.calc.top(), left: xdmenuitem.calc.left()};
       var tgtparent = xdmenuitem.parent();
-      var tgtparentpos = {top: tgtparent.calc.top(), left: tgtparent.calc.left()};
-      var tgttop = Math.round(tgtpos.top + xdmenuitem.calc.heightToBorder());
-      var tgtleft = Math.round(tgtpos.left - tgtparentpos.left);
+      var tgttop = Math.round(xdmenuitem.calc.top() + xdmenuitem.calc.heightToBorder());
+      var tgtleft = Math.round(xdmenuitem.calc.left() - tgtparent.calc.left());
       var tgtwidth = Math.round(xdmenuitem.calc.widthToBorder());
 
-      var curpos = {top: xdpaddle.calc.top(), left: xdpaddle.calc.left()};
       var curwidth = Math.round(parseFloat(xdpaddle.selectOne().style.width));
       var curheight = Math.round(xdpaddle.calc.height());
       tgttop -= curheight;
 
       var animateOpacity = curOpacity != 1;
-      var animatePosition = (Math.round(curpos.left) != tgtleft) || (Math.round(curpos.top) != tgttop) || (tgtwidth != curwidth);
+      var animatePosition = (Math.round(xdpaddle.calc.left()) != tgtleft) || (Math.round(xdpaddle.calc.top()) != tgttop) || (tgtwidth != curwidth);
 
       //Set target position if opacity=0, otherwise animate
       if(curOpacity == 0){
-        xdpaddle.style.top = tgttop+'px';
-        xdpaddle.style.left = tgtleft+'px';
-        xdpaddle.style.width = tgtwidth+'px';
-        animatePosition = false;
+        var cssParams = { top: tgttop+'px', left: tgtleft+'px', width: tgtwidth+'px' };
         //console.log('Setting ' + JSON.stringify(cssParams));
+        xdpaddle.style.top = cssParams.top;
+        xdpaddle.style.left = cssParams.left;
+        xdpaddle.style.width = cssParams.width;
+        animatePosition = false;
       }
 
       if(animateOpacity) animateParams.opacity = 1;
@@ -247,21 +242,13 @@ exports = module.exports = function(jsh){
     var xdsubmenusideitem = null;
     if(submenuid) xdsubmenusideitem = XDom(jsh.xdroot, '.xsubmenuside .xsubmenusideitem_'+submenuid);
 
-    XDom(jsh.xdroot, '.xmenu .xmenuitem').omit(function(el){
-      return (!xdmenuitem) ? false : el === xdmenuitem.selectOne();
-    }).class.remove('selected');
-    XDom(jsh.xdroot, '.xmenuside .xmenusideitem').omit(function(el){
-      return (!xdmenusideitem) ? false : el === xdmenusideitem.selectOne();
-    }).class.remove('selected');
+    XDom(jsh.xdroot, '.xmenu .xmenuitem').omit(function(el){ return (xdmenuitem) ? el === xdmenuitem.selectOne() : false; }).class.remove('selected');
+    XDom(jsh.xdroot, '.xmenuside .xmenusideitem').omit(function(el){ return (xdmenusideitem) ? el === xdmenusideitem.selectOne() : false; }).class.remove('selected');
     if (xdmenuitem && !xdmenuitem.class.contains('selected')) xdmenuitem.class.add('selected');
     if (xdmenusideitem && !xdmenusideitem.class.contains('selected')) xdmenusideitem.class.add('selected');
 
-    XDom(jsh.xdroot, '.xsubmenu .xsubmenuitem').omit(function(el){
-      return (!xdsubmenuitem) ? false : el === xdsubmenuitem.selectOne();
-    }).class.remove('selected');
-    XDom(jsh.xdroot, '.xsubmenuside .xsubmenusideitem').omit(function(el){
-      return (!xdsubmenusideitem) ? false : el === xdsubmenusideitem.selectOne();
-    }).class.remove('selected');
+    XDom(jsh.xdroot, '.xsubmenu .xsubmenuitem').omit(function(el){ return (xdsubmenuitem) ? el === xdsubmenuitem.selectOne() : false; }).class.remove('selected');
+    XDom(jsh.xdroot, '.xsubmenuside .xsubmenusideitem').omit(function(el){ return (xdsubmenusideitem) ? el === xdsubmenusideitem.selectOne() : false; }).class.remove('selected');
     if (xdsubmenuitem && !xdsubmenuitem.class.contains('selected')) xdsubmenuitem.class.add('selected');
     if (xdsubmenusideitem && !xdsubmenusideitem.class.contains('selected')) xdsubmenusideitem.class.add('selected');
 
@@ -298,8 +285,8 @@ exports = module.exports = function(jsh){
     
     curleft = _this.MenuOverhang;
     for (var j = 0; j < _this.MenuItems.length; j++) {
-      curleft += _this.MenuItems[j].width;
       var xmenuitem = _this.MenuItems[j].xdobj;
+      curleft += _this.MenuItems[j].width;
       if (curleft > maxw) {
         if (xmenuitem.isVisible()) xmenuitem.style.display = false;
       }
@@ -344,8 +331,8 @@ exports = module.exports = function(jsh){
     
     curleft = _this.SubMenuOverhang;
     for (var j = 0; j < _this.SubMenuItems.length; j++) {
-      curleft += _this.SubMenuItems[j].width;
       var xsubmenuitem = _this.SubMenuItems[j].xdobj;
+      curleft += _this.SubMenuItems[j].width;
       if (curleft > maxw) {
         if (xsubmenuitem.isVisible()) xsubmenuitem.style.display = false;
       }
@@ -411,7 +398,7 @@ exports = module.exports = function(jsh){
       var xdobj = _this.MenuItems[i].xdobj;
       var reveal = !xdobj.isVisible();
       if(reveal) xdobj.style.display = true;
-      var width = xdobj.calc.widthToMargin(); // obj must be visible for expected widthToMargin() return
+      var width = xdobj.calc.widthToMargin(); // obj must be visible on widthToMargin() call
       if(reveal) xdobj.style.display = false;
       _this.MenuItems[i].width = width;
     }
@@ -426,13 +413,13 @@ exports = module.exports = function(jsh){
     var xdSubMenu = _this.getSubmenu();
     if(!force && (_this.SubMenuItems.length > 0)){
       var xdsubmenuitem = _this.SubMenuItems[0].xdobj;
-      if(xdsubmenuitem.calc.widthToMargin().toString() == xdsubmenuitem.width) return;
+      if(xdsubmenuitem.calc.widthToMargin().toString() == _this.SubMenuItems[0].width) return;
     }
     for(var i=0;i<_this.SubMenuItems.length;i++){
       var xdobj = _this.SubMenuItems[i].xdobj;
       var reveal = !xdobj.isVisible();
       if(reveal) xdobj.style.display = true;
-      var width = xdobj.calc.widthToMargin(); // obj must be visible for expected widthToMargin() return
+      var width = xdobj.calc.widthToMargin(); // obj must be visible on widthToMargin() call
       if(reveal) xdobj.style.display = false;
       _this.SubMenuItems[i].width = width;
     }
