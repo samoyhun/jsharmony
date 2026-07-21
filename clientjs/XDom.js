@@ -486,7 +486,7 @@ XDom.getValue = function(target){
 };
 
 XDom.setValue = function(target, val){
-    if(val === undefined || val === null) val = '';
+  if(val === undefined || val === null) val = '';
   _.each(XDom.resolve(target), function(el){
     if(el && (typeof el.value != 'undefined')){
       el.value = (val).toString();

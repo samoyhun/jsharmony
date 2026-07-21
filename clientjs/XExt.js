@@ -261,21 +261,14 @@ exports = module.exports = function(jsh){
    ************************/
   
   XExt.DatePickerRender = function(ctrl, date, options){
-    options = _.extend({ dateFormat: jsh.DEFAULT_DATEFORMAT, onSelect: null, YearRange: 10}, options);
+    options = _.extend({ dateFormat: jsh.DEFAULT_DATEFORMAT, onSelect: null}, options);
     if(XDom(jsh.xdroot, '.xdatepicker').length) XExt.DatePickerRemove();
     
     var xdobj = XExt.renderTemplate('script.template_datepicker');
-    //Build banner (year select)
-    var year = date.getFullYear();
-    var xdSelectYear = XDom(xdobj, '.select_year');
-    for(var i=0; i<(options.YearRange*2)+1; i++){
-      var value = year-options.YearRange+i;
-      xdSelectYear.content.append('<option value="'+ value +'">'+ value +'</option>');
-    }
-    xdSelectYear.value = year;
-    var selDate = {year: year, month: date.getMonth(), day: date.getDate()};
     XDom('body').content.append(xdobj);
+    var selDate = {year: date.getFullYear(), month: date.getMonth(), day: date.getDate()};
     XExt.DatePickerUpdate(date, selDate);
+
     //Attach handlers:
     var xdDatePicker = XDom(jsh.xdroot, '.xdatepicker');
     xdDatePicker.on('click', function(e){
@@ -286,21 +279,18 @@ exports = module.exports = function(jsh){
       xdClicked.class.add('selected');
       XExt.DatePickerHide();
       if(options.onSelect) options.onSelect(ctrl);
-      ctrl.focus();
-    });
-    xdDatePicker.on('change', function(){
-      XExt.DatePickerUpdate(new Date(xdSelectYear.value, xdSelectMonth.value), selDate);
-      ctrl.focus();
     });
     var xdSelectMonth = XDom(xdDatePicker, '.select_month');
-    xdSelectYear = XDom(xdDatePicker, '.select_year');
+    var xdSelectYear = XDom(xdDatePicker, '.select_year');
+    xdDatePicker.on('change', function(){
+      XExt.DatePickerUpdate(new Date(xdSelectYear.value, xdSelectMonth.value), selDate);
+    });
     XDom(xdDatePicker, '.xdatepicker_next').on('click', function(){
       var currMonth = parseInt(xdSelectMonth.value);
       var currYear = parseInt(xdSelectYear.value);
       if(currMonth >= 11) {currYear++; currMonth = 0;}
       else currMonth++;
       XExt.DatePickerUpdate(new Date(currYear, currMonth), selDate);
-      ctrl.focus();
     });
     XDom(xdDatePicker, '.xdatepicker_prev').on('click', function(){
       var currMonth = parseInt(xdSelectMonth.value);
@@ -308,7 +298,6 @@ exports = module.exports = function(jsh){
       if(currMonth <= 0) {currYear--; currMonth = 11;}
       else currMonth--;
       XExt.DatePickerUpdate(new Date(currYear, currMonth), selDate);
-      ctrl.focus();
     });
     XExt.DatePickerShow();
   };
@@ -317,26 +306,27 @@ exports = module.exports = function(jsh){
     var xdDatePicker = XDom(jsh.xdroot, '.xdatepicker');
     if(!xdDatePicker.length) return;
 
-    var today = new Date();
-    var tDay = today.getDate();     /* Numeric day of the month 1 - 31 */
-    var tMonth = today.getMonth();  /* Numeric month of the year 0 - 11 */
-    var tYear = today.getFullYear();/* Numeric year: 2026 */
-
     var month = date.getMonth();
     var year = date.getFullYear();
 
     var firstDay = new Date(year, month, 1).getDay();
     var totalDays = new Date(year, month + 1, 0).getDate();
-
+    //Load banner years
+    var xdSelectYear = XDom(xdDatePicker, '.select_year');
+    xdSelectYear.content.clear();
+    for(var i=0; i<21; i++){ //21 = 20 year range + current year
+      var value = year-10+i;
+      xdSelectYear.content.append('<option value="'+ value +'">'+ value +'</option>');
+    }
     //Update banner values
     XDom(xdDatePicker, '.select_month').value = month;
     XDom(xdDatePicker, '.select_year').value = year;
-    //Locate table body for update
+    //Clear table body for update
     var xdTable = XDom(xdDatePicker, 'tbody');
     xdTable.content.clear();
     var xdCurrentTr = XDom(XDom.render('<tr></tr>'));
     //Append empty cells for beginning of month
-    for(var i=0; i<firstDay; i++){
+    for(var j=0; j<firstDay; j++){
       xdCurrentTr.content.append('<td></td>');
     }
     //Fill out cells with dates
@@ -350,7 +340,6 @@ exports = module.exports = function(jsh){
       xdEntry.data.month = month;
       xdEntry.data.year = year;
       if(selDate.year == year && selDate.month == month && selDate.day == day_idx) xdEntry.class.add('selected');
-      if(tYear == year && tMonth == month && tDay == day_idx) xdEntry.class.add('today');
       xdCurrentTr.content.append(xdCell);
     }
     //Append last incomplete row
@@ -371,7 +360,7 @@ exports = module.exports = function(jsh){
 
   XExt.DatePicker = function(ctrl, options){
     var xdctrl = XDom(ctrl);
-    xdctrl.on('click', function(){
+    xdctrl.on('focus', function(){
       var moment = jsh.moment(xdctrl.value, options.dateFormat);
       if(!moment.isValid()) moment = jsh.moment();
       var date = new Date(moment.year(), moment.month(), [moment.date()]);
@@ -381,9 +370,11 @@ exports = module.exports = function(jsh){
       xdDatepicker.style.left = xdctrl.calc.left()+window.scrollX+'px';
     });
     xdctrl.on('keydown', function(e){
-      if(e.keyCode == 27 || e.keyCode == 9 || e.keyCode == 13) XExt.DatePickerHide(); //esc,tab,enter
+      if(e.keyCode == 27) XExt.DatePickerHide(); //esc
+      if(e.keyCode == 9) XExt.DatePickerRemove();//tab
     });
   };
+
   XExt.CancelBubble = function (e) {
     if (!e) e = window.event;
     if (e.stopPropagation) e.stopPropagation();

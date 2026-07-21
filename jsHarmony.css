@@ -636,65 +636,73 @@ BODY
 }
 
 <%-rootcss%> .xdatepicker {
+  box-sizing: border-box;
   position: absolute;
   border: 1px solid #a1a1a1;
   border-radius: 4px;
-  width: 250px;
-  padding: 4px;
+  width: 251px;
+  padding: 3px;
   text-align: center;
   color: #454545;
   background-color: #FFFFFF;
 }
-<%-rootcss%> .xdatepicker a {
-  display: block;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  align-content: center;
-  color: #454545;
-  font-weight: bold;
-  text-decoration: none;
+<%-rootcss%> .xdatepicker table {
+  border-collapse: collapse;
 }
-<%-rootcss%> .xdatepicker table a {
-  border: 1px solid #dedede;
+<%-rootcss%> .xdatepicker td {
+  border: 0;
+  padding: 1px;
+  height: 25px;
+}
+<%-rootcss%> .xdatepicker td a {
+  display: block;
+  border: 1px solid #ccc;
   text-align: right;
   color: #363895;
+  padding: 2px;
+  text-decoration: none;
+  font-weight: bold;
 }
 <%-rootcss%> .xdatepicker a:hover {
   cursor: pointer;
   text-decoration: none;
 }
 <%-rootcss%> .xdatepicker_banner {
+  box-sizing: border-box;
   display: flex;
   background-color: #DFDFE6;
   border: 1px solid #A1A1A1;
   border-radius: 4px;
-  height: 35px;
+  height: 33px;
+  padding: 3px 0px;
 }
 <%-rootcss%> .xdatepicker_nav {
   text-align: center;
   flex: 1;
 }
+<%-rootcss%> .xdatepicker_nav a{
+  display: block;
+  width: 100%;
+  height: 100%;
+  align-content: center;
+  color: #454545;
+  text-decoration: none;
+}
 <%-rootcss%> .xdatepicker_center {
-  flex: 3;
+  flex: 5;
   text-align: center;
   align-content: center;
   display: flex;
 }
 <%-rootcss%> .xdatepicker table {
-  table-layout: fixed;
   width: 100%;
 }
 <%-rootcss%> .xdatepicker th {
-  padding: 7px 4px;
+  padding: 9px 4px;
 }
 <%-rootcss%> .xdatepicker .selected {
-  border-color: #B4B4B4;
+  border-color: #A1A1A1;
   background-color: #DDDDDD;
-}
-<%-rootcss%> .xdatepicker .today {
-  border-color: #B4B4B4;
-  background-color: #FFFC17;
 }
 <%-rootcss%> .xtag_input,
 <%-rootcss%> .xform .xtag_input,
