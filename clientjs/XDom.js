@@ -420,7 +420,7 @@ XDom.liveEvent = function(sel, handler){
     if(!e.target || !e.target.matches(sel)) return;
     handler(e);
   };
-}
+};
 
 XDom.on = function(target, _eventName, handler, eventOptions){
   var eventNames = _eventName.split(' ');
@@ -617,7 +617,7 @@ function filterElements(_el, expr, exclude){
   else if(_.isString(expr)) f = function(el){ return el.matches(expr); };
   else if(_.isArray(expr)) f = function(el){ return _.includes(expr, el); };
   else if((typeof expr == 'undefined') || (expr === null)) return [];
-  else f = function(el){ return el === expr };
+  else f = function(el){ return el === expr; };
   _el.forEach(function(el){
     if(f(el) ^ exclude) rslt.push(el);
   });

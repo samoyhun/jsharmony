@@ -1118,7 +1118,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
   XPage.Disable = function(ctrls,field,show_lookup) {
     if (ctrls && ctrls.jquery) {
-      console.warn('Depreciated: XPage.Disable received a jquery object. Please pass an array of dom elements.');
+      console.warn('Deprecated: XPage.Disable received a jquery object. Please pass an array of dom elements.');
       ctrls = ctrls.filter(function() {return jsh.XDom.isElement(this);}).get();
     }
     if (ctrls && !_.isArrayLike(ctrls)) ctrls = [ctrls];
@@ -1145,7 +1145,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
   XPage.Enable = function(ctrls,field) {
     if (ctrls && ctrls.jquery) {
-      console.warn('Depreciated: XPage.Enable received a jquery object. Please pass an array of dom elements.');
+      console.warn('Deprecated: XPage.Enable received a jquery object. Please pass an array of dom elements.');
       ctrls = ctrls.filter(function() {return jsh.XDom.isElement(this);}).get();
     }
     if (ctrls && !_.isArrayLike(ctrls)) ctrls = [ctrls];
