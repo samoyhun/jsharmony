@@ -141,17 +141,12 @@ var Selector = function(){
   });
   _this.style = new Proxy({}, {
     get: function(target, prop, receiver) {
-      if(prop == 'calc') return XDom.style.calc(_this);
-      if(prop == 'display') return XDom.style.display(_this);
-      if(prop == 'width') return XDom.style.width(_this);
-      if(prop == 'height') return XDom.style.height(_this);
+      if(prop in XDom.style) return XDom.style[prop](_this);
       return XDom.getStyle(_this, prop);
     },
     set: function(target, prop, value) {
       if(prop == 'calc') throw new Error('Cannot set calculated style');
-      if(prop == 'display') return XDom.style.display(_this, value);
-      if(prop == 'width') return XDom.style.width(_this, value);
-      if(prop == 'height') return XDom.style.height(_this, value);
+      else if(prop in XDom.style) return XDom.style[prop](_this, value);
       return XDom.setStyle(_this, prop, value);
     },
   });
@@ -253,6 +248,7 @@ var Selector = function(){
   //.empty => .content.clear()
   //.html('html string') => .content.replace('html string')
   //.outerWidth => .calc.widthToBorder
+  //.outerWidth(true) => .calc.widthToMargin
   //.outerHeight => .calc.heightToBorder
   //$.param -> XExt.escapeQuery
 };
@@ -418,6 +414,13 @@ XDom.setAttribute = function(target, prop, val){
     }
   });
 };
+
+XDom.liveEvent = function(sel, handler){
+  return function(e){
+    if(!e.target || !e.target.matches(sel)) return;
+    handler(e);
+  };
+}
 
 XDom.on = function(target, _eventName, handler, eventOptions){
   var eventNames = _eventName.split(' ');
@@ -607,15 +610,22 @@ XDom.getChildren = function(target, childrenSelector){
   return rslt;
 };
 
-XDom.filter = function(target, f){
-  var _el = XDom.resolve(target);
-  return _.filter(_el, f);
-};
+function filterElements(_el, expr, exclude){
+  var rslt = [];
+  var f = null;
+  if(_.isFunction(expr)) f = expr;
+  else if(_.isString(expr)) f = function(el){ return el.matches(expr); };
+  else if(_.isArray(expr)) f = function(el){ return _.includes(expr, el); };
+  else if((typeof expr == 'undefined') || (expr === null)) return [];
+  else f = function(el){ return el === expr };
+  _el.forEach(function(el){
+    if(f(el) ^ exclude) rslt.push(el);
+  });
+  return rslt;
+}
 
-XDom.omit = function(target, f){
-  var _el = XDom.resolve(target);
-  return _.reject(_el, f);
-};
+XDom.filter = function(target, f){ return filterElements(XDom.resolve(target), f, false); };
+XDom.omit = function(target, f){ return filterElements(XDom.resolve(target), f, true); };
 
 XDom.getStyle = function(target, prop){
   var _el = XDom.resolve(target);
@@ -648,6 +658,13 @@ function styleFunc(prop, valTransform){
   };
 }
 
+function styleFuncPx(prop){
+  return styleFunc(prop, function(val){
+    if(_.isNumber(val)) return val.toString()+'px';
+    return val;
+  });
+}
+
 XDom.style = {
   calc: function(target){
     var _el = XDom.resolve(target);
@@ -675,14 +692,12 @@ XDom.style = {
     }
     return val;
   }),
-  width: styleFunc('width', function(val){
-    if(_.isNumber(val)) return val.toString()+'px';
-    return val;
-  }),
-  height: styleFunc('height', function(val){
-    if(_.isNumber(val)) return val.toString()+'px';
-    return val;
-  }),
+  width: styleFuncPx('width'),
+  height: styleFuncPx('height'),
+  top: styleFuncPx('top'),
+  bottom: styleFuncPx('bottom'),
+  left: styleFuncPx('left'),
+  right: styleFuncPx('right'),
 };
 
 function execOnFirstElWithProp(prop, f){
