@@ -843,7 +843,7 @@ function parseStyleUnit(str) {
   }
 }
 
-function step(curTime, el, elProps, startTime, endTime, elAnimateIdx, callback, easeFunc) {
+function step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete, easeFunc) {
   var duration = endTime - startTime;
   var inProgress = ((curTime < endTime) && (duration > 0));
   var xdom_animatestopidx = Number(el.dataset.xdom_animatestopidx);
@@ -854,7 +854,7 @@ function step(curTime, el, elProps, startTime, endTime, elAnimateIdx, callback, 
       if(value.unit == 'rgba') el.style[key] = 'rgba(' + progressVec[0] + ', ' + progressVec[1] + ', ' + progressVec[2] + ', ' + progressVec[3] + ')';
       else el.style[key] = progressVec[0] + value.unit;
     });
-    inProgress ? requestAnimationFrame(function(curTime){ step(curTime, el, elProps, startTime, endTime, elAnimateIdx, callback, easeFunc); }) : callback();
+    inProgress ? requestAnimationFrame(function(curTime){ step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete, easeFunc); }) : onComplete();
   }
 }
 
@@ -865,8 +865,8 @@ XDom.stop = function(target) {
   });
 };
 
-XDom.animate = function(target, props, duration, callback, ease) {
-  if(!callback) callback = function(){};
+XDom.animate = function(target, props, duration, onComplete, ease) {
+  if(!onComplete) onComplete = function(){};
   if(!props) props = {};
   if(!duration) duration = 0;
   var _el = XDom.resolve(target);
@@ -887,9 +887,9 @@ XDom.animate = function(target, props, duration, callback, ease) {
       if(duration > 0) {
         var startTime = document.timeline.currentTime;
         var endTime = startTime + duration;
-        var easeFunc = function(x){ return -(Math.cos(Math.PI * x) - 1) / 2;}; // swing
+        var easeFunc = function(x){ return -(Math.cos(Math.PI * x) - 1) / 2;}; // cosine
         if(ease === 'linear') easeFunc = function(x){return x};
-        requestAnimationFrame(function(curTime){ step(curTime, el, elProps, startTime, endTime, elAnimateIdx, callback, easeFunc);});
+        requestAnimationFrame(function(curTime){ step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete, easeFunc);});
       }
       else {
         _.each(elProps, function(valueObj, prop) {
@@ -897,7 +897,7 @@ XDom.animate = function(target, props, duration, callback, ease) {
           if(valueObj.unit === 'rgba') el.style[prop] = 'rgba(' + to[0] + ', ' + to[1] + ', ' + to[2] + ', ' + to[3] + ')';
           else el.style[prop] = to[0] + valueObj.unit;
         });
-        callback();
+        onComplete();
       }
     }
   });
