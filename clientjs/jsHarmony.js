@@ -69,7 +69,7 @@ var jsHarmony = function(options){
     _this.XExt.trigger(_this.onMessage, data);
     _this.trigger('jsh_message', data);
   };
-
+  this.events = {}; /*{event1: [handlers, ...], event2: [handlers, ...], ...}*/
   this.onInit = null; //function(){};
 
   //Options
@@ -234,21 +234,20 @@ jsHarmony.prototype.getFileProxy = function(){
 
 jsHarmony.prototype.postFileProxy = function(url, params){
   var _this = this;
-  var xdForm_container = XDom('#'+_this.getInstance()+'_xfileform_container');
-  xdForm_container.content.clear();
-  var form = XDom.renderOne('<form method="post" id="'+_this.getInstance()+'_xfileform"></form>');
-  var xdForm = XDom(form);
-  xdForm_container.selectOne().appendChild(form);
+  var xdform_container = XDom('#'+_this.getInstance()+'_xfileform_container');
+  xdform_container.content.clear();
+  var form = XDom.render('<form method="post" id="'+_this.getInstance()+'_xfileform"></form>');
   form.action = url;
   form.target = _this.getInstance()+'_xfileproxy';
   for(var key in params){
-    var input = XDom.renderOne('<input type="hidden" />');
+    var input = XDom.render('<input type="hidden" />');
     input.name = key;
     input.value = (params[key]||'').toString();
     form.appendChild(input);
   }
-  xdForm.emit('submit');
-  xdForm.remove();
+  xdform_container.content.append(form);
+  XDom.emit(form, 'submit');
+  XDom.remove(form);
 };
 
 jsHarmony.prototype.loadScript = function(url, cb){
@@ -275,24 +274,11 @@ jsHarmony.prototype.loadScript = function(url, cb){
 
 jsHarmony.prototype.BindEvents = function(){
   var _this = this;
-  XDom(document).on('DOMContentLoaded', function(){ _this.Init(); });
-  XDom(document).on('DOMContentLoaded', function(){ _this.XWindowResize(); });
-  // TODO: In review discuss: while above works, below is more safe (just in case DOMContentLoaded event fires before this handler is attached to the doc) read jQuery for more info...
-  // (document.readyState !== 'loading') ? _this.Init() : XDom(document).on('DOMContentLoaded', function(){ _this.Init(); });
-  // (document.readyState !== 'loading') ? _this.XWindowResize() : XDom(document).on('DOMContentLoaded', function(){ _this.XWindowResize(); });
-  XDom.on(window, 'load', function () { _this.XWindowResize(); });
-  XDom.on(window, 'resize', function () { _this.XWindowResize(); });
-  XDom.on(window, 'scroll', function () { _this.XWindowResize('scroll'); });
-  window.addEventListener('message', function(event){ _this.Message((event.data || '').toString()); });
-  window.setInterval(function(){
-    var newWindowSize = {
-      width: window.innerWidth,
-      height: window.innerHeight,
-    };
-    if((newWindowSize.width != _this.lastWindowSize.width) || (newWindowSize.height != _this.lastWindowSize.height)){ _this.XWindowResize(); }
-    _this.lastWindowSize = newWindowSize;
-  }, 500);
-  XDom.on(document, 'keydown', function (e) {
+  XDom.onPageLoad(function(){
+    _this.Init();
+    _this.XWindowResize();
+  });
+  XDom(document).on('keydown', function (e) {
     var handled = false;
     if (_this.XPage.CustomShortcutKeys) {
       for(var i=0;i<_this.XPage.CustomShortcutKeys.length;i++){
@@ -308,16 +294,28 @@ jsHarmony.prototype.BindEvents = function(){
       e.stopImmediatePropagation();
     }
   });
+  var xdWin = XDom(window);
+  xdWin.on('load', function () { _this.XWindowResize(); });
+  xdWin.on('resize', function () { _this.XWindowResize(); });
+  xdWin.on('scroll', function () { _this.XWindowResize('scroll'); });
+  xdWin.on('message', function(event){ _this.Message((event.data || '').toString()); });
+  window.setInterval(function(){
+    var newWindowSize = {
+      width: window.innerWidth,
+      height: window.innerHeight,
+    };
+    if((newWindowSize.width != _this.lastWindowSize.width) || (newWindowSize.height != _this.lastWindowSize.height)){ _this.XWindowResize(); }
+    _this.lastWindowSize = newWindowSize;
+  }, 500);
+
 };
 
 jsHarmony.prototype.Init = function(){
   var _this = this;
   // TODO: Remove below when jsh.root is nolonger in use
   if(_this.root.$find('body').length) _this.root = _this.root.$find('body');
-  if(_this.XExt.isMobile()) _this.root.$find('.xmain').addClass('xmain_mobile');
-  // TODO: Remove above when jsh.root is nolonger in use
   if(_this.xdroot.select('body').length) _this.xdroot = XDom(_this.xdroot, 'body');
-  if(_this.XExt.isMobile()) XDom.class.add(_this.xdroot.select('.xmain'), 'xmain_mobile');
+  if(_this.XExt.isMobile()) XDom(_this.xdroot, '.xmain').class.add('xmain_mobile');
   _this.InitFileUpload();
   this.imageLoader = new this.XImageLoader();
   this.imageLoader.loadqueue = new Array(
@@ -338,15 +336,16 @@ jsHarmony.prototype.Init = function(){
   if(!this.xDialogLoader) this.xDialogLoader = new this.XLoader('.xdialogblock.jsHarmonyElement_'+_this._instanceClass+' .xdialogloadingblock');
   this.xLoader.onSquashedClick.push(function(e){ _this.lastSquashedActionTime = Date.now(); });
   this.xDebugConsole = new this.XDebugConsole();
-  XDom.on(document, 'mousemove', function (e) {
+  var xdDoc = XDom(document);
+  xdDoc.on('mousemove', function (e) {
     _this.mouseX = e.pageX;
     _this.mouseY = e.pageY;
     if(_this.mouseDragObj) _this.mouseDrag(_this.mouseDragObj, e);
   });
-  XDom.on(document, 'mousedown', function (e) {
+  xdDoc.on('mousedown', function (e) {
     _this.mouseDown = true;
   });
-  XDom.on(document, 'mouseup', function (e) {
+  xdDoc.on('mouseup', function (e) {
     _this.mouseDown = false;
     if(_this.mouseDragObj){
       _this.mouseDragEnd(_this.mouseDragObj, e);
@@ -355,10 +354,10 @@ jsHarmony.prototype.Init = function(){
       e.stopPropagation();
     }
   });
-  XDom.on(document, 'mouseleave', function (e) {
+  xdDoc.on('mouseleave', function (e) {
     _this.mouseDown = false;
   });
-  XDom.on(this.xdroot.select('a'), 'click', function () {
+  XDom(this.xdroot, 'a').on('click', function () {
     _this.last_clicked_time = Date.now();
     _this.last_clicked = XDom(this);
   });
@@ -375,15 +374,14 @@ jsHarmony.prototype.mouseDragBegin = function(mouseDragObj, mouseCanDrop, e){
   if(!mouseDragObj) return;
   _this.mouseDragObj = mouseDragObj;
   _this.mouseCanDrop = mouseCanDrop;
-  var clone = XDom.renderOne(mouseDragObj.outerHTML);
-  var xdClone = XDom(clone);
+  var xdClone = XDom(XDom.render(mouseDragObj.outerHTML));
   xdClone.style.position =  'absolute';
   xdClone.style.zIndex = 99998;
-  xdClone.style.left = _this.mouseX;
-  xdClone.style.top = _this.mouseY;
+  xdClone.style.left = _this.mouseX+'px';
+  xdClone.style.top = _this.mouseY+'px';
   xdClone.class.add('xdrag');
   xdClone.class.remove('xdrop');
-  _this.xdroot.content.prepend(xdClone.outerHTML);
+  _this.xdroot.content.prepend(xdClone);
 
   _this.trigger('jsh_mouseDragBegin', [mouseDragObj, e]);
 };
@@ -392,14 +390,14 @@ jsHarmony.prototype.mouseDrag = function(mouseDragObj, e){
   var _this = this;
   if(!mouseDragObj) return;
   
-  var clone = XDom(_this.xdroot, '.xdrag');
-  clone.style.left = _this.mouseX;
-  clone.style.top = _this.mouseY;
+  var xdClone = XDom(_this.xdroot, '.xdrag');
+  xdClone.style.left = _this.mouseX+'px';
+  xdClone.style.top = _this.mouseY+'px';
   var targetObj = null;
   _this.xdroot.select('.xdrop').forEach(function(el){
     if(_this.XExt.isMouseWithin(el)){
       if(!_this.mouseCanDrop || _this.mouseCanDrop(el)){
-        if(!targetObj || XExt.contains(targetObj, this)) targetObj = el;
+        if(!targetObj || _this.XExt.isChildOf(targetObj, this)) targetObj = el;
       }
     }
   });
@@ -415,7 +413,7 @@ jsHarmony.prototype.mouseDragEnd = function(mouseDragObj, e){
   this.xdroot.select('.xdrop').forEach(function(el){
     if(_this.XExt.isMouseWithin(el)){
       if(!_this.mouseCanDrop || _this.mouseCanDrop(el)){
-        if(!targetObj || XExt.contains(targetObj, el)) targetObj = el;
+        if(!targetObj || _this.XExt.isChildOf(targetObj, el)) targetObj = el;
       }
     }
   });
@@ -583,7 +581,7 @@ jsHarmony.prototype.InitFileUpload = function () {
 
 jsHarmony.prototype.requireHTML5 = function(){
   var _this = this;
-  XDom(document).on('DOMContentLoaded', function() { // TODO: Change if needed from result of discussion above
+  XDom.onPageLoad(function(){
     if (!document.createElement('canvas').getContext) {
       var content = '\
       <div class="browser_upgrade_msg xdialogbox" style="height: 165px; text-align: center; width: 450px;">\
@@ -631,10 +629,29 @@ jsHarmony.prototype.parseJQueryElements = function(obj, method) {
     return obj;
   }
 };
-// TODO: Alter prototypes below for XDom implementation (discuss in review)
-jsHarmony.prototype.on = function(){ $(this).on.apply($(this), arguments); };
-jsHarmony.prototype.off = function(){ $(this).off.apply($(this), arguments); };
-jsHarmony.prototype.trigger = function(){ $(this).trigger.apply($(this), arguments); };
+jsHarmony.prototype.on = function(eventName, handler){
+  if(!eventName || !handler) return;
+  if(!this.events[eventName]) this.events[eventName] = [];
+  this.events[eventName].push(handler);
+};
+jsHarmony.prototype.off = function(eventName, handler){
+  if(!eventName || !this.events[eventName]) return;
+  if(handler) {
+    for(var i=0; i<this.events[eventName].length; i++){
+      if(this.events[eventName][i] === handler){
+        this.events[eventName].splice(i, 1);
+        i--;
+      }
+    }
+  }
+  else {
+    this.events[eventName] = [];
+  }
+};
+jsHarmony.prototype.trigger = function(eventName /*, param1, param2 */){
+  if(!eventName || !this.events[eventName]) return;
+  this.XExt.trigger.apply(null, [this.events[eventName]].concat(Array.prototype.slice.call(arguments, 1)));
+};
 
 var instances = [];
 if(global.jsHarmony) instances = global.jsHarmony.Instances;
