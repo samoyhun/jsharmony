@@ -269,6 +269,16 @@ Before:
 After:
 ```jsh.XExt.escapeQuery({ data: JSON.stringify(execdata) })```
 
+#### $.contains
+
+the `XExt.isChildOf` function should behave similarly to `$.contains`
+
+Before:
+```$.contains(child_obj, parent_obj)```
+
+After:
+```jsh.XExt.isChildOf(child_obj, parent_obj)```
+
 #### $.ajax
 
 `XExt.Request` provides some of the same affordances. Use `.XExt.AppendUrlParamsCacheBust` for url-based unique param (cache: false in $.ajax), or `XExt.AppendUrlParams` without the uniq parameter.
@@ -340,4 +350,10 @@ After:
 
 the `XExt.renderTemplate` function is added to return an XDom selector containing a template element specified by the `sel` parameter
 
-TODO: in jsHarmony Factory add `43px` to the in-line `width` style to account for `box-sizing: border-box;` change to all xdialogbox containers (only if an in-line style exists)
+#### CustomPrompt
+Add `43px` to the in-line `width` style to account for `box-sizing: border-box;` change to all xdialogbox containers (only if an in-line style exists)
+
+#### XExt.getFileProxy
+
+Returns DOM object instead of jQuery object
+  Cannot use .prop('src', ...)

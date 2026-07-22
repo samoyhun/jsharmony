@@ -134,7 +134,7 @@ exports = module.exports = function(jsh){
       val = val.trim();
       if(!val.length) return;
 
-      var newSpan = XDom.renderOne('<span class="notextselect">'+XExt.escapeHTML(val)+'	&#8203;<div class="xtag_remove xtag_focusable">✕</div></span>');
+      var newSpan = XDom.render('<span class="notextselect">'+XExt.escapeHTML(val)+'	&#8203;<div class="xtag_remove xtag_focusable">✕</div></span>');
       var xdnew = XDom(newSpan);
       xdnew.data.val = val;
 
@@ -862,7 +862,7 @@ exports = module.exports = function(jsh){
     var orig_height = elem.calc.heightToBorder();
     var xdParent = elem.parent();
     if(!xdParent.class.contains(id + '_container')){
-      var wrapper = XDom.renderOne('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
+      var wrapper = XDom.render('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
       xdParent.selectOne().append(wrapper);
       wrapper.appendChild(elem.selectOne());
     }
@@ -887,7 +887,7 @@ exports = module.exports = function(jsh){
     var orig_height = elem.calc.heightToBorder();
     var xdParent = elem.parent();
     if(!xdParent.class.contains(id + '_container')){
-      var wrapper = XDom.renderOne('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
+      var wrapper = XDom.render('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
       xdParent.selectOne().append(wrapper);
       wrapper.appendChild(elem.selectOne());
     }
@@ -1409,7 +1409,7 @@ exports = module.exports = function(jsh){
     var treeid = xdctrl.data.treeid;
     jsh.off('.jsh_tree_'+treeid);
     var hoverBorderStart = 0;
-    jsh.on('jsh_mouseDrag.jsh_tree_'+treeid,function(event, mouseDragObj, targetObj, origEvent){
+    jsh.on('jsh_mouseDrag.jsh_tree_'+treeid, function(event, mouseDragObj, targetObj, origEvent){
       var xdDragTarget = XDom(xdctrl, '.xdragtarget');
       xdDragTarget.class.remove('xdragtarget');
       xdDragTarget.class.remove('xdragtop');
@@ -2116,17 +2116,18 @@ exports = module.exports = function(jsh){
     var customPrompt = null;
     //Classes - default_focus, button_ok, button_cancel
     if(_.isString(html)){
-      customPrompt = XDom.renderOne(html);
+      customPrompt = XDom.render(html.trim());
+      if(!customPrompt) customPrompt = document.createElement('div');
     }
     else {
       reuse = true;
       customPrompt = jsh.parseJQueryElements(html,'XExt.CustomPrompt');
       if(!customPrompt) customPrompt = document.createElement('div');
-      for(var i=0;i<jsh.xDialog.length;i++){
-        if(jsh.xDialog[i].obj == customPrompt){
-          if(jsh.xDialog[i].onDestroy) jsh.xDialog[i].onDestroy({ recycle: true });
-          jsh.xDialog.splice(i, 1);
-          i--;
+      for(var j=0;j<jsh.xDialog.length;j++){
+        if(jsh.xDialog[j].obj == customPrompt){
+          if(jsh.xDialog[j].onDestroy) jsh.xDialog[j].onDestroy({ recycle: true });
+          jsh.xDialog.splice(j, 1);
+          j--;
         }
       }
     }
@@ -2135,7 +2136,7 @@ exports = module.exports = function(jsh){
       options = options || { recycle: false };
       // We always remove handlers even if reuse is false. This is to remove handlers applied beyond the obj (xdialogblock)
       xDialogObj.handlers.forEach(function(obj) {
-        XDom.off(obj.target, obj.eventType, obj.handler);
+        XDom.off(obj.target, obj.eventName, obj.handler);
       });
       if(!options.recycle){
         if(reuse) XDom.style.display(customPrompt, false);
@@ -2184,9 +2185,9 @@ exports = module.exports = function(jsh){
       if (onAccept) return onAccept(function () { acceptfunc_aftervalidate(_onClosed); });
       else acceptfunc_aftervalidate(_onClosed);
     };
-    var bindDialogHandler = xDialogObj.bindDialogHandler = function bindDialogHandler(tgt, evtName, handler){
-      XDom.on(tgt, evtName, handler);
-      if(reuse) xDialogObj.handlers.push({target: tgt, eventType: evtName, handler: handler});
+    var bindDialogHandler = xDialogObj.bindDialogHandler = function bindDialogHandler(tgt, eventName, handler){
+      XDom.on(tgt, eventName, handler);
+      if(reuse) xDialogObj.handlers.push({target: tgt, eventName: eventName, handler: handler});
     };
     XExt.execif(true,
       function(done){
@@ -2943,6 +2944,15 @@ exports = module.exports = function(jsh){
     }
     else throw new Error('Inserting text into contenteditable not supported.');
   };
+  XExt.isChildOf = function(tgt_obj, container_obj){
+    if(tgt_obj === container_obj) return false;
+    var curElement = tgt_obj;
+    while(curElement){
+      curElement = curElement.parentNode;
+      if(curElement === container_obj) return true;
+    }
+    return false;
+  };
   XExt.selectionIsChildOf = function(obj){
     if(window.getSelection){
       var sel = window.getSelection();
@@ -3067,8 +3077,8 @@ exports = module.exports = function(jsh){
     for(var i=0;i<options.anchors.length;i++) anchors[options.anchors[i]] = 1;
     var xdobj = XDom(elem);
     var offsetTop = xdobj.calc.top();
-    var w = xdobj.widthToMargin();
-    var h = xdobj.heightToMargin();
+    var w = xdobj.calc.widthToMargin();
+    var h = xdobj.calc.heightToMargin();
     var fph = Math.abs(((h>0)?((y-offsetTop)/h):0) - 0.5);
   
     var lp = ((w>0)?((x-xdobj.calc.left())/w):0) - 0.5;
@@ -3134,7 +3144,7 @@ exports = module.exports = function(jsh){
     var downArrow = '&#xE313;';
     var xdobj = XDom(obj);
     var xdbody = xdobj.nextSibling('.xaccordionbody');
-    var state = XDom.renderOne('<span class="material-icons xaccordionstate"></span>');
+    var state = XDom.render('<span class="material-icons xaccordionstate"></span>');
     var xdState = XDom(state);
     obj.appendChild(state);
 

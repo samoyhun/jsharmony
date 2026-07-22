@@ -960,7 +960,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       if (xmodel.keys.length != 1) { throw new Error('File models require one key.'); }
       url = jsh._BASEURL + '_dl/' + modelid + '/' + keys[xmodel.keys[0]] + '/' + field;
     }
-    jsh.getFileProxy().prop('src', url);
+    jsh.getFileProxy().src = url;
   }
 
   XPage.FilePreview = function(modelid, field, title) {
