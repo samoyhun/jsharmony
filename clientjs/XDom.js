@@ -141,17 +141,12 @@ var Selector = function(){
   });
   _this.style = new Proxy({}, {
     get: function(target, prop, receiver) {
-      if(prop == 'calc') return XDom.style.calc(_this);
-      if(prop == 'display') return XDom.style.display(_this);
-      if(prop == 'width') return XDom.style.width(_this);
-      if(prop == 'height') return XDom.style.height(_this);
+      if(prop in XDom.style) return XDom.style[prop](_this);
       return XDom.getStyle(_this, prop);
     },
     set: function(target, prop, value) {
       if(prop == 'calc') throw new Error('Cannot set calculated style');
-      if(prop == 'display') return XDom.style.display(_this, value);
-      if(prop == 'width') return XDom.style.width(_this, value);
-      if(prop == 'height') return XDom.style.height(_this, value);
+      else if(prop in XDom.style) return XDom.style[prop](_this, value);
       return XDom.setStyle(_this, prop, value);
     },
   });
@@ -253,6 +248,7 @@ var Selector = function(){
   //.empty => .content.clear()
   //.html('html string') => .content.replace('html string')
   //.outerWidth => .calc.widthToBorder
+  //.outerWidth(true) => .calc.widthToMargin
   //.outerHeight => .calc.heightToBorder
   //$.param -> XExt.escapeQuery
 };
@@ -320,10 +316,27 @@ XDom.class = {
 };
 
 XDom.render = function(html){
+  if(!html) return null;
+  if(html instanceof Element) return html;
+  if(html instanceof Selector) {
+    if(!html.length) return null;
+    var _el = XDom.resolve(html);
+    html = '';
+    for(var i=0; i<_el.length; i++){
+      html += _el[i].outerHTML;
+    }
+  }
+  html = html.toString();
   var container = document.createElement('template');
   container.innerHTML = html;
   // childNodes is a live NodeList, if we return it directly, it will likely have surprising results as nodes are moved elsewhere.
-  return Array.prototype.slice.call(container.content.childNodes);
+  if(container.content.childNodes.length == 1){
+    return container.content.childNodes[0];
+  }
+  else if(container.content.childNodes.length > 1){
+    return Array.prototype.slice.call(container.content.childNodes);
+  }
+  return null;
 };
 
 XDom.renderText = function(txt){
@@ -334,28 +347,20 @@ XDom.renderText = function(txt){
   
 };
 
-XDom.renderOne = function(html){
-  var _el = XDom.render((html||'').trim());
-  for(var i=0;i<_el.length;i++){
-    if(_el[i].nodeType == Node.ELEMENT_NODE) return _el[i];
-  }
-  return document.createElement('div');
-};
-
 XDom.content = {
   append: function(target, val){
     _.each(XDom.resolve(target), function(el){
-      if(el && el.append) el.append.apply(el, XDom.render(val));
+      if(el && el.append) el.append.apply(el, [].concat(XDom.render(val)));
     });
   },
   prepend: function(target, val){
     _.each(XDom.resolve(target), function(el){
-      if(el && el.prepend) el.prepend.apply(el, XDom.render(val));
+      if(el && el.prepend) el.prepend.apply(el, [].concat(XDom.render(val)));
     });
   },
   replace: function(target, val){
     _.each(XDom.resolve(target), function(el){
-      if(el && el.replaceChildren) el.replaceChildren.apply(el, XDom.render(val));
+      if(el && el.replaceChildren) el.replaceChildren.apply(el, [].concat(XDom.render(val)));
     });
   },
   replaceText: function(target, val){
@@ -410,23 +415,30 @@ XDom.setAttribute = function(target, prop, val){
   });
 };
 
-XDom.on = function(target, eventType, handler, eventOptions){
-  var _eventTypes = eventType.split(' ');
+XDom.liveEvent = function(sel, handler){
+  return function(e){
+    if(!e.target || !e.target.matches(sel)) return;
+    handler(e);
+  };
+};
+
+XDom.on = function(target, _eventName, handler, eventOptions){
+  var eventNames = _eventName.split(' ');
   _.each(XDom.resolve(target), function(el){
     if(el && el.addEventListener){
-      _.each(_eventTypes, function(et) {
-        el.addEventListener(et, handler, eventOptions);
+      _.each(eventNames, function(eventName) {
+        el.addEventListener(eventName, handler, eventOptions);
       });
     }
   });
 };
 
-XDom.off = function(target, eventType, handler, eventOptions){
-  var _eventTypes = eventType.split(' ');
+XDom.off = function(target, _eventName, handler, eventOptions){
+  var eventNames = _eventName.split(' ');
   _.each(XDom.resolve(target), function(el){
     if(el && el.removeEventListener){
-      _.each(_eventTypes, function(et) {
-        el.removeEventListener(et, handler, eventOptions);
+      _.each(eventNames, function(eventName) {
+        el.removeEventListener(eventName, handler, eventOptions);
       });
     }
   });
@@ -449,6 +461,22 @@ XDom.emit = function(target, event, data){
       el.dispatchEvent(event);
     }
   });
+};
+
+XDom.onPageLoad = function(event){
+  var execComplete = false;
+  var exec = function(){
+    if(execComplete) return;
+    execComplete = true;
+    event();
+  };
+  if(document.readyState == 'complete'){
+    setTimeout(exec, 0);
+  }
+  else {
+    document.addEventListener('DOMContentLoaded', exec);
+    window.addEventListener('load', exec);
+  }
 };
 
 XDom.getValue = function(target){
@@ -582,15 +610,22 @@ XDom.getChildren = function(target, childrenSelector){
   return rslt;
 };
 
-XDom.filter = function(target, f){
-  var _el = XDom.resolve(target);
-  return _.filter(_el, f);
-};
+function filterElements(_el, expr, exclude){
+  var rslt = [];
+  var f = null;
+  if(_.isFunction(expr)) f = expr;
+  else if(_.isString(expr)) f = function(el){ return el.matches(expr); };
+  else if(_.isArray(expr)) f = function(el){ return _.includes(expr, el); };
+  else if((typeof expr == 'undefined') || (expr === null)) return [];
+  else f = function(el){ return el === expr; };
+  _el.forEach(function(el){
+    if(f(el) ^ exclude) rslt.push(el);
+  });
+  return rslt;
+}
 
-XDom.omit = function(target, f){
-  var _el = XDom.resolve(target);
-  return _.reject(_el, f);
-};
+XDom.filter = function(target, f){ return filterElements(XDom.resolve(target), f, false); };
+XDom.omit = function(target, f){ return filterElements(XDom.resolve(target), f, true); };
 
 XDom.getStyle = function(target, prop){
   var _el = XDom.resolve(target);
@@ -623,6 +658,13 @@ function styleFunc(prop, valTransform){
   };
 }
 
+function styleFuncPx(prop){
+  return styleFunc(prop, function(val){
+    if(_.isNumber(val)) return val.toString()+'px';
+    return val;
+  });
+}
+
 XDom.style = {
   calc: function(target){
     var _el = XDom.resolve(target);
@@ -650,14 +692,12 @@ XDom.style = {
     }
     return val;
   }),
-  width: styleFunc('width', function(val){
-    if(_.isNumber(val)) return val.toString()+'px';
-    return val;
-  }),
-  height: styleFunc('height', function(val){
-    if(_.isNumber(val)) return val.toString()+'px';
-    return val;
-  }),
+  width: styleFuncPx('width'),
+  height: styleFuncPx('height'),
+  top: styleFuncPx('top'),
+  bottom: styleFuncPx('bottom'),
+  left: styleFuncPx('left'),
+  right: styleFuncPx('right'),
 };
 
 function execOnFirstElWithProp(prop, f){

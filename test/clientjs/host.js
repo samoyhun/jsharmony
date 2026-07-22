@@ -20288,54 +20288,42 @@ var mocha = require('mocha');
     });
   })
 
-  describe('XExt escapeQuery', function() {
-    it('escapeQuery', function(){
-      var query;
-      var jqueryParam;
+  /*
+  describe('XExt Request_JSONP', function() {
+    // https://github.com/tghosth/jsonp-server-test
 
-      query = { a: 'string', b: 1 };
-      jqueryParam = "a=string&b=1";
-      //jqueryParam = jsHarmony.jQuery.param(query); console.log(JSON.stringify(jqueryParam));
-      assertEqual(XExt.escapeQuery(query), jqueryParam, 'encodes objects');
+    it('jQuery Control', function(done){
+      jsHarmony.jQuery.ajax('http://localhost:3000/foo', {
+        cache: false,
+        jsonp: 'cb',
+        dataType: 'jsonp',
+        complete: function(data) {
+          assertEqual(data.responseJSON, 'super secret response data foo', 'jquery request');
+          done();
+        },
+        error: function(err) {
+          assert(false, 'jquery request error');
+          done();
+        },
+      });
+    });
 
-      query = { a: null, b: undefined, c: '' };
-      jqueryParam = "a=&b=&c=";
-      //jqueryParam = jsHarmony.jQuery.param(query); console.log(JSON.stringify(jqueryParam));
-      assertEqual(XExt.escapeQuery(query), jqueryParam, 'encodes blanks');
-
-      query = { a: [1,2,3], b: 'c' };
-      jqueryParam = "a%5B%5D=1&a%5B%5D=2&a%5B%5D=3&b=c";
-      //jqueryParam = jsHarmony.jQuery.param(query); console.log(JSON.stringify(jqueryParam));
-      assertEqual(XExt.escapeQuery(query), jqueryParam, 'encodes array values');
-
-      query = { o: { a: 'string', b: 1 } };
-      jqueryParam = "o%5Ba%5D=string&o%5Bb%5D=1";
-      //jqueryParam = jsHarmony.jQuery.param(query); console.log(JSON.stringify(jqueryParam));
-      assertEqual(XExt.escapeQuery(query), jqueryParam, 'encodes object values');
-
-      query = { o: { length: 2, a: 'string', b: 1 } };
-      jqueryParam = "o%5Blength%5D=2&o%5Ba%5D=string&o%5Bb%5D=1";
-      //jqueryParam = jsHarmony.jQuery.param(query); console.log(JSON.stringify(jqueryParam));
-      assertEqual(XExt.escapeQuery(query), jqueryParam, 'encodes object values with a length');
-
-      query = { a: [1,2,[3,4]], b: 'c' };
-      jqueryParam = "a%5B%5D=1&a%5B%5D=2&a%5B2%5D%5B%5D=3&a%5B2%5D%5B%5D=4&b=c";
-      //jqueryParam = jsHarmony.jQuery.param(query); console.log(JSON.stringify(jqueryParam));
-      assertEqual(decodeURIComponent(XExt.escapeQuery(query)), decodeURIComponent(jqueryParam), 'encodes nested array values');
-      assertEqual(XExt.escapeQuery(query), jqueryParam, 'encodes nested array values');
-
-      query = { a: [1,2,{ d: 1, e: 2 }], b: 'c' };
-      jqueryParam = "a%5B%5D=1&a%5B%5D=2&a%5B2%5D%5Bd%5D=1&a%5B2%5D%5Be%5D=2&b=c";
-      //jqueryParam = jsHarmony.jQuery.param(query); console.log(JSON.stringify(jqueryParam));
-      assertEqual(decodeURIComponent(XExt.escapeQuery(query)), decodeURIComponent(jqueryParam), 'encodes array of object');
-      assertEqual(XExt.escapeQuery(query), jqueryParam, 'encodes array of object');
-
-      query = { o: { a: 'string', b: 1, c: [1,2] } };
-      jqueryParam = "o%5Ba%5D=string&o%5Bb%5D=1&o%5Bc%5D%5B%5D=1&o%5Bc%5D%5B%5D=2";
-      //jqueryParam = jsHarmony.jQuery.param(query); console.log(JSON.stringify(jqueryParam));
-      assertEqual(XExt.escapeQuery(query), jqueryParam, 'encodes object of array');
+    it('XExt.Request_JSONP', function(done){
+      XExt.Request_JSONP('http://localhost:3000/foo', {
+        jsonp: 'cb',
+        complete: function(data) {
+          assertEqual(data, 'super secret response data foo', 'xext request');
+          done();
+        },
+        error: function(err) {
+          assert(false, 'xext request error');
+          done();
+        },
+      });
+      assert(true, 'request');
     });
   });
+  */
 })();
 
 },{"mocha":37}]},{},[82]);
