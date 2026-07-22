@@ -1800,7 +1800,7 @@ exports = module.exports = function(jsh){
   };
 
   XExt.XInputAction = function (_obj, _overrideFunc) {
-    if (_obj && (_obj instanceof $) && (_obj.length)) this.obj = _obj[0];
+    if (_obj && (_obj.jquery) && (_obj.length)) this.obj = _obj[0];
     else this.obj = _obj;
     this.tstamp = Date.now();
     this.mouseX = jsh.mouseX;
@@ -2948,8 +2948,8 @@ exports = module.exports = function(jsh){
     if(tgt_obj === container_obj) return false;
     var curElement = tgt_obj;
     while(curElement){
-      if(curElement === container_obj) return true;
       curElement = curElement.parentNode;
+      if(curElement === container_obj) return true;
     }
     return false;
   };
@@ -3269,6 +3269,30 @@ exports = module.exports = function(jsh){
     options.error && request.catch(options.error);
     options.complete && request.finally(options.complete);
     return request;
+  };
+
+  XExt.Request_JSONP = function(url, options) {
+    var callbackName = 'XExt_Request_JSONP' + Date.now();
+    var response;
+    window[callbackName] = function(arg) {response = arg;};
+    var params = {};
+    params[options.jsonp || 'callback'] = callbackName;
+
+    var script = document.createElement('script');
+    script.async = true;
+    script.src = XExt.AppendUrlParams(url, params);
+    jsh.XDom.on(script, 'load error', function(e) {
+      script.remove();
+      delete window[callbackName];
+      if (options.error && e.type == 'error') {
+        options.error(e);
+      }
+      if (options.complete && e.type == 'load') {
+        options.complete(response);
+      }
+    });
+
+    document.querySelector('head').append(script);
   };
 
   return XExt;
