@@ -127,13 +127,12 @@ exports = module.exports = function(jsh){
       }
     }
     //Delegate click handler to xsubmenu_more
-    XDom(jsh.xdroot, '.xmenuhorizontal').on('click', function (e) {
-      if(!XDom.class.contains(e.target, 'xsubmenu_more')) return;
+    XDom(jsh.xdroot, '.xmenuhorizontal').on('click', XDom.liveEvent('.xsubmenu_more', function (e) {
       var xsubmenuside = XDom(jsh.xdroot, '.xsubmenuside');
       if (!xsubmenuside.isVisible()) xsubmenuside.style.display = true;
       else xsubmenuside.style.display = false;
       return false;
-    });
+    }));
   };
 
   XMenuHorizontal.prototype.RenderPaddle = function(newDimensions){
@@ -171,11 +170,9 @@ exports = module.exports = function(jsh){
 
       //Set target position if opacity=0, otherwise animate
       if(curOpacity == 0){
-        var cssParams = { top: tgttop+'px', left: tgtleft+'px', width: tgtwidth+'px' };
-        //console.log('Setting ' + JSON.stringify(cssParams));
-        xdpaddle.style.top = cssParams.top;
-        xdpaddle.style.left = cssParams.left;
-        xdpaddle.style.width = cssParams.width;
+        xdpaddle.style.top = tgttop;
+        xdpaddle.style.left = tgtleft;
+        xdpaddle.style.width = tgtwidth;
         animatePosition = false;
       }
 
@@ -242,13 +239,13 @@ exports = module.exports = function(jsh){
     var xdsubmenusideitem = null;
     if(submenuid) xdsubmenusideitem = XDom(jsh.xdroot, '.xsubmenuside .xsubmenusideitem_'+submenuid);
 
-    XDom(jsh.xdroot, '.xmenu .xmenuitem').omit(function(el){ return (xdmenuitem) ? el === xdmenuitem.selectOne() : false; }).class.remove('selected');
-    XDom(jsh.xdroot, '.xmenuside .xmenusideitem').omit(function(el){ return (xdmenusideitem) ? el === xdmenusideitem.selectOne() : false; }).class.remove('selected');
+    XDom(jsh.xdroot, '.xmenu .xmenuitem').omit(xdmenuitem.selectOne()).class.remove('selected');
+    XDom(jsh.xdroot, '.xmenuside .xmenusideitem').omit(xdmenusideitem.selectOne()).class.remove('selected');
     if (xdmenuitem && !xdmenuitem.class.contains('selected')) xdmenuitem.class.add('selected');
     if (xdmenusideitem && !xdmenusideitem.class.contains('selected')) xdmenusideitem.class.add('selected');
 
-    XDom(jsh.xdroot, '.xsubmenu .xsubmenuitem').omit(function(el){ return (xdsubmenuitem) ? el === xdsubmenuitem.selectOne() : false; }).class.remove('selected');
-    XDom(jsh.xdroot, '.xsubmenuside .xsubmenusideitem').omit(function(el){ return (xdsubmenusideitem) ? el === xdsubmenusideitem.selectOne() : false; }).class.remove('selected');
+    XDom(jsh.xdroot, '.xsubmenu .xsubmenuitem').omit(xdsubmenuitem.selectOne()).class.remove('selected');
+    XDom(jsh.xdroot, '.xsubmenuside .xsubmenusideitem').omit(xdsubmenusideitem.selectOne()).class.remove('selected');
     if (xdsubmenuitem && !xdsubmenuitem.class.contains('selected')) xdsubmenuitem.class.add('selected');
     if (xdsubmenusideitem && !xdsubmenusideitem.class.contains('selected')) xdsubmenusideitem.class.add('selected');
 
@@ -375,7 +372,7 @@ exports = module.exports = function(jsh){
     if (xsubmenuside.length > 0) {
       for (var i = 0; i < _this.SubMenuItems.length; i++) {
         var xsubmenuitem = _this.SubMenuItems[i].xdobj;
-        if (xsubmenuitem.selectOne().tagName === 'A') {
+        if (xsubmenuitem.filter('a').length) {
           var link_onclick = xsubmenuitem.attr.onclick;
           if(link_onclick){
             link_onclick = 'onclick="'+jsh.getInstance()+'.XDom('+jsh.getInstance()+'.xdroot, \'.xsubmenuside\').style.display = false; ' + link_onclick + ';"';
