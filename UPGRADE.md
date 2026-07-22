@@ -269,6 +269,16 @@ Before:
 After:
 ```jsh.XExt.escapeQuery({ data: JSON.stringify(execdata) })```
 
+#### $.contains
+
+the `XExt.isChildOf` function should behave similarly to `$.contains`
+
+Before:
+```$.contains(child_obj, parent_obj)```
+
+After:
+```jsh.XExt.isChildOf(child_obj, parent_obj)```
+
 #### $.ajax
 
 `XExt.Request` provides some of the same affordances. Use `.XExt.AppendUrlParamsCacheBust` for url-based unique param (cache: false in $.ajax), or `XExt.AppendUrlParams` without the uniq parameter.
@@ -296,6 +306,32 @@ jsh.XExt.Request(jsh.XExt.AppendUrlParamsCacheBust(url, params), {
 });
 ```
 
+##### $.ajax: JSONP
+
+`XExt.Request_JSONP` provides basic JSONP functionality where this is still required. Response is provided as direct argument, rather than data.responseJSON.
+
+jQuery:
+```
+$.ajax({
+  cache: false,
+  url: url,
+  data: params,
+  jsonp: 'callback',
+  dataType: 'jsonp',
+  complete: function(data){ data.responseJSON ... },
+  error: function(err) { ... },
+});
+```
+
+XExt.Request_JSONP:
+```
+jsh.XExt.Request_JSONP(jsh.XExt.AppendUrlParamsCacheBust(url, params), {
+  jsonp: 'callback',
+  complete: function(data){ data ... },
+  error: function(err) { ... },
+});
+```
+
 #### XExt.jForEach Removed
 
 the following `.select().forEach(...)` will behave similarly to `XExt.jForEach`
@@ -314,4 +350,10 @@ After:
 
 the `XExt.renderTemplate` function is added to return an XDom selector containing a template element specified by the `sel` parameter
 
-TODO: in jsHarmony Factory add `43px` to the in-line `width` style to account for `box-sizing: border-box;` change to all xdialogbox containers (only if an in-line style exists)
+#### CustomPrompt
+Add `43px` to the in-line `width` style to account for `box-sizing: border-box;` change to all xdialogbox containers (only if an in-line style exists)
+
+#### XExt.getFileProxy
+
+Returns DOM object instead of jQuery object
+  Cannot use .prop('src', ...)
