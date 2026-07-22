@@ -263,9 +263,19 @@ exports = module.exports = function(jsh){
   XExt.DatePickerRender = function(ctrl, date, options){
     options = _.extend({ dateFormat: jsh.DEFAULT_DATEFORMAT, onSelect: null}, options);
     if(XDom(jsh.xdroot, '.xdatepicker').length) XExt.DatePickerRemove();
-    
-    var xdobj = XExt.renderTemplate('script.template_datepicker');
-    XDom('body').content.append(xdobj);
+    XDom('body').content.append(
+      '<div class="xdatepicker" style="display: none">\
+        <div class="xdatepicker_banner">\
+          <div class="xdatepicker_nav"><a class="xdatepicker_prev">&lt</a></div>\
+          <div class="xdatepicker_center">\
+            <select class="select_month" style="width:100%"><option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option><option value="3">Apr</option><option value="4">May</option><option value="5">Jun</option><option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option><option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option></select>\
+            <select class="select_year" style="width:100%"></select>\
+          </div>\
+          <div class="xdatepicker_nav"><a class="xdatepicker_next">&gt</a></div>\
+        </div>\
+        <table><thead><tr><th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th></tr></thead><tbody></tbody></table>\
+      </div>'
+    );
     var selDate = {year: date.getFullYear(), month: date.getMonth(), day: date.getDate()};
     XExt.DatePickerUpdate(date, selDate);
 
