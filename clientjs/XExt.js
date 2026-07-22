@@ -2948,8 +2948,8 @@ exports = module.exports = function(jsh){
     if(tgt_obj === container_obj) return false;
     var curElement = tgt_obj;
     while(curElement){
-      if(curElement === container_obj) return true;
       curElement = curElement.parentNode;
+      if(curElement === container_obj) return true;
     }
     return false;
   };
