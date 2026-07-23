@@ -843,18 +843,18 @@ function parseStyleUnit(str) {
   }
 }
 
-function step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete, easeFunc) {
+function step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete, easing) {
   var duration = endTime - startTime;
   var inProgress = ((curTime < endTime) && (duration > 0));
   var xdom_animatestopidx = Number(el.dataset.xdom_animatestopidx);
   if(elAnimateIdx <= xdom_animatestopidx) return;
   else {
     _.each(elProps, function(value, key) {
-      var progressVec = inProgress ? value.from.map(function(fromX, idx){ return fromX + (value.to[idx] - fromX) * easeFunc(((curTime-startTime)/duration)); }) : value.to;
+      var progressVec = inProgress ? value.from.map(function(fromX, idx){ return fromX + (value.to[idx] - fromX) * easing(((curTime-startTime)/duration)); }) : value.to;
       if(value.unit == 'rgba') el.style[key] = 'rgba(' + progressVec[0] + ', ' + progressVec[1] + ', ' + progressVec[2] + ', ' + progressVec[3] + ')';
       else el.style[key] = progressVec[0] + value.unit;
     });
-    inProgress ? requestAnimationFrame(function(curTime){ step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete, easeFunc); }) : onComplete();
+    inProgress ? requestAnimationFrame(function(curTime){ step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete, easing); }) : onComplete();
   }
 }
 
@@ -865,7 +865,13 @@ XDom.stop = function(target) {
   });
 };
 
-XDom.animate = function(target, props, duration, onComplete, ease) {
+XDom.easing = {
+  sine: function(x){ return -(Math.cos(Math.PI * x) - 1) / 2; },
+  linear: function(x){ return x; }
+}
+
+XDom.animate = function(target, props, duration, onComplete, options) {
+  options = _.extend({easing: XDom.easing.sine}, options);
   if(!onComplete) onComplete = function(){};
   if(!props) props = {};
   if(!duration) duration = 0;
@@ -877,28 +883,16 @@ XDom.animate = function(target, props, duration, onComplete, ease) {
     var elProps = {};
     var containsProps = false;
     for(var prop in props){
-      var startObj = parseStyleUnit(window.getComputedStyle(el)[prop]);
-      var endObj = parseStyleUnit(props[prop]);
-      if(!startObj || !endObj || (startObj.unit != endObj.unit)) continue; // leave prop out of elProps at unit mismatch (or missing values)
-      elProps[prop] = {from: startObj.val, to: endObj.val, unit: endObj.unit};
+      var start = parseStyleUnit(window.getComputedStyle(el)[prop]);
+      var end = parseStyleUnit(props[prop]);
+      if(!start || !end || (start.unit != end.unit)) continue; // leave prop out of elProps at unit mismatch (or missing values)
+      elProps[prop] = {from: start.val, to: end.val, unit: end.unit};
       containsProps = true;
     }
     if(containsProps){
-      if(duration > 0) {
-        var startTime = document.timeline.currentTime;
-        var endTime = startTime + duration;
-        var easeFunc = function(x){ return -(Math.cos(Math.PI * x) - 1) / 2;}; // cosine
-        if(ease === 'linear') easeFunc = function(x){return x};
-        requestAnimationFrame(function(curTime){ step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete, easeFunc);});
-      }
-      else {
-        _.each(elProps, function(valueObj, prop) {
-          var to = valueObj.to;
-          if(valueObj.unit === 'rgba') el.style[prop] = 'rgba(' + to[0] + ', ' + to[1] + ', ' + to[2] + ', ' + to[3] + ')';
-          else el.style[prop] = to[0] + valueObj.unit;
-        });
-        onComplete();
-      }
+      var startTime = document.timeline.currentTime;
+      var endTime = startTime + duration;
+      requestAnimationFrame(function(curTime){ step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete, options.easing);});
     }
   });
 };
