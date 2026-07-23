@@ -557,7 +557,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       var target = jsh.XDom.selectOne(xgrid.PlaceholderID, jsh.xdroot);
       target && target.prepend.apply(target, ejsNodes);
     }
-    else if(XDom.selectOne('.xtbl_loadmore', jsh.xdroot.selector(xgrid.PlaceholderID))){
+    else if(jsh.XDom.selectOne('.xtbl_loadmore', jsh.xdroot.selector(xgrid.PlaceholderID))){
       //Prepend
       var target = jsh.XDom.selectOne('.xtbl_loadmore', jsh.xdroot.selector(xgrid.PlaceholderID));
       XDom.insertBefore(target && target.parentNode, ejsNodes, target);
@@ -604,7 +604,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       if (key_names.length != 1) { throw new Error('Models with file downloads must have one key.'); }
       url = jsh._BASEURL + '_dl/' + modelid + '/' + keys[key_names[0]] + '/' + field;
     }
-    jsh.getFileProxy().prop('src', url);
+    jsh.getFileProxy().src = url;
   }
 
   xcontroller.FilePreview = function(field, title, rowid){

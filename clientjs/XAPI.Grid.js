@@ -368,12 +368,9 @@ exports = module.exports = function(jsh){
     }, params);
     if(!callback) callback = function(err, rslt){ };
 
-    $.ajax({
-      type:'GET',
+    jsh.XExt.Request(jsh.XExt.AppendUrlParamsCacheBust(jsh._BASEURL+'_d/'+this.modelid+'/', params), {
+      method: 'GET',
       cache: false,
-      url:jsh._BASEURL+'_d/'+this.modelid+'/',
-      data: params,
-      dataType: 'json',
       success: function(data){ callback(null, data); },
       error: function (data) { callback(data||{}, null); },
     });
@@ -381,7 +378,7 @@ exports = module.exports = function(jsh){
 
   XAPIGrid.jsHarmony.prototype.ExportCSV = function(params, callback){
     var url = jsh._BASEURL + '_csv/' + this.modelid + '/?'+$.param(params);
-    jsh.getFileProxy().prop('src', url);
+    jsh.getFileProxy().src = url;
     if(callback) callback();
   };
 

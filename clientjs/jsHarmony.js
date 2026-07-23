@@ -69,7 +69,7 @@ var jsHarmony = function(options){
     _this.XExt.trigger(_this.onMessage, data);
     _this.trigger('jsh_message', data);
   };
-
+  this.events = {}; /*{event1: [handlers, ...], event2: [handlers, ...], ...}*/
   this.onInit = null; //function(){};
 
   //Options
@@ -165,7 +165,6 @@ var jsHarmony = function(options){
 
   this._instanceClass = this.XExt.escapeCSSClass(this._instance);
   this.root = $(document);
-  this.XDroot = XDom(document);
   this.xdroot = XDom(document);
   this.xdDialogBlock = null;
   this.globalsMonitorCache = {};
@@ -201,7 +200,7 @@ var jsHarmony = function(options){
   this.popups = {};
   this.srcfiles = {};
   this.scriptLoader = {};
-  this.lastWindowSize = { width: $(window).width(), height: $(window).height() };
+  this.lastWindowSize = { width: window.innerWidth, height: window.innerHeight };
 
   this._GET = this.XExt.parseGET();
   _.extend(this._GET, this.forcequery);
@@ -230,24 +229,25 @@ jsHarmony.prototype.getInstance = function(){
 
 jsHarmony.prototype.getFileProxy = function(){
   var _this = this;
-  return _this.$root('#'+_this.getInstance()+'_xfileproxy');
+  return _this.xdroot.selectOne('#'+_this.getInstance()+'_xfileproxy');
 };
 
 jsHarmony.prototype.postFileProxy = function(url, params){
   var _this = this;
-  var jform_container = $('#'+_this.getInstance()+'_xfileform_container');
-  jform_container.empty();
-  var jform = $('<form method="post" id="'+_this.getInstance()+'_xfileform"></form>');
-  jform_container.append(jform);
-  jform.prop('action', url);
-  jform.prop('target', _this.getInstance()+'_xfileproxy');
+  var xdform_container = XDom('#'+_this.getInstance()+'_xfileform_container');
+  xdform_container.content.clear();
+  var form = XDom.render('<form method="post" id="'+_this.getInstance()+'_xfileform"></form>');
+  form.action = url;
+  form.target = _this.getInstance()+'_xfileproxy';
   for(var key in params){
-    var jinput = $('<input type="hidden" />');
-    jinput.prop('name', key);
-    jinput.prop('value', (params[key]||'').toString());
-    jform.append(jinput);
+    var input = XDom.render('<input type="hidden" />');
+    input.name = key;
+    input.value = (params[key]||'').toString();
+    form.appendChild(input);
   }
-  jform.submit().remove();
+  xdform_container.content.append(form);
+  XDom.emit(form, 'submit');
+  XDom.remove(form);
 };
 
 jsHarmony.prototype.loadScript = function(url, cb){
@@ -274,21 +274,11 @@ jsHarmony.prototype.loadScript = function(url, cb){
 
 jsHarmony.prototype.BindEvents = function(){
   var _this = this;
-  $(document).ready(function(){ _this.Init(); });
-  $(document).ready(function () { _this.XWindowResize(); });
-  $(window).load(function () { _this.XWindowResize(); });
-  $(window).resize(function () { _this.XWindowResize(); });
-  $(window).scroll(function () { _this.XWindowResize('scroll'); });
-  window.addEventListener('message', function(event){ _this.Message((event.data || '').toString()); });
-  window.setInterval(function(){
-    var newWindowSize = {
-      width: $(window).width(),
-      height: $(window).height(),
-    };
-    if((newWindowSize.width != _this.lastWindowSize.width) || (newWindowSize.height != _this.lastWindowSize.height)){ _this.XWindowResize(); }
-    _this.lastWindowSize = newWindowSize;
-  }, 500);
-  $(document).keydown(function (e) {
+  XDom.onPageLoad(function(){
+    _this.Init();
+    _this.XWindowResize();
+  });
+  XDom(document).on('keydown', function (e) {
     var handled = false;
     if (_this.XPage.CustomShortcutKeys) {
       for(var i=0;i<_this.XPage.CustomShortcutKeys.length;i++){
@@ -304,12 +294,28 @@ jsHarmony.prototype.BindEvents = function(){
       e.stopImmediatePropagation();
     }
   });
+  var xdWin = XDom(window);
+  xdWin.on('load', function () { _this.XWindowResize(); });
+  xdWin.on('resize', function () { _this.XWindowResize(); });
+  xdWin.on('scroll', function () { _this.XWindowResize('scroll'); });
+  xdWin.on('message', function(event){ _this.Message((event.data || '').toString()); });
+  window.setInterval(function(){
+    var newWindowSize = {
+      width: window.innerWidth,
+      height: window.innerHeight,
+    };
+    if((newWindowSize.width != _this.lastWindowSize.width) || (newWindowSize.height != _this.lastWindowSize.height)){ _this.XWindowResize(); }
+    _this.lastWindowSize = newWindowSize;
+  }, 500);
+
 };
 
 jsHarmony.prototype.Init = function(){
   var _this = this;
+  // TODO: Remove below when jsh.root is nolonger in use
   if(_this.root.$find('body').length) _this.root = _this.root.$find('body');
-  if(_this.XExt.isMobile()) _this.root.$find('.xmain').addClass('xmain_mobile');
+  if(_this.xdroot.select('body').length) _this.xdroot = XDom(_this.xdroot, 'body');
+  if(_this.XExt.isMobile()) XDom(_this.xdroot, '.xmain').class.add('xmain_mobile');
   _this.InitFileUpload();
   this.imageLoader = new this.XImageLoader();
   this.imageLoader.loadqueue = new Array(
@@ -320,7 +326,7 @@ jsHarmony.prototype.Init = function(){
     _this._PUBLICURL+'images/arrow_up_over.png'
   );
   this.imageLoader.StartLoad();
-  $('html').click(function () {
+  XDom('html').on('click', function () {
     _this.hideContextMenu();
   });
   _this.InitDialogs();
@@ -330,13 +336,16 @@ jsHarmony.prototype.Init = function(){
   if(!this.xDialogLoader) this.xDialogLoader = new this.XLoader('.xdialogblock.jsHarmonyElement_'+_this._instanceClass+' .xdialogloadingblock');
   this.xLoader.onSquashedClick.push(function(e){ _this.lastSquashedActionTime = Date.now(); });
   this.xDebugConsole = new this.XDebugConsole();
-  $(document).mousemove(function (e) {
+  var xdDoc = XDom(document);
+  xdDoc.on('mousemove', function (e) {
     _this.mouseX = e.pageX;
     _this.mouseY = e.pageY;
     if(_this.mouseDragObj) _this.mouseDrag(_this.mouseDragObj, e);
-  }).mousedown(function (e) {
+  });
+  xdDoc.on('mousedown', function (e) {
     _this.mouseDown = true;
-  }).mouseup(function (e) {
+  });
+  xdDoc.on('mouseup', function (e) {
     _this.mouseDown = false;
     if(_this.mouseDragObj){
       _this.mouseDragEnd(_this.mouseDragObj, e);
@@ -344,12 +353,13 @@ jsHarmony.prototype.Init = function(){
       e.preventDefault();
       e.stopPropagation();
     }
-  }).mouseleave(function (e) {
+  });
+  xdDoc.on('mouseleave', function (e) {
     _this.mouseDown = false;
   });
-  this.$root('a').on('click', function () {
+  XDom(this.xdroot, 'a').on('click', function () {
     _this.last_clicked_time = Date.now();
-    _this.last_clicked = $(this);
+    _this.last_clicked = XDom(this);
   });
   if(this.isAuthenticated && this.Config.require_html5_after_login){
     this.requireHTML5();
@@ -363,16 +373,15 @@ jsHarmony.prototype.mouseDragBegin = function(mouseDragObj, mouseCanDrop, e){
   _this.hideContextMenu();
   if(!mouseDragObj) return;
   _this.mouseDragObj = mouseDragObj;
-  var jobj = $(mouseDragObj);
   _this.mouseCanDrop = mouseCanDrop;
-  var jclone = jobj.clone();
-  jclone.css('position', 'absolute');
-  jclone.css('z-index', 99998);
-  jclone.css('left', _this.mouseX);
-  jclone.css('top', _this.mouseY);
-  jclone.addClass('xdrag');
-  jclone.removeClass('xdrop');
-  _this.root.prepend(jclone);
+  var xdClone = XDom(XDom.render(mouseDragObj.outerHTML));
+  xdClone.style.position =  'absolute';
+  xdClone.style.zIndex = 99998;
+  xdClone.style.left = _this.mouseX+'px';
+  xdClone.style.top = _this.mouseY+'px';
+  xdClone.class.add('xdrag');
+  xdClone.class.remove('xdrop');
+  _this.xdroot.content.prepend(xdClone);
 
   _this.trigger('jsh_mouseDragBegin', [mouseDragObj, e]);
 };
@@ -381,14 +390,14 @@ jsHarmony.prototype.mouseDrag = function(mouseDragObj, e){
   var _this = this;
   if(!mouseDragObj) return;
   
-  var jclone = _this.$root('.xdrag');
-  jclone.css('left', _this.mouseX);
-  jclone.css('top', _this.mouseY);
+  var xdClone = XDom(_this.xdroot, '.xdrag');
+  xdClone.style.left = _this.mouseX+'px';
+  xdClone.style.top = _this.mouseY+'px';
   var targetObj = null;
-  _this.$root('.xdrop').each(function(){
-    if(_this.XExt.isMouseWithin(this)){
-      if(!_this.mouseCanDrop || _this.mouseCanDrop(this)){
-        if(!targetObj || $.contains(targetObj, this)) targetObj = this;
+  _this.xdroot.select('.xdrop').forEach(function(el){
+    if(_this.XExt.isMouseWithin(el)){
+      if(!_this.mouseCanDrop || _this.mouseCanDrop(el)){
+        if(!targetObj || _this.XExt.isChildOf(targetObj, this)) targetObj = el;
       }
     }
   });
@@ -399,12 +408,12 @@ jsHarmony.prototype.mouseDrag = function(mouseDragObj, e){
 jsHarmony.prototype.mouseDragEnd = function(mouseDragObj, e){
   var _this = this;
   if(!mouseDragObj) return;
-  this.$root('.xdrag').remove();
+  XDom(this.xdroot, '.xdrag').remove();
   var targetObj = null;
-  this.$root('.xdrop').each(function(){
-    if(_this.XExt.isMouseWithin(this)){
-      if(!_this.mouseCanDrop || _this.mouseCanDrop(this)){
-        if(!targetObj || $.contains(targetObj, this)) targetObj = this;
+  this.xdroot.select('.xdrop').forEach(function(el){
+    if(_this.XExt.isMouseWithin(el)){
+      if(!_this.mouseCanDrop || _this.mouseCanDrop(el)){
+        if(!targetObj || _this.XExt.isChildOf(targetObj, el)) targetObj = el;
       }
     }
   });
@@ -416,7 +425,7 @@ jsHarmony.prototype.hideContextMenu = function(){
     this.xContextMenuVisible = false;
     this.xContextMenuItem = undefined;
     this.xContextMenuItemData = undefined;
-    this.$root('.xcontext_menu').hide();
+    XDom(this.xdroot, '.xcontext_menu').style.display = false;
   }
 };
 
@@ -437,20 +446,20 @@ jsHarmony.prototype.DefaultErrorHandler = function(num,txt){
 };
 
 jsHarmony.prototype.XDebugInfo = function (txt,clear) {
-  var jobj = this.$root('.xdebuginfo.jsHarmonyElement_'+this._instanceClass);
-  jobj.show();
-  if (clear) jobj.empty();
-  jobj.prepend(txt + '<br/>');
+  var xdobj = XDom(this.xdroot, '.xdebuginfo.jsHarmonyElement_'+this._instanceClass);
+  xdobj.style.display = true;
+  if (clear) xdobj.content.clear();
+  xdobj.content.prepend(txt + '<br/>');
 };
 jsHarmony.prototype.InitDialogs = function () {
   var _this = this;
-  this.root.append($(ejs.render(XViews['jsh_system'],{ jsh: _this })));
+  this.xdroot.content.append(ejs.render(XViews['jsh_system'],{ jsh: _this }));
   this.xdDialogBlock = XDom(this.xdroot, '.xdialogblock.jsHarmonyElement_'+this._instanceClass);
 };
 jsHarmony.prototype.InitControls = function() {
   var _this = this;
-  $('.xtabcontrol').not('.initialized').each(function(){ _this.XExt.bindTabControl(this); });
-  $('.xaccordiontab').not('.initialized').each(function(){ _this.XExt.bindAccordion(this); });
+  XDom('.xtabcontrol').omit(function(el){return XDom.class.contains(el, 'initialized');}).select().forEach(function(el){ _this.XExt.bindTabControl(el); });
+  XDom('.xaccordiontab').omit(function(el){return XDom.class.contains(el, 'initialized');}).select().forEach(function(el){ _this.XExt.bindAccordion(el); });
 };
 jsHarmony.prototype.refreshBodyHead = function(_el){
   if(!_el) _el = this.xdroot.select('.xbodyhead');
@@ -466,17 +475,17 @@ jsHarmony.prototype.refreshBodyHead = function(_el){
   });
 };
 jsHarmony.prototype.XWindowResize = function (source) {
-  var ww = $(window).width();
-  var wh = $(window).height();
-  var sleft = $(window).scrollLeft();
-  var stop = $(window).scrollTop();
-  var docw = $(document).width();
-  var doch = $(document).height();
+  var ww = window.innerWidth;
+  var wh = window.innerHeight;
+  var sleft = window.scrollX;
+  var stop = window.scrollY;
+  var docw = document.documentElement.scrollWidth;
+  var doch = document.documentElement.scrollHeight;
   var pw = ((docw > ww) ? docw : ww); //Page width = greater of document or window width
   var ph = ((doch > wh) ? doch : wh); //Page height = greater of document or window height
   var params = { ww: ww, wh: wh, sleft: sleft, stop: stop, docw: docw, doch: doch, pw: pw, ph: ph };
   this.refreshBodyHead();
-  this.$root('.xhead').css('top', (-1 * stop) + 'px');
+  XDom.setStyle(this.xdroot.select('.xhead'), 'top', (-1 * stop) + 'px');
   this.XDialogResize(source, params);
   this.RefreshLayout();
   this.lastWindowSize = {
@@ -496,7 +505,7 @@ jsHarmony.prototype.XDialogResize = function (source, params) {
     _.each(this.xdDialogBlock.select('.xdialogbox'), function (obj) {
       var xdobj = XDom(obj);
       if (!XDom.isVisible(obj)) return;
-      if (document.activeElement && document.activeElement.matches('input,select,textarea') && XDom(document.activeElement).parent().select().length) {
+      if (document.activeElement && document.activeElement.matches('input,select,textarea') && XDom(document.activeElement).parent().length) {
         if (source == 'scroll') return;
       }
       var dw = xdobj.calc.widthToBorder();
@@ -538,13 +547,13 @@ jsHarmony.prototype.getFocusHandlers = function (dialogContainer) {
 
 jsHarmony.prototype.getTopDialogContainer = function () {
   if(!this.xDialog.length) return window;
-  return $(this.xDialog[0].obj)[0];
+  return this.xDialog[0].obj;
 };
 
 jsHarmony.prototype.InitFileUpload = function () {
   if (this.xfileuploadLoader != null) return;
   this.xfileuploadLoader = new Object();
-  this.root.append(
+  this.xdroot.content.append(
     '<div style="display:none;">\
       <div class="xdialogbox xfileuploader" align="center" style="height:130px;"><div style="position:relative;">\
         <strong class="xfileuploader_title"></strong>\
@@ -572,7 +581,7 @@ jsHarmony.prototype.InitFileUpload = function () {
 
 jsHarmony.prototype.requireHTML5 = function(){
   var _this = this;
-  $(document).ready(function() {
+  XDom.onPageLoad(function(){
     if (!document.createElement('canvas').getContext) {
       var content = '\
       <div class="browser_upgrade_msg xdialogbox" style="height: 165px; text-align: center; width: 450px;">\
@@ -614,16 +623,35 @@ jsHarmony.prototype.runGlobalsMonitor = function(){
 
 jsHarmony.prototype.parseJQueryElements = function(obj, method) {
   if (obj && obj.jquery) {
-    console.warn('Depreciated: '+method+' received a jquery object. Please pass a dom element.');
+    console.warn('Deprecated: '+method+' received a jquery object. Please pass a dom element.'); // eslint-disable-line no-console
     return obj.filter(function() {return jsHarmony.XDom.isElement(this);}).get(0);
   } else {
     return obj;
   }
 };
-
-jsHarmony.prototype.on = function(){ $(this).on.apply($(this), arguments); };
-jsHarmony.prototype.off = function(){ $(this).off.apply($(this), arguments); };
-jsHarmony.prototype.trigger = function(){ $(this).trigger.apply($(this), arguments); };
+jsHarmony.prototype.on = function(eventName, handler){
+  if(!eventName || !handler) return;
+  if(!this.events[eventName]) this.events[eventName] = [];
+  this.events[eventName].push(handler);
+};
+jsHarmony.prototype.off = function(eventName, handler){
+  if(!eventName || !this.events[eventName]) return;
+  if(handler) {
+    for(var i=0; i<this.events[eventName].length; i++){
+      if(this.events[eventName][i] === handler){
+        this.events[eventName].splice(i, 1);
+        i--;
+      }
+    }
+  }
+  else {
+    this.events[eventName] = [];
+  }
+};
+jsHarmony.prototype.trigger = function(eventName /*, param1, param2 */){
+  if(!eventName || !this.events[eventName]) return;
+  this.XExt.trigger.apply(null, [this.events[eventName]].concat(Array.prototype.slice.call(arguments, 1)));
+};
 
 var instances = [];
 if(global.jsHarmony) instances = global.jsHarmony.Instances;
