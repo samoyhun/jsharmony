@@ -558,7 +558,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       var target = jsh.XDom.selectOne(xgrid.PlaceholderID, jsh.xdroot);
       target && target.prepend.apply(target, ejsNodes);
     }
-    else if(XDom.selectOne('.xtbl_loadmore', jsh.xdroot.selector(xgrid.PlaceholderID))){
+    else if(jsh.XDom.selectOne('.xtbl_loadmore', jsh.xdroot.selector(xgrid.PlaceholderID))){
       //Prepend
       var target = jsh.XDom.selectOne('.xtbl_loadmore', jsh.xdroot.selector(xgrid.PlaceholderID));
       XDom.insertBefore(target && target.parentNode, ejsNodes, target);

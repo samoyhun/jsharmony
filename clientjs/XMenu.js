@@ -239,13 +239,13 @@ exports = module.exports = function(jsh){
     var xdsubmenusideitem = null;
     if(submenuid) xdsubmenusideitem = XDom(jsh.xdroot, '.xsubmenuside .xsubmenusideitem_'+submenuid);
 
-    XDom(jsh.xdroot, '.xmenu .xmenuitem').omit(xdmenuitem.selectOne()).class.remove('selected');
-    XDom(jsh.xdroot, '.xmenuside .xmenusideitem').omit(xdmenusideitem.selectOne()).class.remove('selected');
+    XDom(jsh.xdroot, '.xmenu .xmenuitem').omit(xdmenuitem && xdmenuitem.selectOne()).class.remove('selected');
+    XDom(jsh.xdroot, '.xmenuside .xmenusideitem').omit(xdmenusideitem && xdmenusideitem.selectOne()).class.remove('selected');
     if (xdmenuitem && !xdmenuitem.class.contains('selected')) xdmenuitem.class.add('selected');
     if (xdmenusideitem && !xdmenusideitem.class.contains('selected')) xdmenusideitem.class.add('selected');
 
-    XDom(jsh.xdroot, '.xsubmenu .xsubmenuitem').omit(xdsubmenuitem.selectOne()).class.remove('selected');
-    XDom(jsh.xdroot, '.xsubmenuside .xsubmenusideitem').omit(xdsubmenusideitem.selectOne()).class.remove('selected');
+    XDom(jsh.xdroot, '.xsubmenu .xsubmenuitem').omit(xdsubmenuitem && xdsubmenuitem.selectOne()).class.remove('selected');
+    XDom(jsh.xdroot, '.xsubmenuside .xsubmenusideitem').omit(xdsubmenusideitem && xdsubmenusideitem.selectOne()).class.remove('selected');
     if (xdsubmenuitem && !xdsubmenuitem.class.contains('selected')) xdsubmenuitem.class.add('selected');
     if (xdsubmenusideitem && !xdsubmenusideitem.class.contains('selected')) xdsubmenusideitem.class.add('selected');
 
