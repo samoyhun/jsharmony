@@ -47,19 +47,15 @@ exports = module.exports = function(jsh){
   XBarcode.prototype.Print = function (_Params, onComplete, onFail) {
     var params = {};
     if (_Params) params = _.extend(this.Params, _Params);
-    var url = this.Server + '/print/' + this.Template + '/?' + $.param(params);
+    var url = jsh.XExt.AppendUrlParamsCacheBust(this.Server + '/print/' + this.Template + '/', params);
     XBarcode_ClearLoadEvents();
     XBarcode_SetLoadEvents(onFail);
     
     jsh.xLoader.StartLoading(jsh.xfileuploadLoader);
-    $.ajax({
-      cache: false,
-      url: url,
+    jsh.XExt.Request_JSONP(url, {
       jsonp: 'callback',
-      dataType: 'jsonp',
-      complete: function (data) {
+      complete: function (jdata) {
         XBarcode_ClearLoadEvents();
-        var jdata = data.responseJSON;
         if ((jdata instanceof Object) && ('_error' in jdata)) {
           if (jsh.DefaultErrorHandler(jdata._error.Number, jdata._error.Message)) { /* Do nothing */ }
           else if ((jdata._error.Number == -9) || (jdata._error.Number == -5)) { jsh.XExt.Alert(jdata._error.Message); }
@@ -70,7 +66,7 @@ exports = module.exports = function(jsh){
           if (onComplete) onComplete();
         }
         else {
-          jsh.XExt.Alert('Error Printing Barcode: ' + JSON.stringify(data.responseJSON ? data.responseJSON : ''), onFail);
+          jsh.XExt.Alert('Error Printing Barcode: ' + JSON.stringify(jdata ? jdata : ''), onFail);
         }
       },
       error: function (err) { XBarcode_Timeout(onFail); }

@@ -309,6 +309,32 @@ jsh.XExt.Request(jsh.XExt.AppendUrlParamsCacheBust(url, params), {
 });
 ```
 
+##### $.ajax: JSONP
+
+`XExt.Request_JSONP` provides basic JSONP functionality where this is still required. Response is provided as direct argument, rather than data.responseJSON.
+
+jQuery:
+```
+$.ajax({
+  cache: false,
+  url: url,
+  data: params,
+  jsonp: 'callback',
+  dataType: 'jsonp',
+  complete: function(data){ data.responseJSON ... },
+  error: function(err) { ... },
+});
+```
+
+XExt.Request_JSONP:
+```
+jsh.XExt.Request_JSONP(jsh.XExt.AppendUrlParamsCacheBust(url, params), {
+  jsonp: 'callback',
+  complete: function(data){ data ... },
+  error: function(err) { ... },
+});
+```
+
 #### XExt.jForEach Removed
 
 the following `.select().forEach(...)` will behave similarly to `XExt.jForEach`
