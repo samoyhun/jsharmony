@@ -459,8 +459,8 @@ jsHarmony.prototype.InitDialogs = function () {
 };
 jsHarmony.prototype.InitControls = function() {
   var _this = this;
-  XDom('.xtabcontrol').omit(function(el){return XDom.class.contains(el, 'initialized');}).select().forEach(function(el){ _this.XExt.bindTabControl(el); });
-  XDom('.xaccordiontab').omit(function(el){return XDom.class.contains(el, 'initialized');}).select().forEach(function(el){ _this.XExt.bindAccordion(el); });
+  XDom('.xtabcontrol').omit('.initialized').select().forEach(function(el){ _this.XExt.bindTabControl(el); });
+  XDom('.xaccordiontab').omit('.initialized').select().forEach(function(el){ _this.XExt.bindAccordion(el); });
 };
 jsHarmony.prototype.refreshBodyHead = function(_el){
   if(!_el) _el = this.xdroot.select('.xbodyhead');

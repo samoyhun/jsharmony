@@ -281,15 +281,14 @@ exports = module.exports = function(jsh){
 
     //Attach handlers:
     var xdDatePicker = XDom(jsh.xdroot, '.xdatepicker');
-    xdDatePicker.on('click', function(e){
+    xdDatePicker.on('click', XDom.liveEvent('.entry', function(e){
       var xdClicked = XDom(e.target);
-      if(!xdClicked.class.contains('entry')) return;
       XDom(ctrl).value = jsh.moment({year: xdClicked.data.year, month: xdClicked.data.month, day: xdClicked.innerHTML}).format(options.dateFormat);
       XDom(xdDatePicker, '.entry').class.remove('selected');
       xdClicked.class.add('selected');
       XExt.DatePickerHide();
       if(options.onSelect) options.onSelect(ctrl);
-    });
+    }));
     var xdSelectMonth = XDom(xdDatePicker, '.select_month');
     var xdSelectYear = XDom(xdDatePicker, '.select_year');
     xdDatePicker.on('change', function(){
@@ -1850,13 +1849,13 @@ exports = module.exports = function(jsh){
       XDom(xdctrl, '.glyph').content.replace('&#x25e2;');
     }
     else{
-      var unexpanded = xdTreeItem.omit(function(el){return XDom.class.contains(el, 'expanded');});
+      var unexpanded = xdTreeItem.omit('.expanded');
       var i = 0;
       while(unexpanded.length){
         i++;
         if(i>1000)break;
         unexpanded.select().forEach(function(el){ XExt.TreeExpandNode(xdctrl.selectOne(), XDom.getAttribute(el, 'data-id')); });
-        unexpanded = xdTreeItem.omit(function(el){return XDom.class.contains(el, 'expanded');});
+        unexpanded = xdTreeItem.omit('.expanded');
       }
     }
   };
@@ -2579,7 +2578,7 @@ exports = module.exports = function(jsh){
 
         var panelWidth = null;
         var panelHeight = null;
-        var xsubformPanel = XDom(jsh.xdroot, POPUP_CONTAINER).filter(function(el){return XDom.class.contains(el, 'xsubform');}).selectOne('.xpanel');
+        var xsubformPanel = XDom(jsh.xdroot, POPUP_CONTAINER).filter('.xsubform').selectOne('.xpanel');
         if(xsubformPanel) {
           panelWidth = xsubformPanel.style.width;
           panelHeight = xsubformPanel.style.height;
@@ -3258,13 +3257,13 @@ exports = module.exports = function(jsh){
       xdTabButton.class.add('selected');
       if(tabFor){
         xdTabPanels.class.remove('selected');
-        xdTabPanels.filter(function(el){return XDom.class.contains(el, '.'+tabFor);}).class.add('selected');
+        xdTabPanels.filter('.'+tabFor).class.add('selected');
       }
       var ontabselected = xdTabButton.data.ontabselected;
       if(ontabselected) XExt.JSEval(ontabselected, xdTabButton.selectOne());
     });
-    if(!xdTabButtons.filter(function(el){return XDom.class.contains(el, '.selected');}).length) xdTabButtons.first().class.add('selected');
-    xdTabPanels.filter(function(el){return XDom.class.contains(el, '.'+xdTabButtons.filter(function(el){return XDom.class.contains(el, '.selected');}).attr.for);}).class.add('selected');
+    if(!xdTabButtons.filter('.selected').length) xdTabButtons.first().class.add('selected');
+    xdTabPanels.filter('.'+xdTabButtons.filter('.selected').attr.for).class.add('selected');
     xdobj.class.add('initialized');
   };
   //Bind accordion events
