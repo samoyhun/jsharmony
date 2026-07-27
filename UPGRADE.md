@@ -264,6 +264,7 @@ after:
 #### .datepicker 
 
 the `XExt.DatePicker` function should behave similarly to `.datepicker`. Note: must pass a `ctrl` DOM obj as param instead of chaining jQuery.
+* DatePicker now uses moment instead of jQuery for formatting
 
 #### colorbox TBD
 

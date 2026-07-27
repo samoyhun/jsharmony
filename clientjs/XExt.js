@@ -256,9 +256,9 @@ exports = module.exports = function(jsh){
     });
   };
 
-  /************************
-   * DATEPICKER RENDERING *
-   ************************/
+  /**************
+   * DATEPICKER *
+   **************/
   
   XExt.DatePickerRender = function(ctrl, date, options){
     options = _.extend({ dateFormat: jsh.DEFAULT_DATEFORMAT, onSelect: null}, options);
@@ -323,8 +323,8 @@ exports = module.exports = function(jsh){
     //Load banner years
     var xdSelectYear = XDom(xdDatePicker, '.select_year');
     xdSelectYear.content.clear();
-    for(var i=0; i<21; i++){ //21 = 20 year range + current year
-      var value = year-10+i;
+    for(var i=-10; i<=10; i++){
+      var value = year+i;
       xdSelectYear.content.append('<option value="'+ value +'">'+ value +'</option>');
     }
     //Update banner values
