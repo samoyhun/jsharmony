@@ -843,7 +843,7 @@ function parseStyleUnit(str) {
   }
 }
 
-function step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete, easing) {
+function step(curTime, el, elProps, startTime, endTime, elAnimateIdx, easing, onComplete) {
   var duration = endTime - startTime;
   var inProgress = ((curTime < endTime) && (duration > 0));
   var xdom_animatestopidx = Number(el.dataset.xdom_animatestopidx);
@@ -854,7 +854,8 @@ function step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete
       if(value.unit == 'rgba') el.style[key] = 'rgba(' + progressVec[0] + ', ' + progressVec[1] + ', ' + progressVec[2] + ', ' + progressVec[3] + ')';
       else el.style[key] = progressVec[0] + value.unit;
     });
-    inProgress ? requestAnimationFrame(function(curTime){ step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete, easing); }) : onComplete();
+    if(inProgress) requestAnimationFrame(function(curTime){ step(curTime, el, elProps, startTime, endTime, elAnimateIdx, easing, onComplete); });
+    else onComplete();
   }
 }
 
@@ -866,7 +867,7 @@ XDom.stop = function(target) {
 };
 
 XDom.easing = {
-  sine: function(x){ return -(Math.cos(Math.PI * x) - 1) / 2; },
+  sine: function(x){ return Math.abs(-(Math.cos(Math.PI * x) - 1) / 2); },
   linear: function(x){ return x; }
 }
 
@@ -892,7 +893,7 @@ XDom.animate = function(target, props, duration, onComplete, options) {
     if(containsProps){
       var startTime = document.timeline.currentTime;
       var endTime = startTime + duration;
-      requestAnimationFrame(function(curTime){ step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete, options.easing);});
+      requestAnimationFrame(function(curTime){ step(curTime, el, elProps, startTime, endTime, elAnimateIdx, options.easing, onComplete);});
     }
   });
 };
