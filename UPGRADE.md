@@ -227,6 +227,11 @@ Model onrowbind/onrowunbind code snipits formally provided an environment with a
 
 #### XPage.Disable / XPage.Enable (first argument)
 
+#### XBarcode.EnableScanner(first argument)
+
+```XBarcode.EnableScanner(*obj*, onBarcodeEnd, options)```
+Note: options.destroyHandler must be called in order to unbind the events
+
 These functions expect an array of elements
 
 ```XPage.Disable(form.querySelectorAll('.runas .user'));```

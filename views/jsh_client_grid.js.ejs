@@ -40,8 +40,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     });
     xsearch.Data = new jsh.XSearch.SearchQuery(xmodel);
     xsearch.OnAfterRender = function(){ 
-      // TODO: barcode takes jquery
-      jsh.XDom(jsh.xdroot, '.xsearch_'+xmodel.class+' input.xsearch_value').select().forEach(function(input){ jsh.XBarcode.EnableScanner($(input)); }); 
+      jsh.XDom(jsh.xdroot, '.xsearch_'+xmodel.class+' input.xsearch_value').select().forEach(function(input){ jsh.XBarcode.EnableScanner(input); }); 
       // TODO: jquery datepicker
       jsh.XDom(jsh.xdroot, '.xsearch_'+xmodel.class+' input.xsearch_value.datepicker').select().forEach(function(date){ 
         $(date).datepicker({ constrainInput: false, changeMonth: true, changeYear: true, dateFormat: jsh.DEFAULT_DATEFORMAT });
