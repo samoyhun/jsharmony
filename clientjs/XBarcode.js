@@ -84,7 +84,7 @@ exports = module.exports = function(jsh){
       destroyHandler: null, // [] Array of function(){}
     }, options);
     var xdobj = XDom(obj);
-    if (typeof xdobj.data.keydown_focus !== 'undefined') return;
+    if (typeof xdobj.data.keydown_focus != 'undefined') return;
     var isScanning = false;
     var scanTimer = null;
     var AUTOENDSCAN_TIMEOUT = 500;
