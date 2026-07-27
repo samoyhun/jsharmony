@@ -227,6 +227,11 @@ Model onrowbind/onrowunbind code snipits formally provided an environment with a
 
 #### XPage.Disable / XPage.Enable (first argument)
 
+#### XBarcode.EnableScanner(first argument)
+
+```XBarcode.EnableScanner(*obj*, onBarcodeEnd, options)```
+Note: options.destroyHandler must be called in order to unbind the events
+
 These functions expect an array of elements
 
 ```XPage.Disable(form.querySelectorAll('.runas .user'));```
@@ -354,7 +359,22 @@ After:
 the `XExt.renderTemplate` function is added to return an XDom selector containing a template element specified by the `sel` parameter
 
 #### CustomPrompt
-Add `43px` to the in-line `width` style to account for `box-sizing: border-box;` change to all xdialogbox containers (only if an in-line style exists)
+
+Add `43px` to the in-line `width` style to account for `box-sizing: border-box;` change to all xdialogbox containers (only if an in-line style exists).
+removed option from customprompt `options.reuse`
+`onInit()` now passes `onInit(*xDialogObj*)` was `onInit(acceptfunc, cancelfunc)`
+`onClosed()` now passes `onClosed(*xDialogObj*)` was `onClosed()`
+`acceptfunc` now is stored in `xDialogObj.acceptfunc`
+`cancelfunc` now is stored in `xDialogObj.cancelfunc`
+
+#### XPayment.js
+
+XPayment.js requires testing of XDom implementation (untested)
+
+#### XMenu.js
+
+changed `this.SubMenuItems` from array of items to array of `{xdobj: XDom(item), width: item-width}`
+chnaged `this.MenuItems` from array of items to array of `{xdobj: XDom(item), width: item-width}`
 
 #### XExt.getFileProxy
 

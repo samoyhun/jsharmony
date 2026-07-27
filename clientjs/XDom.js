@@ -844,25 +844,19 @@ function parseStyleUnit(str) {
   }
 }
 
-function step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete) {
+function step(curTime, el, elProps, startTime, endTime, elAnimateIdx, easing, onComplete) {
   var duration = endTime - startTime;
   var inProgress = ((curTime < endTime) && (duration > 0));
   var xdom_animatestopidx = Number(el.dataset.xdom_animatestopidx);
-  if(elAnimateIdx <= xdom_animatestopidx) return onComplete(true);
+  if(elAnimateIdx <= xdom_animatestopidx) return;
   else {
     _.each(elProps, function(value, key) {
-      var progressVec = inProgress ? value.from.map(function(fromX, idx){ return fromX + (value.to[idx] - fromX) * ((curTime-startTime)/duration); }) : value.to;
+      var progressVec = inProgress ? value.from.map(function(fromX, idx){ return fromX + (value.to[idx] - fromX) * easing(((curTime-startTime)/duration)); }) : value.to;
       if(value.unit == 'rgba') el.style[key] = 'rgba(' + progressVec[0] + ', ' + progressVec[1] + ', ' + progressVec[2] + ', ' + progressVec[3] + ')';
       else el.style[key] = progressVec[0] + value.unit;
     });
-    if(inProgress){
-      requestAnimationFrame(function(curTime){
-        step(curTime, el, elProps, startTime, endTime, elAnimateIdx, onComplete);
-      });
-    }
-    else {
-      onComplete(false); //if an element reaches this point then it would have "completed" naturally
-    }
+    if(inProgress) requestAnimationFrame(function(curTime){ step(curTime, el, elProps, startTime, endTime, elAnimateIdx, easing, onComplete); });
+    else onComplete();
   }
 }
 
@@ -873,50 +867,36 @@ XDom.stop = function(target) {
   });
 };
 
-XDom.animate = function(target, props, duration, callback) {
-  if(!callback) callback = function(){};
+XDom.easing = {
+  sine: function(x){ return Math.abs(-(Math.cos(Math.PI * x) - 1) / 2); },
+  linear: function(x){ return x; }
+}
+
+XDom.animate = function(target, props, duration, onComplete, options) {
+  options = _.extend({easing: XDom.easing.sine}, options);
+  if(!onComplete) onComplete = function(){};
   if(!props) props = {};
   if(!duration) duration = 0;
   var _el = XDom.resolve(target);
   if(_el.length === 0) return;
-  var completeCnt = 0;
-  var hasSuccess = false;
   _.each( _el, function(el){
     var elAnimateIdx = parseInt(el.dataset.xdom_animateidx || 0) + 1;
     el.dataset.xdom_animateidx = elAnimateIdx;
     var elProps = {};
     var containsProps = false;
-    for(var key in props){
-      var rawEnd = props[key];
-      if((rawEnd === null) || (typeof rawEnd == 'undefined') || (rawEnd === '')) continue;
-      rawEnd = rawEnd.toString();
-      var rawStart = window.getComputedStyle(el)[key];
-      var start = parseStyleUnit(rawStart);
-      var end = parseStyleUnit(rawEnd);
-      if((!start || !end) || (start.unit != end.unit)) continue; // leave prop out of elProps at unit mismatch (or missing values)
-      elProps[key] = {from: start.val, to: end.val, unit: end.unit};
+    for(var prop in props){
+      var start = parseStyleUnit(window.getComputedStyle(el)[prop]);
+      var end = parseStyleUnit(props[prop]);
+      if(!start || !end || (start.unit != end.unit)) continue; // leave prop out of elProps at unit mismatch (or missing values)
+      elProps[prop] = {from: start.val, to: end.val, unit: end.unit};
       containsProps = true;
     }
-    if(duration <= 0 && containsProps){
-      _.each(elProps, function(valueObj, key) {
-        var to = valueObj.to;
-        if(valueObj.unit === 'rgba') el.style[key] = 'rgba(' + to[0] + ', ' + to[1] + ', ' + to[2] + ', ' + to[3] + ')';
-        else el.style[key] = to[0] + valueObj.unit;
-      });
-    }
-    else if(containsProps) {
+    if(containsProps){
       var startTime = document.timeline.currentTime;
       var endTime = startTime + duration;
-      requestAnimationFrame(function(curTime){
-        step(curTime, el, elProps, startTime, endTime, elAnimateIdx, function(aborted){
-          completeCnt++;
-          if(!aborted) hasSuccess = true;
-          if(hasSuccess && (completeCnt === _el.length)) callback();
-        });
-      });
+      requestAnimationFrame(function(curTime){ step(curTime, el, elProps, startTime, endTime, elAnimateIdx, options.easing, onComplete);});
     }
   });
-  if(duration <= 0) callback();
 };
 
 /**
