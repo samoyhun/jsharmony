@@ -171,17 +171,17 @@ exports = module.exports = function(jsh){
       }
       xdobj.data.keydown_focus = '1';
     };
-    xdobj.on('keydown.xbarcode', onKeyDown);
+    xdobj.on('keydown', onKeyDown);
     var onBlur = function (e) { xdobj.data.keydown_focus = ''; };
-    xdobj.on('blur.xbarcode', onBlur);
+    xdobj.on('blur', onBlur);
     var onKeyup = function (e) { if (xdobj.data.keydown_focus != '1') return; };
-    xdobj.on('keyup.xbarcode', onKeyup);
+    xdobj.on('keyup', onKeyup);
     if(options.onBarcodeReady) options.onBarcodeReady();
     if(options.destroyHandler) options.destroyHandler.push(function(){
       clearTimeout(scanTimer);
-      xdobj.off('keydown.xbarcode', onKeyDown);
-      xdobj.off('blur.xbarcode', onBlur);
-      xdobj.off('keyup.xbarcode', onKeyup);
+      xdobj.off('keydown', onKeyDown);
+      xdobj.off('blur', onBlur);
+      xdobj.off('keyup', onKeyup);
       xdobj.data.keydown_focus = undefined;
       scanTimer = null;
     });
