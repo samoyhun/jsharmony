@@ -1328,9 +1328,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       }
       //Add model to DIV
       // Note: this operation counts on execution of scripts in the embeded code to define the model.
-      // TODO: non-jquery method of executing scripts.
-      $(ocontainer).html(ejsrslt);
-      //jsh.XDom.content.replace(ocontainer, ejsrslt);
+      jsh.XDom.content.replace(ocontainer, ejsrslt, {evaluateScripts: true});
 
       XPage.traverseModelsAsync(model.id,
         function (xmodel, done) {

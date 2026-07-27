@@ -331,7 +331,6 @@ XDom.renderText = function(txt){
   container.innerText = txt;
   // childNodes is a live NodeList, if we return it directly, it will likely have surprising results as nodes are moved elsewhere.
   return Array.prototype.slice.call(container.childNodes);
-  
 };
 
 XDom.renderOne = function(html){
@@ -342,20 +341,52 @@ XDom.renderOne = function(html){
   return document.createElement('div');
 };
 
+function evaluteScript(oldScript) {
+  // don't monkey with script nodes that we can't execute
+  if (oldScript.type && oldScript.type != 'text/javascript') return;
+
+  var newScript = document.createElement('script');
+  newScript.text = oldScript.text;
+  if (oldScript.src) newScript.src = oldScript.src;
+  if (oldScript.type) newScript.type = oldScript.type;
+  oldScript.replaceWith(newScript);
+}
+
+XDom.evaluateScriptsWithin = function(target) {
+  _.each(XDom.resolve(target), function(el){
+    if(el && el.nodeName && el.nodeName.toUpperCase() == 'SCRIPT') {
+      evaluteScript(el);
+    } else if(el && el.querySelector) {
+      _.each(el.querySelectorAll('script'), function(oldScript) {
+        evaluteScript(oldScript);
+      });
+    }
+  });
+};
+
+function elementApplyEval(el, method, val, options) {
+  if(el && el[method]) {
+    var nodes = XDom.render(val);
+    el[method].apply(el, nodes);
+    if(options && options.evaluateScripts) XDom.evaluateScriptsWithin(nodes);
+  }
+}
+
+// script execution happens here rather than XDom.render in case the code assumes elements from the template will be findable in document or xdroot
 XDom.content = {
-  append: function(target, val){
+  append: function(target, val, options){
     _.each(XDom.resolve(target), function(el){
-      if(el && el.append) el.append.apply(el, XDom.render(val));
+      elementApplyEval(el, 'append', val, options);
     });
   },
-  prepend: function(target, val){
+  prepend: function(target, val, options){
     _.each(XDom.resolve(target), function(el){
-      if(el && el.prepend) el.prepend.apply(el, XDom.render(val));
+      elementApplyEval(el, 'prepend', val, options);
     });
   },
-  replace: function(target, val){
+  replace: function(target, val, options){
     _.each(XDom.resolve(target), function(el){
-      if(el && el.replaceChildren) el.replaceChildren.apply(el, XDom.render(val));
+      elementApplyEval(el, 'replaceChildren', val, options);
     });
   },
   replaceText: function(target, val){

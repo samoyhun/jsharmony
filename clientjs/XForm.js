@@ -71,7 +71,7 @@ exports = module.exports = function(jsh){
       this.Data.OnRender.apply(this.Data, arguments);
     }
     else if(this.TemplateID){
-      var ejssource = jsh.XDom(jsh.xdroot, this.TemplateID).select()[0].innerHTML;
+      var ejssource = jsh.XDom(jsh.xdroot, this.TemplateID).first().innerHTML;
       jsh.XDom(jsh.xdroot, this.PlaceholderID).content.replace(jsh.XExt.renderEJS(ejssource, undefined, {
         data:this.Data
       }));
