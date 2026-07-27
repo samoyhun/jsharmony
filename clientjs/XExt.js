@@ -2554,7 +2554,6 @@ exports = module.exports = function(jsh){
           var xdSearchVal = XDom(jsh.xdroot, POPUP_CONTAINER + ' .xsearch_value');
           if (xdSearchVal.isVisible()) xdSearchVal.first().focus();
           else if (XDom(jsh.xdroot, POPUP_CONTAINER).select('td a').length) XDom.focus(XDom(jsh.xdroot, POPUP_CONTAINER).selectOne('td a'));
-          //else jsh.$root(POPUP_CONTAINER).$find('input,select,textarea').first().focus();
 
           xDialogObj.bindDialogHandler(XDom.selectOne('.xpopupbox_content', xDialogObj.obj), 'scroll', function(){ jsh.refreshBodyHead(xdPopup.select('.xbodyhead')); });
         };

@@ -21,11 +21,6 @@ require('./polyfill.js');
 require('./crypto-md5-2.5.3.js');
 
 //Libraries
-var $ = require('./jquery-1.11.2');
-$.fn.$find = function(){ return $.fn.find.apply(this, arguments); };
-var jQuery = $;
-require('../public/jquery-ui/js/jquery-ui-1.10.3.custom-aspa.min.js')(jQuery);
-require('../public/js/jquery.csv.min.js')(jQuery);
 var _ = require('lodash');
 var ejs = require('ejs');
 var async = require('async');
@@ -88,7 +83,6 @@ var jsHarmony = function(options){
   for(var key in options) this[key] = options[key];
 
   //Libraries
-  this.$ = $;
   this._ = _;
   this.ejs = ejs;
   this.async = async;
@@ -164,7 +158,6 @@ var jsHarmony = function(options){
   this.cancelExit = false;
 
   this._instanceClass = this.XExt.escapeCSSClass(this._instance);
-  this.root = $(document);
   this.xdroot = XDom(document);
   this.xdDialogBlock = null;
   this.globalsMonitorCache = {};
@@ -212,15 +205,11 @@ var jsHarmony = function(options){
   jsHarmony.Instances.push(this);
 
   if(options.globalScope){
-    window.$ = $;
-    window.jQuery = $;
     window.moment = moment;
     window.jsh = this;
     if(!_this._instance) _this._instance = 'jsh';
   }
 };
-
-jsHarmony.prototype.$root = function(sel){ return this.root.$find(sel); };
 
 jsHarmony.prototype.getInstance = function(){
   if(!this._instance) throw new Error('jsHarmony._instance is required');
@@ -312,8 +301,6 @@ jsHarmony.prototype.BindEvents = function(){
 
 jsHarmony.prototype.Init = function(){
   var _this = this;
-  // TODO: Remove below when jsh.root is nolonger in use
-  if(_this.root.$find('body').length) _this.root = _this.root.$find('body');
   if(_this.xdroot.select('body').length) _this.xdroot = XDom(_this.xdroot, 'body');
   if(_this.XExt.isMobile()) XDom(_this.xdroot, '.xmain').class.add('xmain_mobile');
   _this.InitFileUpload();
@@ -658,7 +645,6 @@ var instances = [];
 if(global.jsHarmony) instances = global.jsHarmony.Instances;
 if(window.jsHarmony) instances = window.jsHarmony.Instances;
 jsHarmony.Instances = instances;
-jsHarmony.jQuery = $;
 jsHarmony.XDom = XDom;
 
 global.jsHarmony = jsHarmony;

@@ -307,10 +307,8 @@ exports = module.exports = function(jsh){
     var showmore = false;
     //Find out if we need to show "more" menu
     var curleft = _this.SubMenuOverhang;
-    //jsh.$root('.dev_marker').remove();
     for (var i = 0; i < _this.SubMenuItems.length; i++) {
       curleft += _this.SubMenuItems[i].width;
-      //jsh.root.prepend('<div class="dev_marker" style="background-color:red;width:1px;height:120px;position:absolute;top:0px;left:'+curleft+'px;z-index:9999;"></div>');
     }
     if (curleft > maxw) showmore = true;
     

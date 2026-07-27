@@ -17,8 +17,6 @@ You should have received a copy of the GNU Lesser General Public License
 along with this package.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-var $ = require('./jquery-1.11.2');
-$.fn.$find = function(){ return $.fn.find.apply(this, arguments); };
 var _ = require('lodash');
 
 exports = module.exports = function(jsh){
@@ -37,7 +35,7 @@ exports = module.exports = function(jsh){
 
     var _this = this;
     var url = ExecParams.url;
-    if(!_.isEmpty(ExecParams.query)) url += '?'+$.param(ExecParams.query);
+    if(!_.isEmpty(ExecParams.query)) url += '?'+jsh.XExt.escapeQuery(ExecParams.query);
     var loader = null;
     if('loader' in ExecParams){
       loader = ExecParams.loader;
