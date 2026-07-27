@@ -256,6 +256,134 @@ exports = module.exports = function(jsh){
     });
   };
 
+  /**************
+   * DATEPICKER *
+   **************/
+  
+  XExt.DatePickerRender = function(ctrl, date, options){
+    options = _.extend({ dateFormat: jsh.DEFAULT_DATEFORMAT, onSelect: null}, options);
+    if(XDom(jsh.xdroot, '.xdatepicker').length) XExt.DatePickerRemove();
+    XDom('body').content.append(
+      '<div class="xdatepicker" style="display: none">\
+        <div class="xdatepicker_banner">\
+          <div class="xdatepicker_nav"><a class="xdatepicker_prev">&lt</a></div>\
+          <div class="xdatepicker_center">\
+            <select class="select_month" style="width:100%"><option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option><option value="3">Apr</option><option value="4">May</option><option value="5">Jun</option><option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option><option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option></select>\
+            <select class="select_year" style="width:100%"></select>\
+          </div>\
+          <div class="xdatepicker_nav"><a class="xdatepicker_next">&gt</a></div>\
+        </div>\
+        <table><thead><tr><th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th></tr></thead><tbody></tbody></table>\
+      </div>'
+    );
+    var selDate = {year: date.getFullYear(), month: date.getMonth(), day: date.getDate()};
+    XExt.DatePickerUpdate(date, selDate);
+
+    //Attach handlers:
+    var xdDatePicker = XDom(jsh.xdroot, '.xdatepicker');
+    xdDatePicker.on('click', XDom.liveEvent('.entry', function(e){
+      var xdClicked = XDom(e.target);
+      XDom(ctrl).value = jsh.moment({year: xdClicked.data.year, month: xdClicked.data.month, day: xdClicked.innerHTML}).format(options.dateFormat);
+      XDom(xdDatePicker, '.entry').class.remove('selected');
+      xdClicked.class.add('selected');
+      XExt.DatePickerHide();
+      if(options.onSelect) options.onSelect(ctrl);
+    }));
+    var xdSelectMonth = XDom(xdDatePicker, '.select_month');
+    var xdSelectYear = XDom(xdDatePicker, '.select_year');
+    xdDatePicker.on('change', function(){
+      XExt.DatePickerUpdate(new Date(xdSelectYear.value, xdSelectMonth.value), selDate);
+    });
+    XDom(xdDatePicker, '.xdatepicker_next').on('click', function(){
+      var currMonth = parseInt(xdSelectMonth.value);
+      var currYear = parseInt(xdSelectYear.value);
+      if(currMonth >= 11) {currYear++; currMonth = 0;}
+      else currMonth++;
+      XExt.DatePickerUpdate(new Date(currYear, currMonth), selDate);
+    });
+    XDom(xdDatePicker, '.xdatepicker_prev').on('click', function(){
+      var currMonth = parseInt(xdSelectMonth.value);
+      var currYear = parseInt(xdSelectYear.value);
+      if(currMonth <= 0) {currYear--; currMonth = 11;}
+      else currMonth--;
+      XExt.DatePickerUpdate(new Date(currYear, currMonth), selDate);
+    });
+    XExt.DatePickerShow();
+  };
+
+  XExt.DatePickerUpdate = function(date, selDate){
+    var xdDatePicker = XDom(jsh.xdroot, '.xdatepicker');
+    if(!xdDatePicker.length) return;
+
+    var month = date.getMonth();
+    var year = date.getFullYear();
+
+    var firstDay = new Date(year, month, 1).getDay();
+    var totalDays = new Date(year, month + 1, 0).getDate();
+    //Load banner years
+    var xdSelectYear = XDom(xdDatePicker, '.select_year');
+    xdSelectYear.content.clear();
+    for(var i=-10; i<=10; i++){
+      var value = year+i;
+      xdSelectYear.content.append('<option value="'+ value +'">'+ value +'</option>');
+    }
+    //Update banner values
+    XDom(xdDatePicker, '.select_month').value = month;
+    XDom(xdDatePicker, '.select_year').value = year;
+    //Clear table body for update
+    var xdTable = XDom(xdDatePicker, 'tbody');
+    xdTable.content.clear();
+    var xdCurrentTr = XDom(XDom.render('<tr></tr>'));
+    //Append empty cells for beginning of month
+    for(var j=0; j<firstDay; j++){
+      xdCurrentTr.content.append('<td></td>');
+    }
+    //Fill out cells with dates
+    for(var day_idx = 1; day_idx<=totalDays; day_idx++){
+      if((day_idx + firstDay - 1) % 7 === 0){
+        xdTable.content.append(xdCurrentTr);
+        xdCurrentTr = XDom(XDom.render('<tr></tr>'));
+      }
+      var xdCell = XDom(XDom.render('<td><a class="entry">' + day_idx + '</a></td>'));
+      var xdEntry = XDom(xdCell, 'a.entry');
+      xdEntry.data.month = month;
+      xdEntry.data.year = year;
+      if(selDate.year == year && selDate.month == month && selDate.day == day_idx) xdEntry.class.add('selected');
+      xdCurrentTr.content.append(xdCell);
+    }
+    //Append last incomplete row
+    if(xdCurrentTr.children.length > 0) xdTable.content.append(xdCurrentTr);
+  };
+
+  XExt.DatePickerRemove = function(){
+    XDom(jsh.xdroot, '.xdatepicker').remove();
+  };
+
+  XExt.DatePickerHide = function(){
+    XDom(jsh.xdroot, '.xdatepicker').animate.opacity(false, XExt.DatePickerRemove, 350);
+  };
+
+  XExt.DatePickerShow = function(){
+    XDom(jsh.xdroot, '.xdatepicker').animate.opacity(true, null, 350);
+  };
+
+  XExt.DatePicker = function(ctrl, options){
+    var xdctrl = XDom(ctrl);
+    xdctrl.on('focus', function(){
+      var moment = jsh.moment(xdctrl.value, options.dateFormat);
+      if(!moment.isValid()) moment = jsh.moment();
+      var date = new Date(moment.year(), moment.month(), [moment.date()]);
+      XExt.DatePickerRender(ctrl, date, options);
+      var xdDatepicker = XDom(jsh.xdroot, '.xdatepicker');
+      xdDatepicker.style.top = xdctrl.calc.top()+xdctrl.calc.heightToBorder()+window.scrollY+'px';
+      xdDatepicker.style.left = xdctrl.calc.left()+window.scrollX+'px';
+    });
+    xdctrl.on('keydown', function(e){
+      if(e.keyCode == 27) XExt.DatePickerHide(); //esc
+      if(e.keyCode == 9) XExt.DatePickerRemove();//tab
+    });
+  };
+
   XExt.CancelBubble = function (e) {
     if (!e) e = window.event;
     if (e.stopPropagation) e.stopPropagation();
@@ -1721,13 +1849,13 @@ exports = module.exports = function(jsh){
       XDom(xdctrl, '.glyph').content.replace('&#x25e2;');
     }
     else{
-      var unexpanded = xdTreeItem.omit(function(el){return XDom.class.contains(el, 'expanded');});
+      var unexpanded = xdTreeItem.omit('.expanded');
       var i = 0;
       while(unexpanded.length){
         i++;
         if(i>1000)break;
         unexpanded.select().forEach(function(el){ XExt.TreeExpandNode(xdctrl.selectOne(), XDom.getAttribute(el, 'data-id')); });
-        unexpanded = xdTreeItem.omit(function(el){return XDom.class.contains(el, 'expanded');});
+        unexpanded = xdTreeItem.omit('.expanded');
       }
     }
   };
@@ -2450,7 +2578,7 @@ exports = module.exports = function(jsh){
 
         var panelWidth = null;
         var panelHeight = null;
-        var xsubformPanel = XDom(jsh.xdroot, POPUP_CONTAINER).filter(function(el){return XDom.class.contains(el, 'xsubform');}).selectOne('.xpanel');
+        var xsubformPanel = XDom(jsh.xdroot, POPUP_CONTAINER).filter('.xsubform').selectOne('.xpanel');
         if(xsubformPanel) {
           panelWidth = xsubformPanel.style.width;
           panelHeight = xsubformPanel.style.height;
@@ -3129,13 +3257,13 @@ exports = module.exports = function(jsh){
       xdTabButton.class.add('selected');
       if(tabFor){
         xdTabPanels.class.remove('selected');
-        xdTabPanels.filter(function(el){return XDom.class.contains(el, '.'+tabFor);}).class.add('selected');
+        xdTabPanels.filter('.'+tabFor).class.add('selected');
       }
       var ontabselected = xdTabButton.data.ontabselected;
       if(ontabselected) XExt.JSEval(ontabselected, xdTabButton.selectOne());
     });
-    if(!xdTabButtons.filter(function(el){return XDom.class.contains(el, '.selected');}).length) xdTabButtons.first().class.add('selected');
-    xdTabPanels.filter(function(el){return XDom.class.contains(el, '.'+xdTabButtons.filter(function(el){return XDom.class.contains(el, '.selected');}).attr.for);}).class.add('selected');
+    if(!xdTabButtons.filter('.selected').length) xdTabButtons.first().class.add('selected');
+    xdTabPanels.filter('.'+xdTabButtons.filter('.selected').attr.for).class.add('selected');
     xdobj.class.add('initialized');
   };
   //Bind accordion events

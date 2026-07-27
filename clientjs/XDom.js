@@ -489,9 +489,10 @@ XDom.getValue = function(target){
 };
 
 XDom.setValue = function(target, val){
+  val = (val === undefined || val === null) ? '' : val.toString();
   _.each(XDom.resolve(target), function(el){
     if(el && (typeof el.value != 'undefined')){
-      el.value = (val||'').toString();
+      el.value = val;
     }
   });
 };

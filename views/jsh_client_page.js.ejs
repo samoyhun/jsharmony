@@ -287,7 +287,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
         var target = jsh._BASEURL;
         var xdbcrumb = jsh.XDom(jsh.xdroot, 'div.bcrumbs');
         if (xdbcrumb.length > 0) {
-          target = xdBcrumbobj.children.filter(function(el) {return el.nodeName == 'A';}).last().attr.href;
+          target = xdBcrumbobj.children.filter('a').last().attr.href;
         }
         XExt.navTo(target);
       }
@@ -1002,7 +1002,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     if (jsh.xfileupload_ctrl.length != 1) return;
     var xdFileUploader = jsh.XDom(jsh.xdroot, '.xfileuploader');
     var onInit = function () {
-      jsh.XDom.setValue(jsh.xdroot.select('.xfileuploader_prevtoken'), jsh.XDom.getValue(jsh.xfileupload_ctrl.children.filter(function(el){ return jsh.XDom.class.contains(el, 'xform_file_token') })));
+      jsh.XDom.setValue(jsh.xdroot.select('.xfileuploader_prevtoken'), jsh.XDom.getValue(jsh.xfileupload_ctrl.children.filter('.xform_file_token')));
       jsh.XDom.setAttribute(jsh.xdroot.select('.xfileuploader_form'), 'action', jsh._BASEURL + '_ul/');
       XExt.clearFileInput(jsh.xdroot.selectOne('.xfileuploader_file'));
     };

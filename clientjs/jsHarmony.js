@@ -137,7 +137,7 @@ var jsHarmony = function(options){
   this.mouseCanDrop = undefined;    //function(obj){ return true; }
   this.last_clicked_time = undefined;
   this.last_clicked = undefined;
-  this.DEFAULT_DATEFORMAT = 'mm/dd/yy';
+  this.DEFAULT_DATEFORMAT = 'MM/DD/YY';
   this.onPaymentProxyComplete = function(){};
 
   this.imageLoader = null;
@@ -326,7 +326,8 @@ jsHarmony.prototype.Init = function(){
     _this._PUBLICURL+'images/arrow_up_over.png'
   );
   this.imageLoader.StartLoad();
-  XDom('html').on('click', function () {
+  XDom('html').on('click', function (e) {
+    if(!_this.XDom(e.target).parent('.xdatepicker,.datepicker').length) _this.XExt.DatePickerHide();
     _this.hideContextMenu();
   });
   _this.InitDialogs();
@@ -458,8 +459,8 @@ jsHarmony.prototype.InitDialogs = function () {
 };
 jsHarmony.prototype.InitControls = function() {
   var _this = this;
-  XDom('.xtabcontrol').omit(function(el){return XDom.class.contains(el, 'initialized');}).select().forEach(function(el){ _this.XExt.bindTabControl(el); });
-  XDom('.xaccordiontab').omit(function(el){return XDom.class.contains(el, 'initialized');}).select().forEach(function(el){ _this.XExt.bindAccordion(el); });
+  XDom('.xtabcontrol').omit('.initialized').select().forEach(function(el){ _this.XExt.bindTabControl(el); });
+  XDom('.xaccordiontab').omit('.initialized').select().forEach(function(el){ _this.XExt.bindAccordion(el); });
 };
 jsHarmony.prototype.refreshBodyHead = function(_el){
   if(!_el) _el = this.xdroot.select('.xbodyhead');
