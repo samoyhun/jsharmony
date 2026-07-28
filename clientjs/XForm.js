@@ -71,8 +71,8 @@ exports = module.exports = function(jsh){
       this.Data.OnRender.apply(this.Data, arguments);
     }
     else if(this.TemplateID){
-      var ejssource = jsh.XDom(jsh.xdroot, this.TemplateID).select()[0].innerHTML;
-      jsh.XDom(jsh.xdroot, this.PlaceholderID).content.replace(jsh.XExt.renderEJS(ejssource, undefined, {
+      var ejssource = jsh.xd(this.TemplateID).element.innerHTML;
+      jsh.xd(this.PlaceholderID).content.replace(jsh.XExt.renderEJS(ejssource, undefined, {
         data:this.Data
       }));
     }
@@ -141,7 +141,7 @@ exports = module.exports = function(jsh){
       this.Data._orig = null;
     }
     if (this.xData) {
-      jsh.XDom(jsh.xdroot, this.xData.PlaceholderID).selector('.xform_ctrl.updated').class.remove('updated');
+      jsh.xd(this.xData.PlaceholderID).select('.xform_ctrl.updated').class.remove('updated');
     }
     this.IsDirty = false;
   };
@@ -191,7 +191,7 @@ exports = module.exports = function(jsh){
         row = jsh.parseJQueryElements(row, 'XForm.SetIndex');
         this.Data._row = row;
       }
-      else this.Data._row = jsh.XDom(jsh.xdroot, this.xData.PlaceholderID).selectOne("tr[data-id='" + this.Index + "']");
+      else this.Data._row = jsh.xd(this.xData.PlaceholderID).select("tr[data-id='" + this.Index + "']").element;
     }
     return true;
   };

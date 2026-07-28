@@ -54,7 +54,7 @@ exports = module.exports = function(jsh){
     var _PlaceholderID = '';
     if(this.xmodel && this.xmodel && this.xmodel.controller && this.xmodel.controller.search) _PlaceholderID = this.xmodel.controller.search.PlaceholderID || '';
     _this.Items = [];
-    var searchExpressions = jsh.XDom(jsh.xdroot, _PlaceholderID + ' div.xsearch_expression').select();
+    var searchExpressions = jsh.xd(_PlaceholderID + ' div.xsearch_expression').elements;
     for(var i=0;i<searchExpressions.length;i++){
       var obj = searchExpressions[i];
       var v_column = jsh.XDom(obj, 'select.xsearch_column').value;
@@ -68,7 +68,7 @@ exports = module.exports = function(jsh){
   SearchQuery.prototype.HasUpdates = function (_PlaceholderID) {
     var _this = this;
     var newitems = [];
-    jsh.XDom(jsh.xdroot, _PlaceholderID + ' div').select.forEach(function (obj, i) {
+    jsh.xd(_PlaceholderID + ' div').select.forEach(function (obj, i) {
       var v_column = jsh.XDom(obj, 'select.xsearch_column').value;
       var v_value = jsh.XDom(obj, 'input.xsearch_value').value;
       var v_join = jsh.XDom(obj, 'input.xsearch_join').value;

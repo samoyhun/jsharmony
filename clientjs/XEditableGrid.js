@@ -113,7 +113,7 @@ exports = module.exports = function(jsh){
       var newrowid = -1;
       var oldobj = _this.CurrentCell;
       if (!oldobj) return; //Return if user was not previously in grid
-      if (jsh.XDom(jsh.xdroot, '.xdatepicker').isVisible()) {
+      if (jsh.xd('.xdatepicker').isVisible()) {
         if (newobj == document.body) return;
         else if (jsh.XDom.parent(newobj, '.xdatepicker')) return;
       }
@@ -344,7 +344,7 @@ exports = module.exports = function(jsh){
     var xmodel = (modelid? jsh.XModels[modelid] : null);
     var xfields = (xmodel ? xmodel.fields : []);
 
-    _.forEach(jsh.XDom(obj, '.xelem' + xmodel.class).select(), function(el){
+    _.forEach(jsh.XDom(obj, '.xelem' + xmodel.class).elements, function(el){
       //Ignore hidden fields
       if((el.nodeName.toLowerCase()=='input')&&(el.type.toLowerCase()=='hidden')) return;
       var xdEl = jsh.XDom(el);
@@ -377,7 +377,7 @@ exports = module.exports = function(jsh){
     jsh.XDom(obj, '.xelem' + xmodel.class + ', .xlookup, .xtextzoom').on('keydown', function (e) { return _this.ControlKeyDown(this, e); });
     jsh.XDom(obj, '.xlookup,.xtextzoom').on('focus', function (e) { var ctrl = this.previousElementSibling; return _this.SetFocus(ctrl, e); });
     if(datarow && datarow._is_insert){
-      _.forEach(jsh.XDom(obj, '.xelem' + xmodel.class).select(),function(el){
+      _.forEach(jsh.XDom(obj, '.xelem' + xmodel.class).elements,function(el){
         var xdEl = jsh.XDom(el);
         if (!xdEl.class.contains('editable')) return;
         xdEl.class.add('updated');

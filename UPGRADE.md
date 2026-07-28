@@ -17,7 +17,7 @@ jQuery:
 ```jsh.$root('.selector')```
 
 XDom:
-```jsh.XDom(jsh.xdroot, '.selector')```
+```jsh.xd('.selector')```
 
 #### Template source
 
@@ -25,7 +25,7 @@ jQuery:
 ```jsh.$root(_this.TemplateID).html();```
 
 XDom:
-```jsh.XDom(jsh.xdroot, _this.TemplateID).select()[0].innerHTML;```
+```jsh.xd(_this.TemplateID).element.innerHTML;```
 
 #### Append
 
@@ -51,7 +51,7 @@ jQuery:
 ```jsh.$root(grid_template).data('target');```
 
 XDom:
-```jsh.XDom(jsh.xdroot, grid_template).data.target;```
+```jsh.xd(grid_template).data.target;```
 
 #### Slide
 
@@ -59,7 +59,7 @@ jQuery:
 ```jsh.$root('.xsearch_'+xmodel.class).slideDown(timeout,function(){ selectFirstSearchInput(); });```
 
 XDom:
-```jsh.XDom(jsh.xdroot, '.xsearch_'+xmodel.class).animate.height(true, function(){ selectFirstSearchInput(); }, timeout);```
+```jsh.xd('.xsearch_'+xmodel.class).animate.height(true, function(){ selectFirstSearchInput(); }, timeout);```
 
 #### Show
 
@@ -67,7 +67,7 @@ jQuery:
 ```jsh.$root('.xtitlecaption'+xmodel.class).show();```
 
 XDom:
-```jsh.XDom(jsh.xdroot, '.xtitlecaption'+xmodel.class).style.display = true;```
+```jsh.xd('.xtitlecaption'+xmodel.class).style.display = true;```
 
 ### Excplicitly implement filters for jquery-specific selectors
 
@@ -77,7 +77,7 @@ jQuery:
 ```jsh.$root('.xcontext_menu:visible')```
 
 XDom:
-```jsh.XDom(jsh.xdroot, '.xconext_menu').filter(jsh.XDom.isVisible)```
+```jsh.xd('.xconext_menu').filter(jsh.XDom.isVisible)```
 
 ### Replace jQuery objects in method arguments with plain elements
 
@@ -160,7 +160,7 @@ Many callbacks and other interface methods formally took jquery wrapped sets. Th
 
 #### xgrid OnRowBind (first argument)
 
-```if(xgrid.OnRowBind) xgrid.OnRowBind(xdRow.select(), newrow);```
+```if(xgrid.OnRowBind) xgrid.OnRowBind(xdRow.elements, newrow);```
 
 #### XEditableGrid.BindRow (first argument)
 
@@ -183,7 +183,7 @@ Many callbacks and other interface methods formally took jquery wrapped sets. Th
 ```
 XExt.XModel.RenderField(
   xform.DataSet[dbrowid],
-  jsh.XDom(jsh.xdroot, xgrid.PlaceholderID).selector("tr[data-id='" + dbrowid + "']").selectOne(), 
+  jsh.xd(xgrid.PlaceholderID).select("tr[data-id='" + dbrowid + "']").element, 
   xmodel.id, 
   xform.Data.Fields[key],
   xform.DataSet[dbrowid][key],
@@ -207,7 +207,7 @@ Model field ongetvalue code snipits formally provided an environment witha `jctr
 
 ```xmodel.onrowbind(xmodel,*obj*,datarow);```
 
-```xmodel.onrowunbind(xmodel,xdObj.selectOne(),rowid);```
+```xmodel.onrowunbind(xmodel,xdObj.element,rowid);```
 
 Model onrowbind/onrowunbind code snipits formally provided an environment with a `jobj` jQuery object. This is now `obj`, a plain dom object.
 
@@ -343,7 +343,7 @@ jsh.XExt.Request_JSONP(jsh.XExt.AppendUrlParamsCacheBust(url, params), {
 
 #### XExt.jForEach Removed
 
-the following `.select().forEach(...)` will behave similarly to `XExt.jForEach`
+the following `.elements.forEach(...)` will behave similarly to `XExt.jForEach`
 
 #### XExt.dialogButtonFunc 
 

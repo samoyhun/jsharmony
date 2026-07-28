@@ -121,10 +121,10 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       //Do not reload if performing a refresh, and the model is the same as the previous model
       if(options.onRefreshNoChange && jsh.cur_model && model && (JSON.stringify(model)==JSON.stringify(jsh.cur_model))){ options.onRefreshNoChange(); return; }
 
-      var xform_title = jsh.XDom(jsh.xdroot, '.xform_title').selectOne();
+      var xform_title = jsh.xd('.xform_title').element;
       jsh.prev_title = xform_title && xform_title.innerHTML;
       if(!jsh.prev_title) jsh.prev_title = '';
-      var div_bcrumbs = jsh.XDom(jsh.xdroot, 'div.bcrumbs').selectOne();
+      var div_bcrumbs = jsh.xd('div.bcrumbs').element;
       jsh.prev_bcrumbs = div_bcrumbs && div_bcrumbs.innerHTML;
       if(!jsh.prev_bcrumbs) jsh.prev_bcrumbs = '';
 
@@ -162,7 +162,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       jsh.XBase = {};
       var ejsrslt = jsh.Render(model);
       //console.log(ejsrslt); //Show Full Source
-      var xdxbody = jsh.XDom(jsh.xdroot, '.xbody');
+      var xdxbody = jsh.xd('.xbody');
       xdxbody.content.clear();
       jsh.XPage.Destroy();
 
@@ -195,7 +195,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       // TODO: jquery html insertion
       XDom(jsh.xdroot, '.xbody').content.replace(ejsrslt);
       //xdxbody.content.replace(ejsrslt);
-      var prevClasses = XExt.getClasses(xdxbody.selectOne());
+      var prevClasses = XExt.getClasses(xdxbody.element);
       for(var i=0;i<prevClasses.length;i++){
         if(XExt.beginsWith(prevClasses[i], 'xbody_')){
           xdxbody.class.remove(prevClasses[i]);
@@ -209,19 +209,19 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       if (orig_title.indexOf('<#') < 0){
         jsh.XPage.UpdateTitle({ resolveEJS: false });
       }
-      else if(jsh.prev_title_src == model.toptitle) jsh.XDom(jsh.xdroot, '.xform_title').content.replace(jsh.prev_title);
-      else jsh.XDom(jsh.xdroot, '.xform_title').content.replace('&nbsp;');
+      else if(jsh.prev_title_src == model.toptitle) jsh.xd('.xform_title').content.replace(jsh.prev_title);
+      else jsh.xd('.xform_title').content.replace('&nbsp;');
       jsh.prev_title_src = model.toptitle;
     
       //Handle breadcrumbs
-      var div_bcrumbs = jsh.XDom(jsh.xdroot, 'div.bcrumbs').selectOne()
+      var div_bcrumbs = jsh.xd('div.bcrumbs').element
       jsh.orig_bcrumbs = XExt.unescapeEJS(div_bcrumbs && div_bcrumbs.innerHTML);
-      if (jsh.orig_bcrumbs.indexOf('<#') < 0) jsh.XDom(jsh.xdroot, 'div.bcrumbs').content.replace(jsh.orig_bcrumbs);
-      else if(jsh.prev_bcrumbs_src == jsh.orig_bcrumbs) jsh.XDom(jsh.xdroot, 'div.bcrumbs').content.replace(jsh.prev_bcrumbs);
-      else jsh.XDom(jsh.xdroot, 'div.bcrumbs').content.replace('&nbsp;'); 
+      if (jsh.orig_bcrumbs.indexOf('<#') < 0) jsh.xd('div.bcrumbs').content.replace(jsh.orig_bcrumbs);
+      else if(jsh.prev_bcrumbs_src == jsh.orig_bcrumbs) jsh.xd('div.bcrumbs').content.replace(jsh.prev_bcrumbs);
+      else jsh.xd('div.bcrumbs').content.replace('&nbsp;'); 
       jsh.prev_bcrumbs_src = jsh.orig_bcrumbs;
 
-      var xdtoplink_help = jsh.XDom(jsh.xdroot, '.toplink_help').omit('.static');
+      var xdtoplink_help = jsh.xd('.toplink_help').omit('.static');
       xdtoplink_help.attr.href = model.helpurl;
       xdtoplink_help.attr.onclick = 'return (function(){'+XExt.getJSLocals(model.id)+model.helpurl_onclick+'}).call(this);';
       if(model.menu){ jsh.XMenu.Select(model.menu); }
@@ -251,7 +251,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
   }
 
   jsh.ResetLinks = function(rootobj){
-    _.forEach(jsh.XDom(rootobj || jsh.xdroot, 'a').select(), function(obj,i){
+    _.forEach(jsh.XDom(rootobj || jsh.xdroot, 'a').elements, function(obj,i){
       if(jsh.XDom.getAttribute(obj, 'onclick')) return;
       if(jsh.XDom.parent(obj, '.mce-content-body,[contenteditable],.htmlarea_container')) return;
       if(jsh.XDom.getAttribute(obj, 'target')) return;
@@ -439,7 +439,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
   jsh.Error = function(num,txt){
     console.log('Error #'+num+': '+txt);
-    jsh.XDom(jsh.xdroot, '.xbody').content.replace('<h3>Error #'+num+': '+txt+'</h3>');
+    jsh.xd('.xbody').content.replace('<h3>Error #'+num+': '+txt+'</h3>');
   }
 
   //Array of source HTML
