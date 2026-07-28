@@ -105,6 +105,9 @@ var Selector = function(){
     }).join(','));
   };
 
+  _this.xdom = _this.selector;
+  _this.xd = _this.selector;
+
   _this.class = {
     add: XDom.class.add.bind(XDom, this),
     remove: XDom.class.remove.bind(XDom, this),
@@ -134,6 +137,12 @@ var Selector = function(){
   });
   Object.defineProperty(this, 'length', {
     get: function() { return this.select().length; },
+  });
+  Object.defineProperty(this, 'element', {
+    get: function() { var elements = this.select(); return elements && elements.length && elements[0]; },
+  });
+  Object.defineProperty(this, 'elements', {
+    get: function() { return this.select(); },
   });
   _this.data = new Proxy({}, {
     get: function(target, prop, receiver) { return XDom.getData(_this, prop); },
