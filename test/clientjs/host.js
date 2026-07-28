@@ -19584,7 +19584,7 @@ var mocha = require('mocha');
 
     it('input responding to click event', function() {
       XDom.emit('#checkbox1', 'click');
-      assertEqual(XDom('#checkbox1').select()[0].checked, true, 'emit triggered input');
+      assertEqual(XDom('#checkbox1').element.checked, true, 'emit triggered input');
     });
 
     after(function(){
@@ -20138,11 +20138,11 @@ var mocha = require('mocha');
     });
 
     it('is visible', function(){
-      assert(XDom.isVisible(XDom('.visible').selectOne()), 'normal element is visible');
+      assert(XDom.isVisible(XDom('.visible').element), 'normal element is visible');
     });
 
     it('is not visible', function(){
-      assert(!XDom.isVisible(XDom('.hidden').selectOne()), 'off element is not visible');
+      assert(!XDom.isVisible(XDom('.hidden').element), 'off element is not visible');
     });
 
     after(function(){

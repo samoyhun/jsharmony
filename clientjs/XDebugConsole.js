@@ -256,7 +256,7 @@ exports = module.exports = function(jsh){
           '<input type="checkbox" class="xdebugconsole_source" id="' + obj_id + '" value="' + source_id + '"> ' + _this.all_sources[source_id] +
         '</label>';
     }
-    this.xdDebugDialog = XDom(jsh.xdroot, '.xdebugconsole');
+    this.xdDebugDialog = jsh.xd('.xdebugconsole');
     this.xdDebugPanel = XDom(this.xdDebugDialog, '.debug-panel');
     XDom.content.append(this.xdDebugPanel.select('.debug-settings'), settingsHtml);
     this.xdDebugPanelMin = XDom(this.xdDebugDialog, '.debug-panel-minimized');

@@ -20,7 +20,7 @@ This model must be run with the "action" querystring parameter.  The following a
       <% _.each(keys, function(key){ %>
       <label><%=key%>: <input type="text" name="<%=key%>" class="required" value="<%=(querystring[key]||'')%>" /></label><br/>
       <% }); %>
-      <input type="button" value="Browse Record" onclick="var XDom = <%=instance%>.XDom; var XExt = <%=instance%>.XExt; var form = XDom.parent(this, 'form')[0]; var hasErrors = false; XDom(form, '.required').select().forEach(function(el){ if(!el.value){ XExt.Alert('Please enter a value for '+XDom.getAttribute(el, 'name')); hasErrors = true; } }); if(hasErrors) return; form.submit();" style="margin-top:8px;" />
+      <input type="button" value="Browse Record" onclick="var XDom = <%=instance%>.XDom; var XExt = <%=instance%>.XExt; var form = XDom.parent(this, 'form')[0]; var hasErrors = false; XDom(form, '.required').elements.forEach(function(el){ if(!el.value){ XExt.Alert('Please enter a value for '+XDom.getAttribute(el, 'name')); hasErrors = true; } }); if(hasErrors) return; form.submit();" style="margin-top:8px;" />
     </form>
   <% } %>
   <% if(Helper.hasModelAction(req, model, 'BU')){ %>
@@ -32,7 +32,7 @@ This model must be run with the "action" querystring parameter.  The following a
       <% _.each(keys, function(key){ %>
       <label><%=key%>: <input type="text" name="<%=key%>" class="required" value="<%=(querystring[key]||'')%>" /></label><br/>
       <% }); %>
-      <input type="button" value="Update Record" onclick="var XDom = <%=instance%>.XDom; var XExt = <%=instance%>.XExt; var form = XDom.parent(this, 'form')[0]; var hasErrors = false; XDom(form, '.required').select().forEach(function(el){ if(!el.value){ XExt.Alert('Please enter a value for '+XDom.getAttribute(el, 'name')); hasErrors = true; } }); if(hasErrors) return; form.submit();" style="margin-top:8px;" />
+      <input type="button" value="Update Record" onclick="var XDom = <%=instance%>.XDom; var XExt = <%=instance%>.XExt; var form = XDom.parent(this, 'form')[0]; var hasErrors = false; XDom(form, '.required').elements.forEach(function(el){ if(!el.value){ XExt.Alert('Please enter a value for '+XDom.getAttribute(el, 'name')); hasErrors = true; } }); if(hasErrors) return; form.submit();" style="margin-top:8px;" />
     </form>
   <% } %>
 
@@ -46,7 +46,7 @@ This model must be run with the "action" querystring parameter.  The following a
       <% _.each(foreignkeys, function(key){ %>
       <label><%=key%>: <input type="text" name="<%=key%>" class="required" value="<%=(querystring[key]||'')%>" /></label><br/>
       <% }); %>
-      <input type="button" value="Browse Record" onclick="var XDom = <%=instance%>.XDom; var XExt = <%=instance%>.XExt; var form = XDom.parent(this, 'form')[0]; var hasErrors = false; XDom(form, '.required').select().forEach(function(el){ if(!el.value){ XExt.Alert('Please enter a value for '+XDom.getAttribute(el, 'name')); hasErrors = true; } }); if(hasErrors) return; form.submit();" style="margin-top:8px;" />
+      <input type="button" value="Browse Record" onclick="var XDom = <%=instance%>.XDom; var XExt = <%=instance%>.XExt; var form = XDom.parent(this, 'form')[0]; var hasErrors = false; XDom(form, '.required').elements.forEach(function(el){ if(!el.value){ XExt.Alert('Please enter a value for '+XDom.getAttribute(el, 'name')); hasErrors = true; } }); if(hasErrors) return; form.submit();" style="margin-top:8px;" />
     </form>
   <% } %>
   <% if(Helper.hasModelAction(req, model, 'BU')){ %>
@@ -58,7 +58,7 @@ This model must be run with the "action" querystring parameter.  The following a
       <% _.each(foreignkeys, function(key){ %>
       <label><%=key%>: <input type="text" name="<%=key%>" class="required" value="<%=(querystring[key]||'')%>" /></label><br/>
       <% }); %>
-      <input type="button" value="Update Record" onclick="var XDom = <%=instance%>.XDom; var XExt = <%=instance%>.XExt; var form = XDom.parent(this, 'form')[0]; var hasErrors = false; XDom(form, '.required').select().forEach(function(el){ if(!el.value){ XExt.Alert('Please enter a value for '+XDom.getAttribute(el, 'name')); hasErrors = true; } }); if(hasErrors) return; form.submit();" style="margin-top:8px;" />
+      <input type="button" value="Update Record" onclick="var XDom = <%=instance%>.XDom; var XExt = <%=instance%>.XExt; var form = XDom.parent(this, 'form')[0]; var hasErrors = false; XDom(form, '.required').elements.forEach(function(el){ if(!el.value){ XExt.Alert('Please enter a value for '+XDom.getAttribute(el, 'name')); hasErrors = true; } }); if(hasErrors) return; form.submit();" style="margin-top:8px;" />
     </form>
   <% } %>
 <% } %>

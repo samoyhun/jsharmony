@@ -230,7 +230,7 @@ jsHarmony.prototype.getInstance = function(){
 
 jsHarmony.prototype.getFileProxy = function(){
   var _this = this;
-  return _this.xdroot.selectOne('#'+_this.getInstance()+'_xfileproxy');
+  return _this.xd('#'+_this.getInstance()+'_xfileproxy').element;
 };
 
 jsHarmony.prototype.postFileProxy = function(url, params){
@@ -315,8 +315,8 @@ jsHarmony.prototype.Init = function(){
   var _this = this;
   // TODO: Remove below when jsh.root is nolonger in use
   if(_this.root.$find('body').length) _this.root = _this.root.$find('body');
-  if(_this.xdroot.select('body').length) _this.xdroot = XDom(_this.xdroot, 'body');
-  if(_this.XExt.isMobile()) XDom(_this.xdroot, '.xmain').class.add('xmain_mobile');
+  if(_this.xd('body').length) _this.xdroot = _this.xd('body');
+  if(_this.XExt.isMobile()) _this.xd('.xmain').class.add('xmain_mobile');
   _this.InitFileUpload();
   this.imageLoader = new this.XImageLoader();
   this.imageLoader.loadqueue = new Array(
@@ -460,8 +460,8 @@ jsHarmony.prototype.InitDialogs = function () {
 };
 jsHarmony.prototype.InitControls = function() {
   var _this = this;
-  XDom('.xtabcontrol').omit('.initialized').select().forEach(function(el){ _this.XExt.bindTabControl(el); });
-  XDom('.xaccordiontab').omit('.initialized').select().forEach(function(el){ _this.XExt.bindAccordion(el); });
+  XDom('.xtabcontrol').omit('.initialized').elements.forEach(function(el){ _this.XExt.bindTabControl(el); });
+  XDom('.xaccordiontab').omit('.initialized').elements.forEach(function(el){ _this.XExt.bindAccordion(el); });
 };
 jsHarmony.prototype.refreshBodyHead = function(_el){
   if(!_el) _el = this.xdroot.select('.xbodyhead');

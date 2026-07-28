@@ -505,7 +505,7 @@ var mocha = require('mocha');
 
     it('input responding to click event', function() {
       XDom.emit('#checkbox1', 'click');
-      assertEqual(XDom('#checkbox1').select()[0].checked, true, 'emit triggered input');
+      assertEqual(XDom('#checkbox1').element.checked, true, 'emit triggered input');
     });
 
     after(function(){
@@ -836,7 +836,7 @@ var mocha = require('mocha');
       setup();
       var el = document.createElement('div');
       XDom.selector('#parent').insertBefore(el, null);
-      assert(XDom.selector('#parent').children.select()[2] == el, 'inserted at end');
+      assert(XDom.selector('#parent').children.elements[2] == el, 'inserted at end');
     });
 
     it('before first element', function() {
@@ -844,7 +844,7 @@ var mocha = require('mocha');
       var el = document.createElement('div');
       var ref = document.getElementById('child1');
       XDom.selector('#parent').insertBefore(el, ref);
-      assert(XDom.selector('#parent').children.select()[0] == el, 'inserted at beginning');
+      assert(XDom.selector('#parent').children.elements[0] == el, 'inserted at beginning');
     });
 
     it('in the middle', function() {
@@ -852,7 +852,7 @@ var mocha = require('mocha');
       var el = document.createElement('div');
       var ref = document.getElementById('child2');
       XDom.selector('#parent').insertBefore(el, ref);
-      assert(XDom.selector('#parent').children.select()[1] == el, 'inserted at middle');
+      assert(XDom.selector('#parent').children.elements[1] == el, 'inserted at middle');
     });
 
     it('no target', function() {
@@ -875,7 +875,7 @@ var mocha = require('mocha');
       var _el = XDom.render('before <div>inside</div> after');
       var ref = document.getElementById('child2');
       XDom.selector('#parent').insertBefore(_el, ref);
-      assertEqual(XDom.selector('#parent').select()[0].textContent, '1before inside after2', 'inserted all nodes in order');
+      assertEqual(XDom.selector('#parent').elements[0].textContent, '1before inside after2', 'inserted all nodes in order');
     });
 
     after(function(){
@@ -1030,7 +1030,7 @@ var mocha = require('mocha');
       assertEqual(typeof(contentBox.calc.topFromDocument()), 'number', 'contentBox top from document');
       assertEqual(contentBox.calc.topFromParent(), 43, 'contentBox top from parent');
       assertEqual(contentBox.calc.topFromOffsetParent(), 66, 'contentBox top from offset parent');
-      assertEqual(contentBox.calc.topFrom(innerBox.select()[0]), 43, 'contentBox top from target');
+      assertEqual(contentBox.calc.topFrom(innerBox.element), 43, 'contentBox top from target');
     });
 
     it('left', function(){
@@ -1042,7 +1042,7 @@ var mocha = require('mocha');
       assertEqual(typeof(contentBox.calc.leftFromDocument()), 'number', 'contentBox left from document');
       assertEqual(contentBox.calc.leftFromParent(), 43, 'contentBox left from parent');
       assertEqual(contentBox.calc.leftFromOffsetParent(), 66, 'contentBox left from offset parent');
-      assertEqual(contentBox.calc.leftFrom(innerBox.select()[0]), 43, 'contentBox left from target');
+      assertEqual(contentBox.calc.leftFrom(innerBox.element), 43, 'contentBox left from target');
     });
 
     after(function(){
@@ -1059,11 +1059,11 @@ var mocha = require('mocha');
     });
 
     it('is visible', function(){
-      assert(XDom.isVisible(XDom('.visible').selectOne()), 'normal element is visible');
+      assert(XDom.isVisible(XDom('.visible').element), 'normal element is visible');
     });
 
     it('is not visible', function(){
-      assert(!XDom.isVisible(XDom('.hidden').selectOne()), 'off element is not visible');
+      assert(!XDom.isVisible(XDom('.hidden').element), 'off element is not visible');
     });
 
     after(function(){
@@ -1080,7 +1080,7 @@ var mocha = require('mocha');
     });
 
     it('is element', function(){
-      assert(XDom.isElement(XDom('#workspace div').select()[0]), 'div is element');
+      assert(XDom.isElement(XDom('#workspace div').element), 'div is element');
     });
 
     it('is not element', function(){

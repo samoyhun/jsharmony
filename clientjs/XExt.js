@@ -106,7 +106,7 @@ exports = module.exports = function(jsh){
     ctrl = jsh.parseJQueryElements(ctrl,'XExt.TagBox_Save');
     baseinputctrl = jsh.parseJQueryElements(baseinputctrl,'XExt.TagBox_Save');
     var tags = [];
-    XDom(ctrl).getChildren('span').select().forEach(function(el){ tags.push(XDom(el).data.val); });
+    XDom(ctrl).getChildren('span').elements.forEach(function(el){ tags.push(XDom(el).data.val); });
     var xdBaseInputCtrl = XDom(baseinputctrl);
     var prevval = xdBaseInputCtrl.value;
     xdBaseInputCtrl.value = tags.join(', ');
@@ -171,7 +171,7 @@ exports = module.exports = function(jsh){
     xdctrl.on('click', function(){
       if(xdinput.class.contains('inactive')){
         xdinput.value = '';
-        xdinput.selectOne().parentNode.insertBefore(xdinput.selectOne(), null);
+        xdinput.element.parentNode.insertBefore(xdinput.element, null);
         xdinput.focus();
       }
     });
@@ -203,9 +203,9 @@ exports = module.exports = function(jsh){
         if(xdobj.nextSibling().length && (cursorpos==xdobj.value.length)){
           handled = true;
           var objnextnext = null;
-          if(xdobj.nextSibling().nextSibling().length) objnextnext = xdobj.nextSibling().nextSibling().selectOne();
+          if(xdobj.nextSibling().nextSibling().length) objnextnext = xdobj.nextSibling().nextSibling().element;
           isMovingInput = true;
-          xdobj.selectOne().parentNode.insertBefore(xdobj.selectOne(), objnextnext);
+          xdobj.element.parentNode.insertBefore(xdobj.element, objnextnext);
           xdobj.focus();
           isMovingInput = false;
         }
@@ -213,9 +213,9 @@ exports = module.exports = function(jsh){
       else if(e.which==37){ //Left
         if(xdobj.previousSibling().length && (cursorpos==0)){
           handled = true;
-          var objprev = xdobj.previousSibling().selectOne();
+          var objprev = xdobj.previousSibling().element;
           isMovingInput = true;
-          xdobj.selectOne().parentNode.insertBefore(xdobj.selectOne(), objprev);
+          xdobj.element.parentNode.insertBefore(xdobj.element, objprev);
           xdobj.focus();
           isMovingInput = false;
         }
@@ -262,7 +262,7 @@ exports = module.exports = function(jsh){
   
   XExt.DatePickerRender = function(ctrl, date, options){
     options = _.extend({ dateFormat: jsh.DEFAULT_DATEFORMAT, onSelect: null}, options);
-    if(XDom(jsh.xdroot, '.xdatepicker').length) XExt.DatePickerRemove();
+    if(jsh.xd('.xdatepicker').length) XExt.DatePickerRemove();
     XDom('body').content.append(
       '<div class="xdatepicker" style="display: none">\
         <div class="xdatepicker_banner">\
@@ -280,7 +280,7 @@ exports = module.exports = function(jsh){
     XExt.DatePickerUpdate(date, selDate);
 
     //Attach handlers:
-    var xdDatePicker = XDom(jsh.xdroot, '.xdatepicker');
+    var xdDatePicker = jsh.xd('.xdatepicker');
     xdDatePicker.on('click', XDom.liveEvent('.entry', function(e){
       var xdClicked = XDom(e.target);
       XDom(ctrl).value = jsh.moment({year: xdClicked.data.year, month: xdClicked.data.month, day: xdClicked.innerHTML}).format(options.dateFormat);
@@ -312,7 +312,7 @@ exports = module.exports = function(jsh){
   };
 
   XExt.DatePickerUpdate = function(date, selDate){
-    var xdDatePicker = XDom(jsh.xdroot, '.xdatepicker');
+    var xdDatePicker = jsh.xd('.xdatepicker');
     if(!xdDatePicker.length) return;
 
     var month = date.getMonth();
@@ -356,15 +356,15 @@ exports = module.exports = function(jsh){
   };
 
   XExt.DatePickerRemove = function(){
-    XDom(jsh.xdroot, '.xdatepicker').remove();
+    jsh.xd('.xdatepicker').remove();
   };
 
   XExt.DatePickerHide = function(){
-    XDom(jsh.xdroot, '.xdatepicker').animate.opacity(false, XExt.DatePickerRemove, 350);
+    jsh.xd('.xdatepicker').animate.opacity(false, XExt.DatePickerRemove, 350);
   };
 
   XExt.DatePickerShow = function(){
-    XDom(jsh.xdroot, '.xdatepicker').animate.opacity(true, null, 350);
+    jsh.xd('.xdatepicker').animate.opacity(true, null, 350);
   };
 
   XExt.DatePicker = function(ctrl, options){
@@ -374,7 +374,7 @@ exports = module.exports = function(jsh){
       if(!moment.isValid()) moment = jsh.moment();
       var date = new Date(moment.year(), moment.month(), [moment.date()]);
       XExt.DatePickerRender(ctrl, date, options);
-      var xdDatepicker = XDom(jsh.xdroot, '.xdatepicker');
+      var xdDatepicker = jsh.xd('.xdatepicker');
       xdDatepicker.style.top = xdctrl.calc.top()+xdctrl.calc.heightToBorder()+window.scrollY+'px';
       xdDatepicker.style.left = xdctrl.calc.left()+window.scrollX+'px';
     });
@@ -392,14 +392,14 @@ exports = module.exports = function(jsh){
   };
 
   XExt.HideContextMenu = function () {
-    XDom(jsh.xdroot, '.xcontext_menu').style.display = false;
+    jsh.xd('.xcontext_menu').style.display = false;
   };
 
   XExt.ShowContextMenu = function (selector, context_item, data, options){
     options = _.extend({ top: jsh.mouseY, left: jsh.mouseX }, options);
     if (!selector) selector = '.xcontext_menu';
     XExt.HideContextMenu();
-    var xdSelector = XDom(jsh.xdroot, selector);
+    var xdSelector = jsh.xd(selector);
     xdSelector.style.visibility = 'hidden';
     xdSelector.style.display = true;
     var xtop = options.top; var xleft = options.left;
@@ -410,14 +410,14 @@ exports = module.exports = function(jsh){
     var dheight = xdSelector.calc.heightToBorder()+4;
     if ((xtop + dheight) > wheight) xtop = wheight - dheight;
     if ((xleft + dwidth) > wwidth) xleft = wwidth - dwidth;
-    var offsetParent = xdSelector.selectOne().offsetParent;
+    var offsetParent = xdSelector.element.offsetParent;
     xtop -= XDom.calc.top(offsetParent) - 1;
     xleft -= XDom.calc.left(offsetParent) - 1;
 
     if (xtop < 0) xtop = 0;
     if (xleft < 0) xleft = 0;
 
-    xdSelector.getChildren('a').select().forEach(function(el){
+    xdSelector.getChildren('a').elements.forEach(function(el){
       var obj = el;
       var xdobj = XDom(obj);
       var onrender = xdobj.data.onrender;
@@ -983,16 +983,16 @@ exports = module.exports = function(jsh){
     if(!id){ if(cb) cb(); return; }
     if (window.CKEDITOR.instances[id]){ if(cb) cb(); return; }
     
-    var elem = XDom(jsh.xdroot, '#'+id);
-    if(!elem.length) elem = XDom(jsh.xdroot, '.'+id);
+    var elem = jsh.xd('#'+id);
+    if(!elem.length) elem = jsh.xd('.'+id);
     if(!elem.length){ return XExt.Alert('Cound not initialize editor on '+id+': form control with that id not found'); }
     var orig_width = elem.calc.widthToBorder();
     var orig_height = elem.calc.heightToBorder();
     var xdParent = elem.parent();
     if(!xdParent.class.contains(id + '_container')){
       var wrapper = XDom.render('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
-      xdParent.selectOne().append(wrapper);
-      wrapper.appendChild(elem.selectOne());
+      xdParent.element.append(wrapper);
+      wrapper.appendChild(elem.element);
     }
     window.CKEDITOR.replace(id, _.extend({ height: orig_height },config));
     if(cb) cb();
@@ -1008,16 +1008,16 @@ exports = module.exports = function(jsh){
     if(!config){ if(cb) cb(); return; }
     if (window.tinymce.get(id)){ if(cb) cb(); return; }
     
-    var elem = XDom(jsh.xdroot, '#'+id);
-    if(!elem.length) elem = XDom(jsh.xdroot, '.'+id);
+    var elem = jsh.xd('#'+id);
+    if(!elem.length) elem = jsh.xd('.'+id);
     if(!elem.length){ return XExt.Alert('Cound not initialize editor on '+id+': form control with that id not found'); }
     var orig_width = elem.calc.widthToBorder();
     var orig_height = elem.calc.heightToBorder();
     var xdParent = elem.parent();
     if(!xdParent.class.contains(id + '_container')){
       var wrapper = XDom.render('<div class="' + id + '_container htmlarea_container" style="width:' + orig_width + 'px;"></div>');
-      xdParent.selectOne().append(wrapper);
-      wrapper.appendChild(elem.selectOne());
+      xdParent.element.append(wrapper);
+      wrapper.appendChild(elem.element);
     }
     config = config || {};
     config.selector = '#' + id;
@@ -1109,7 +1109,7 @@ exports = module.exports = function(jsh){
   XExt.jumpAnchor = function (name) {
     if (!name) return;
     if (name[0] == '#') name = name.substring(1);
-    var xdobj = XDom(jsh.xdroot, 'a[name="' + name + '"]');
+    var xdobj = jsh.xd('a[name="' + name + '"]');
     if (xdobj.length == 0) return;
     window.scrollTo(0, xdobj.calc.top());
   };
@@ -1350,7 +1350,7 @@ exports = module.exports = function(jsh){
     //Disable item_dropdown if context menu is empty
     if(controlparams.item_dropdown){
       if(field && field.name){
-        var xdContextmenu = XDom(jsh.xdroot, '._item_context_menu_' + field.name);
+        var xdContextmenu = jsh.xd('._item_context_menu_' + field.name);
         if(!xdContextmenu.length || !xdContextmenu.children.length) controlparams.item_dropdown = false;
       }
     }
@@ -1559,7 +1559,7 @@ exports = module.exports = function(jsh){
               var nowTime = new Date().getTime();
               if(!hoverBorderStart) hoverBorderStart = nowTime;
               if((nowTime-hoverBorderStart)>300){
-                xdctrl.selectOne().scrollTop = (Math.max(xdctrl.selectOne().scrollTop - 15, 0));
+                xdctrl.element.scrollTop = (Math.max(xdctrl.element.scrollTop - 15, 0));
               }
             }, 100);
           }
@@ -1572,7 +1572,7 @@ exports = module.exports = function(jsh){
               var nowTime = new Date().getTime();
               if(!hoverBorderStart) hoverBorderStart = nowTime;
               if((nowTime-hoverBorderStart)>300){
-                xdctrl.selectOne().scrollTop += 15;
+                xdctrl.element.scrollTop += 15;
               }
             }, 100);
           }
@@ -1638,7 +1638,7 @@ exports = module.exports = function(jsh){
       return rslt;
     };
     var rslt = jsh.ejs.render('\
-      <a href="#" class="tree_item tree_item_<%=n.ID%> <%=(n.Children.length && (n.LazyRender&&!n.Expanded)?"tree_render_lazy":"")%> <%=(n.Children.length==0?"nochildren":"")%> <%=(n.Expanded?"expanded":"")%> <%=(n.Selected?"selected":"")%>" data-id="<%=n.ID%>" data-value="<%=n.Value%>" onclick=\'<%-instance%>.XExt.TreeSelectNode(this,<%-JSON.stringify(n.Value)%>,{ source: "click" }); return false;\' oncontextmenu=\'return <%-instance%>.XExt.TreeItemContextMenu(this,<%-JSON.stringify(n.ID)%>);\'><div class="glyph" href="#" onclick=\'<%-instance%>.XExt.CancelBubble(arguments[0]); <%-instance%>.XExt.TreeToggleNode(<%-instance%>.XDom(this).parent(".xform_ctrl.tree").selectOne(),<%-JSON.stringify(n.ID)%>); return false;\'><%-(n.Expanded?"&#x25e2;":"&#x25b7;")%></div><% if(n.Icon){ %><img class="icon" src="<%-jsh._PUBLICURL%>images/icon_<%=n.Icon%>.png" /><% } %><span>'+item_dropdown_html+'<%-getNodeContent()%></span></a>\
+      <a href="#" class="tree_item tree_item_<%=n.ID%> <%=(n.Children.length && (n.LazyRender&&!n.Expanded)?"tree_render_lazy":"")%> <%=(n.Children.length==0?"nochildren":"")%> <%=(n.Expanded?"expanded":"")%> <%=(n.Selected?"selected":"")%>" data-id="<%=n.ID%>" data-value="<%=n.Value%>" onclick=\'<%-instance%>.XExt.TreeSelectNode(this,<%-JSON.stringify(n.Value)%>,{ source: "click" }); return false;\' oncontextmenu=\'return <%-instance%>.XExt.TreeItemContextMenu(this,<%-JSON.stringify(n.ID)%>);\'><div class="glyph" href="#" onclick=\'<%-instance%>.XExt.CancelBubble(arguments[0]); <%-instance%>.XExt.TreeToggleNode(<%-instance%>.XDom(this).parent(".xform_ctrl.tree").element,<%-JSON.stringify(n.ID)%>); return false;\'><%-(n.Expanded?"&#x25e2;":"&#x25b7;")%></div><% if(n.Icon){ %><img class="icon" src="<%-jsh._PUBLICURL%>images/icon_<%=n.Icon%>.png" /><% } %><span>'+item_dropdown_html+'<%-getNodeContent()%></span></a>\
       <div class="children <%=(n.Expanded?"expanded":"")%> tree_item_<%=n.ID%>" data-id="<%=n.ID%>" data-value="<%=n.Value%>"><%-children%></div>',
     { n: n, children: children, jsh: jsh, instance: jsh.getInstance(), getNodeContent: getNodeContent }
     );
@@ -1696,7 +1696,7 @@ exports = module.exports = function(jsh){
     }
     if (jsh.xdroot.select(menuid).length) {
       if(contextMenuOptions && contextMenuOptions.hideIfOpen){
-        if(XDom(jsh.xdroot, menuid).isVisible()){
+        if(jsh.xd(menuid).isVisible()){
           XExt.HideContextMenu();
           return false;
         }
@@ -1715,7 +1715,7 @@ exports = module.exports = function(jsh){
 
   XExt.TreeGetSelectedNodes = function (ctrl) {
     var rslt = [];
-    XDom(ctrl, '.tree_item.selected').select().forEach(function(el) {
+    XDom(ctrl, '.tree_item.selected').elements.forEach(function(el) {
       var val = XDom.getData(el, 'value');
       if (val) rslt.push(val.toString());
     });
@@ -1724,7 +1724,7 @@ exports = module.exports = function(jsh){
 
   XExt.TreeGetExpandedNodes = function (ctrl) {
     var rslt = [];
-    XDom(ctrl, '.tree_item.expanded').select().forEach(function(el) {
+    XDom(ctrl, '.tree_item.expanded').elements.forEach(function(el) {
       var val = XDom.getData(el, 'value');
       if (val) rslt.push(val.toString());
     });
@@ -1808,9 +1808,9 @@ exports = module.exports = function(jsh){
   XExt.TreeToggleNode = function (ctrl, nodeid) {
     var xdctrl = XDom(ctrl).parent('.xform_ctrl.tree');
     if (XDom(xdctrl, '.children.tree_item_' + nodeid).class.contains('expanded'))
-      XExt.TreeCollapseNode(xdctrl.selectOne(), nodeid);
+      XExt.TreeCollapseNode(xdctrl.element, nodeid);
     else
-      XExt.TreeExpandNode(xdctrl.selectOne(), nodeid);
+      XExt.TreeExpandNode(xdctrl.element, nodeid);
   };
 
   XExt.TreeCollapseNode = function (ctrl, nodeid) {
@@ -1832,8 +1832,8 @@ exports = module.exports = function(jsh){
     var rslt = [];
     toptree.select('.tree_item.selected').forEach(function(el){
       var xdParent = XDom(el).parent();
-      while (xdParent.length && (xdParent.selectOne() != toptree.selectOne())) {
-        XExt.TreeExpandNode(toptree.selectOne(), xdParent.data.id);
+      while (xdParent.length && (xdParent.element != toptree.element)) {
+        XExt.TreeExpandNode(toptree.element, xdParent.data.id);
         xdParent = xdParent.parent();
       }
     });
@@ -1854,7 +1854,7 @@ exports = module.exports = function(jsh){
       while(unexpanded.length){
         i++;
         if(i>1000)break;
-        unexpanded.select().forEach(function(el){ XExt.TreeExpandNode(xdctrl.selectOne(), XDom.getAttribute(el, 'data-id')); });
+        unexpanded.elements.forEach(function(el){ XExt.TreeExpandNode(xdctrl.element, XDom.getAttribute(el, 'data-id')); });
         unexpanded = xdTreeItem.omit('.expanded');
       }
     }
@@ -2031,7 +2031,7 @@ exports = module.exports = function(jsh){
     if(!xdobj.length) return window;
     var xdDialog = xdobj.parent('.xdialogbox');
     if(!xdDialog.length) return window;
-    return xdDialog.selectOne();
+    return xdDialog.element;
   };
 
   /**
@@ -2064,7 +2064,7 @@ exports = module.exports = function(jsh){
     }
     //alert(msg);
     var xdobj = XExt.renderTemplate('script.template_xalertbox');
-    var alertBox = xdobj.selectOne();
+    var alertBox = xdobj.element;
     var xDialogObj = {
       obj: alertBox,
       onDestroy: function(){ xdobj.remove(); },
@@ -2093,7 +2093,7 @@ exports = module.exports = function(jsh){
 
     xdobj.on('acceptDialog', acceptfunc);
     
-    jsh.xdDialogBlock.selectOne().appendChild(alertBox);
+    jsh.xdDialogBlock.element.appendChild(alertBox);
     xdobj.style.display = true;
     jsh.xdDialogBlock.style.display = true;
     jsh.XWindowResize();
@@ -2128,7 +2128,7 @@ exports = module.exports = function(jsh){
     XDom(oldactive).blur();
 
     var xdobj = XExt.renderTemplate('script.template_xconfirmbox');
-    var confirmBox = xdobj.selectOne();
+    var confirmBox = xdobj.element;
 
     var xDialogObj = {
       obj: confirmBox,
@@ -2158,7 +2158,7 @@ exports = module.exports = function(jsh){
     xdBtnNo.on('click', XExt.dialogButtonFunc(confirmBox, oldactive, onNo));
     XDom(xdobj, 'input').on('keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
     
-    jsh.xdDialogBlock.selectOne().appendChild(confirmBox);
+    jsh.xdDialogBlock.element.appendChild(confirmBox);
     xdobj.style.display = true;
     jsh.xdDialogBlock.style.display = true;
     jsh.XWindowResize();
@@ -2202,7 +2202,7 @@ exports = module.exports = function(jsh){
     //If cancel or close, rslt = null
     //if (onComplete) onComplete(rslt);
     var xdobj = XExt.renderTemplate('script.template_xpromptbox');
-    var promptBox = xdobj.selectOne();
+    var promptBox = xdobj.element;
 
     var xDialogObj = {
       obj: promptBox,
@@ -2227,7 +2227,7 @@ exports = module.exports = function(jsh){
     XDom(xdobj, 'input').on('keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
     xdPromptField.on('keydown', function (e) { if (e.keyCode == 13) { acceptfunc(); } });
     
-    jsh.xdDialogBlock.selectOne().appendChild(promptBox);
+    jsh.xdDialogBlock.element.appendChild(promptBox);
     xdobj.style.display = true;
     jsh.xdDialogBlock.style.display = true;
     jsh.XWindowResize();
@@ -2354,7 +2354,7 @@ exports = module.exports = function(jsh){
             }));
           });
         }
-        jsh.xdDialogBlock.selectOne().appendChild(customPrompt);
+        jsh.xdDialogBlock.element.appendChild(customPrompt);
         xdobj.style.display = true;
         jsh.xdDialogBlock.style.display = true;
         if(jsh.XPage && jsh.XPage.LayoutOneColumn) jsh.XPage.LayoutOneColumn(customPrompt, { reset: true });
@@ -2384,7 +2384,7 @@ exports = module.exports = function(jsh){
     if(!val) val = '';
     val = val.toString();
     var xdobj = XExt.renderTemplate('script.template_xtextzoombox');
-    var textZoomBox = xdobj.selectOne();
+    var textZoomBox = xdobj.element;
 
     var xDialogObj = {
       obj: textZoomBox,
@@ -2414,7 +2414,7 @@ exports = module.exports = function(jsh){
     XDom(xdobj, 'input.button_ok').on('click', acceptfunc);
     XDom(xdobj, 'input.button_cancel').on('click', cancelfunc);
     XDom(xdobj, 'input').on('keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
-    jsh.xdDialogBlock.selectOne().appendChild(textZoomBox);
+    jsh.xdDialogBlock.element.appendChild(textZoomBox);
     xdobj.style.display = true;
     jsh.xdDialogBlock.style.display = true;
     jsh.XWindowResize();
@@ -2425,7 +2425,7 @@ exports = module.exports = function(jsh){
     if(!options) options = {};
     if(!lov) lov = [];
     var xdobj = XExt.renderTemplate('script.template_xhintsbox');
-    var hintsBox = xdobj.selectOne();
+    var hintsBox = xdobj.element;
 
     var xDialogObj = {
       obj: hintsBox,
@@ -2447,7 +2447,7 @@ exports = module.exports = function(jsh){
       xdRowInput.value = item[jsh.uimap.code_val];
       XDom(xdRow, 'span').content.replace(item[jsh.uimap.code_txt]);
       if(options.readonly) xdRowInput.remove();
-      hintsListing.append(xdRow.selectOne());
+      hintsListing.append(xdRow.element);
     });
 
     if(options.readonly) XDom(xdobj, 'input.button_ok,input[type="checkbox"]').style.display = false;
@@ -2466,7 +2466,7 @@ exports = module.exports = function(jsh){
     XDom(xdobj, 'input.button_cancel').on('click', cancelfunc);
     var xdInput = XDom(xdobj, 'input');
     xdInput.on('keydown', function (e) { if (e.keyCode == 27) { cancelfunc(); } });
-    jsh.xdDialogBlock.selectOne().appendChild(hintsBox);
+    jsh.xdDialogBlock.element.appendChild(hintsBox);
     xdobj.style.display = true;
     jsh.xdDialogBlock.style.display = true;
     jsh.XWindowResize();
@@ -2527,7 +2527,7 @@ exports = module.exports = function(jsh){
     if(parentmodelclass) POPUP_CONTAINER += '.xelem' + parentmodelclass;
     if(options.container) POPUP_CONTAINER = options.container;
 
-    if (!parentobj) parentobj = XDom(jsh.xdroot, POPUP_CONTAINER);
+    if (!parentobj) parentobj = jsh.xd(POPUP_CONTAINER);
     var numOpens = 0;
     var xmodel = jsh.XModels[modelid];
 
@@ -2542,7 +2542,7 @@ exports = module.exports = function(jsh){
         if(xgrid){
           xgrid.RowCount = 0;
           if (xgrid.Prop) xgrid.Prop.Enabled = true;
-          XDom(jsh.xdroot, xgrid.PlaceholderID).content.clear();
+          jsh.xd(xgrid.PlaceholderID).content.clear();
         }
         if(xform && xform.Prop){ xform.Prop.Enabled = true; }
         var orig_jsh_ignorefocusHandler = jsh.ignorefocusHandler;
@@ -2550,10 +2550,10 @@ exports = module.exports = function(jsh){
         var onInit = function (xDialogObj) {
           if (options.OnPopupOpen) if(options.OnPopupOpen(popupData[modelid])===false) return;
           numOpens++;
-          if(xgrid && (numOpens==1)) xgrid.Select();
-          var xdSearchVal = XDom(jsh.xdroot, POPUP_CONTAINER + ' .xsearch_value');
+          if(xgrid && (numOpens==1)) xgrid.elements;
+          var xdSearchVal = jsh.xd(POPUP_CONTAINER + ' .xsearch_value');
           if (xdSearchVal.isVisible()) xdSearchVal.first().focus();
-          else if (XDom(jsh.xdroot, POPUP_CONTAINER).select('td a').length) XDom.focus(XDom(jsh.xdroot, POPUP_CONTAINER).selectOne('td a'));
+          else if (jsh.xd(POPUP_CONTAINER).select('td a').length) XDom.focus(jsh.xd(POPUP_CONTAINER).selectOne('td a'));
           //else jsh.$root(POPUP_CONTAINER).$find('input,select,textarea').first().focus();
 
           xDialogObj.bindDialogHandler(XDom.selectOne('.xpopupbox_content', xDialogObj.obj), 'scroll', function(){ jsh.refreshBodyHead(xdPopup.select('.xbodyhead')); });
@@ -2567,7 +2567,7 @@ exports = module.exports = function(jsh){
                 parentmodel.set(fname, popupData[modelid].resultrow[parentfield.controlparams.popup_copy_results[fname]], null);
               }
             }
-            if (options.OnControlUpdate) options.OnControlUpdate(parentobj.selectOne(), popupData[modelid]);
+            if (options.OnControlUpdate) options.OnControlUpdate(parentobj.element, popupData[modelid]);
           }
           if (options.OnPopupClosed) options.OnPopupClosed(popupData[modelid]);
           if (parentobj) parentobj.focus();
@@ -2578,7 +2578,7 @@ exports = module.exports = function(jsh){
 
         var panelWidth = null;
         var panelHeight = null;
-        var xsubformPanel = XDom(jsh.xdroot, POPUP_CONTAINER).filter('.xsubform').selectOne('.xpanel');
+        var xsubformPanel = jsh.xd(POPUP_CONTAINER).filter('.xsubform').selectOne('.xpanel');
         if(xsubformPanel) {
           panelWidth = xsubformPanel.style.width;
           panelHeight = xsubformPanel.style.height;
@@ -2596,7 +2596,7 @@ exports = module.exports = function(jsh){
         var xdPopContext = XDom(xdPopup, '.xpopupbox_content');
         if(panelWidth) xdPopContext.style.width = panelWidth;
         if(panelHeight) xdPopContext.style.minHeight = panelHeight;
-        XExt.CustomPrompt(null, xdPopup.selectOne(), onInit, null, null, onClosed, {backgroundClose: true});
+        XExt.CustomPrompt(null, xdPopup.element, onInit, null, null, onClosed, {backgroundClose: true});
       });
   };
 
@@ -2794,7 +2794,7 @@ exports = module.exports = function(jsh){
     if (xdobj.length) return xdobj;
     var parent = XDom(elem).parent();
     if (!parent.length) return parent;
-    return XExt.findClosest(parent.selectOne(), sel);
+    return XExt.findClosest(parent.element, sel);
   };
 
   XExt.getToken = function (onComplete, onFail) {
@@ -3177,8 +3177,8 @@ exports = module.exports = function(jsh){
     var xdobj = XDom(obj);
     var objpos = {top: xdobj.calc.top(), left: xdobj.calc.left()};
     var containerpos = {top: xdcontainer.calc.top(), left: xdcontainer.calc.left()};
-    objpos.top -= containerpos.top - xdcontainer.selectOne().scrollTop;
-    objpos.left -= containerpos.left - xdcontainer.selectOne().scrollLeft;
+    objpos.top -= containerpos.top - xdcontainer.element.scrollTop;
+    objpos.left -= containerpos.left - xdcontainer.element.scrollLeft;
     XExt.scrollIntoView(container, objpos, xdobj.calc.height());
   };
   //Check if the mouse is within the target element
@@ -3260,7 +3260,7 @@ exports = module.exports = function(jsh){
         xdTabPanels.filter('.'+tabFor).class.add('selected');
       }
       var ontabselected = xdTabButton.data.ontabselected;
-      if(ontabselected) XExt.JSEval(ontabselected, xdTabButton.selectOne());
+      if(ontabselected) XExt.JSEval(ontabselected, xdTabButton.element);
     });
     if(!xdTabButtons.filter('.selected').length) xdTabButtons.first().class.add('selected');
     xdTabPanels.filter('.'+xdTabButtons.filter('.selected').attr.for).class.add('selected');

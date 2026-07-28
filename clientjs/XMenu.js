@@ -90,30 +90,30 @@ exports = module.exports = function(jsh){
 
   XMenuHorizontal.prototype = new XMenuBase();
 
-  XMenuHorizontal.isActive = function(){ return XDom(jsh.xdroot, '.xmenuhorizontal').length; };
+  XMenuHorizontal.isActive = function(){ return jsh.xd('.xmenuhorizontal').length; };
 
   XMenuHorizontal.prototype.Init = function(){
     var _this = this;
     if(!XMenuBase.prototype.Init.apply(this)) return;
 
     //Set up Top Menu Sidebar
-    if (XDom(jsh.xdroot, '.xmenu').length > 0) {
-      XDom(jsh.xdroot, '.xmenu a').select().forEach(function (obj) {
+    if (jsh.xd('.xmenu').length > 0) {
+      jsh.xd('.xmenu a').elements.forEach(function (obj) {
         var xdobj = XDom(obj);
         if (xdobj.class.contains('xmenu_more')) return;
         _this.MenuItems.push({xdobj: xdobj, width: null});
       });
       _this.CalcDimensions(true);
       
-      XDom(jsh.xdroot, '.xmenu_more').on('click', function () {
-        var xmenuside = XDom(jsh.xdroot, '.xmenuside');
-        XDom(jsh.xdroot, '.xsubmenuside').style.display = false;
+      jsh.xd('.xmenu_more').on('click', function () {
+        var xmenuside = jsh.xd('.xmenuside');
+        jsh.xd('.xsubmenuside').style.display = false;
         xmenuside.style.display = !xmenuside.isVisible();
         return false;
       });
       
       //Create xmenuside
-      var xmenuside = XDom(jsh.xdroot, '.xmenuside');
+      var xmenuside = jsh.xd('.xmenuside');
       if (xmenuside.length > 0) {
         for (var i = 0; i < _this.MenuItems.length; i++) {
           var xmenuitem = _this.MenuItems[i].xdobj;
@@ -127,8 +127,8 @@ exports = module.exports = function(jsh){
       }
     }
     //Delegate click handler to xsubmenu_more
-    XDom(jsh.xdroot, '.xmenuhorizontal').on('click', XDom.liveEvent('.xsubmenu_more', function (e) {
-      var xsubmenuside = XDom(jsh.xdroot, '.xsubmenuside');
+    jsh.xd('.xmenuhorizontal').on('click', XDom.liveEvent('.xsubmenu_more', function (e) {
+      var xsubmenuside = jsh.xd('.xsubmenuside');
       if (!xsubmenuside.isVisible()) xsubmenuside.style.display = true;
       else xsubmenuside.style.display = false;
       return false;
@@ -137,11 +137,11 @@ exports = module.exports = function(jsh){
 
   XMenuHorizontal.prototype.RenderPaddle = function(newDimensions){
     var _this = this;
-    var xdpaddle = XDom(jsh.xdroot, '.xmenupaddle');
+    var xdpaddle = jsh.xd('.xmenupaddle');
     if(!xdpaddle.length) return;
-    var xdmenuitem = XDom(jsh.xdroot, '.xmenu .xmenuitem.selected');
+    var xdmenuitem = jsh.xd('.xmenu .xmenuitem.selected');
     var curOpacity = 0;
-    if(typeof xdpaddle.selectOne().style.opacity != 'undefined'){ curOpacity = parseFloat(xdpaddle.selectOne().style.opacity)||0; }
+    if(typeof xdpaddle.element.style.opacity != 'undefined'){ curOpacity = parseFloat(xdpaddle.element.style.opacity)||0; }
 
     var animateParams = {};
     if(!xdmenuitem.length || !xdmenuitem.isVisible()){
@@ -161,7 +161,7 @@ exports = module.exports = function(jsh){
       var tgtleft = Math.round(xdmenuitem.calc.left() - tgtparent.calc.left());
       var tgtwidth = Math.round(xdmenuitem.calc.widthToBorder());
 
-      var curwidth = Math.round(parseFloat(xdpaddle.selectOne().style.width));
+      var curwidth = Math.round(parseFloat(xdpaddle.element.style.width));
       var curheight = Math.round(xdpaddle.calc.height());
       tgttop -= curheight;
 
@@ -207,18 +207,18 @@ exports = module.exports = function(jsh){
     selectedmenu = jsh.XExt.escapeCSSClass(selectedmenu);
 
     //Find item
-    var xdsubmenuitem = XDom(jsh.xdroot, '.xsubmenu .xsubmenuitem_'+selectedmenu).first();
+    var xdsubmenuitem = jsh.xd('.xsubmenu .xsubmenuitem_'+selectedmenu).first();
     var xdmenuitem = null;
     var submenuid = '';
     var menuid = '';
     if(xdsubmenuitem.length){
       submenuid = selectedmenu;
       menuid = jsh.XExt.escapeCSSClass(xdsubmenuitem.parent('.xsubmenu').data.parent);
-      xdmenuitem = XDom(jsh.xdroot, '.xmenu .xmenuitem_'+menuid).first();
+      xdmenuitem = jsh.xd('.xmenu .xmenuitem_'+menuid).first();
     }
     else{
       xdsubmenuitem = null;
-      xdmenuitem = XDom(jsh.xdroot, '.xmenu .xmenuitem_'+selectedmenu).first();
+      xdmenuitem = jsh.xd('.xmenu .xmenuitem_'+selectedmenu).first();
       if(xdmenuitem.length){
         menuid = selectedmenu;
       }
@@ -234,18 +234,18 @@ exports = module.exports = function(jsh){
     _this.RenderSubmenu();
 
     var xdmenusideitem = null;
-    if(menuid) xdmenusideitem = XDom(jsh.xdroot, '.xmenuside .xmenusideitem_'+menuid);
+    if(menuid) xdmenusideitem = jsh.xd('.xmenuside .xmenusideitem_'+menuid);
 
     var xdsubmenusideitem = null;
-    if(submenuid) xdsubmenusideitem = XDom(jsh.xdroot, '.xsubmenuside .xsubmenusideitem_'+submenuid);
+    if(submenuid) xdsubmenusideitem = jsh.xd('.xsubmenuside .xsubmenusideitem_'+submenuid);
 
-    XDom(jsh.xdroot, '.xmenu .xmenuitem').omit(xdmenuitem && xdmenuitem.selectOne()).class.remove('selected');
-    XDom(jsh.xdroot, '.xmenuside .xmenusideitem').omit(xdmenusideitem && xdmenusideitem.selectOne()).class.remove('selected');
+    jsh.xd('.xmenu .xmenuitem').omit(xdmenuitem && xdmenuitem.element).class.remove('selected');
+    jsh.xd('.xmenuside .xmenusideitem').omit(xdmenusideitem && xdmenusideitem.element).class.remove('selected');
     if (xdmenuitem && !xdmenuitem.class.contains('selected')) xdmenuitem.class.add('selected');
     if (xdmenusideitem && !xdmenusideitem.class.contains('selected')) xdmenusideitem.class.add('selected');
 
-    XDom(jsh.xdroot, '.xsubmenu .xsubmenuitem').omit(xdsubmenuitem && xdsubmenuitem.selectOne()).class.remove('selected');
-    XDom(jsh.xdroot, '.xsubmenuside .xsubmenusideitem').omit(xdsubmenusideitem && xdsubmenusideitem.selectOne()).class.remove('selected');
+    jsh.xd('.xsubmenu .xsubmenuitem').omit(xdsubmenuitem && xdsubmenuitem.element).class.remove('selected');
+    jsh.xd('.xsubmenuside .xsubmenusideitem').omit(xdsubmenusideitem && xdsubmenusideitem.element).class.remove('selected');
     if (xdsubmenuitem && !xdsubmenuitem.class.contains('selected')) xdsubmenuitem.class.add('selected');
     if (xdsubmenusideitem && !xdsubmenusideitem.class.contains('selected')) xdsubmenusideitem.class.add('selected');
 
@@ -256,7 +256,7 @@ exports = module.exports = function(jsh){
     var _this = this;
     if(!this.isInitialized) return;
 
-    if (XDom(jsh.xdroot, '.xmenu').length == 0) return;
+    if (jsh.xd('.xmenu').length == 0) return;
     var maxw = window.innerWidth-1;
     
     //Refresh dimensions, if necessary
@@ -268,7 +268,7 @@ exports = module.exports = function(jsh){
     for (var i = 0; i < _this.MenuItems.length; i++) { curleft += _this.MenuItems[i].width; }
     if (curleft > maxw) showmore = true;
     
-    var xdmore = XDom(jsh.xdroot, '.xmenu_more');
+    var xdmore = jsh.xd('.xmenu_more');
     if (xdmore.length > 0) {
       if (showmore) {
         if (!xdmore.isVisible()) xdmore.style.display = true;
@@ -276,7 +276,7 @@ exports = module.exports = function(jsh){
         maxw -= _this.MenuMoreWidth;
       }
       else {
-        if (xdmore.isVisible()) { xdmore.style.display = false; XDom(jsh.xdroot, '.xmenuside').style.display = false; }
+        if (xdmore.isVisible()) { xdmore.style.display = false; jsh.xd('.xmenuside').style.display = false; }
       }
     }
     
@@ -342,7 +342,7 @@ exports = module.exports = function(jsh){
   XMenuHorizontal.prototype.getSubmenu = function(menuid){
     var _this = this;
     if(!menuid) menuid = _this.menuid;
-    return XDom(jsh.xdroot, '.xsubmenu_' + String(menuid).toUpperCase());
+    return jsh.xd('.xsubmenu_' + String(menuid).toUpperCase());
   };
 
   XMenuHorizontal.prototype.RenderSubmenu = function(){
@@ -353,14 +353,14 @@ exports = module.exports = function(jsh){
     _this.SubMenuItems = [];
     _this.SubMenuOverhang = 0;
     _this.SubMenuMoreWidth = 0;
-    XDom(jsh.xdroot, '.xsubmenu').style.display = false;
-    var xdSubMenuSide = XDom(jsh.xdroot, '.xsubmenuside');
+    jsh.xd('.xsubmenu').style.display = false;
+    var xdSubMenuSide = jsh.xd('.xsubmenuside');
     xdSubMenuSide.style.display = false;
     xdSubMenuSide.content.clear();
 
     if (xdSubMenu.length > 0) {
       xdSubMenu.style.display = true;
-      XDom(xdSubMenu, 'a, div').select().forEach(function(obj){
+      XDom(xdSubMenu, 'a, div').elements.forEach(function(obj){
         var xdobj = XDom(obj);
         if (xdobj.class.contains('xsubmenu_more')) return;
         _this.SubMenuItems.push({xdobj: xdobj, width: null});
@@ -368,7 +368,7 @@ exports = module.exports = function(jsh){
       _this.CalcSubmenuDimensions(true);
     }
     //Initialize xsubmenuside for this submenu
-    var xsubmenuside = XDom(jsh.xdroot, '.xsubmenuside');
+    var xsubmenuside = jsh.xd('.xsubmenuside');
     if (xsubmenuside.length > 0) {
       for (var i = 0; i < _this.SubMenuItems.length; i++) {
         var xsubmenuitem = _this.SubMenuItems[i].xdobj;
@@ -399,7 +399,7 @@ exports = module.exports = function(jsh){
       if(reveal) xdobj.style.display = false;
       _this.MenuItems[i].width = width;
     }
-    var xmenu = XDom(jsh.xdroot, '.xmenu');
+    var xmenu = jsh.xd('.xmenu');
     _this.MenuOverhang = xmenu.calc.left() + parseInt(xmenu.style.calc.paddingLeft.replace(/\D/g, ''));
     if (isNaN(_this.MenuOverhang)) _this.MenuOverhang = 0;
     return true;
@@ -426,8 +426,8 @@ exports = module.exports = function(jsh){
 
   XMenuHorizontal.prototype.Navigated = function(obj){
     var xdobj = XDom(obj);
-    var xdmenuside = XDom(jsh.xdroot, '.xmenuside');
-    var xdsubmenuside = XDom(jsh.xdroot, '.xsubmenuside');
+    var xdmenuside = jsh.xd('.xmenuside');
+    var xdsubmenuside = jsh.xd('.xsubmenuside');
 
     if(!xdobj.class.contains('xmenu_more')) xdmenuside.style.display = false;
     if(!xdobj.class.contains('xsubmenu_more')) xdsubmenuside.style.display = false;

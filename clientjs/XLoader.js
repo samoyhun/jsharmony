@@ -35,7 +35,7 @@ exports = module.exports = function(jsh){
     this.containerClass = _containerClass || '.xloadingblock.jsHarmonyElement_'+jsh._instanceClass;
 
     //DOM Elements
-    this.xdContainer = XDom(jsh.xdroot, _this.containerClass);
+    this.xdContainer = jsh.xd(_this.containerClass);
     this.xdLoadingBox = XDom(this.xdContainer, ' .xloadingbox');
 
     //Check if required elements have been rendered to the page

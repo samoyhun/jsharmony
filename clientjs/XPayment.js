@@ -88,10 +88,10 @@ exports = module.exports = function(jsh){
       formhtml += '<INPUT TYPE="HIDDEN" NAME="' + jsh.XExt.escapeHTML(key) + '" VALUE="' + jsh.XExt.escapeHTML(val) + '" />';
     });
     formhtml += '</form>';
-    XDom(jsh.xdroot, '.xpaymentformcontainer').content.replace(formhtml);
-    XDom(jsh.xdroot, '.xpaymentform').attr.action = fp_data.fp_url;
+    jsh.xd('.xpaymentformcontainer').content.replace(formhtml);
+    jsh.xd('.xpaymentform').attr.action = fp_data.fp_url;
     jsh.xLoader.StartLoading(this.Loader);
-    XDom(jsh.xdroot, '.xpaymentform').emit('submit');
+    jsh.xd('.xpaymentform').emit('submit');
   };
   XPayment.prototype.Result = function() {
     var _this = this;

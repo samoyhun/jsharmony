@@ -83,17 +83,17 @@ if(lovfield == '') throw new Error('Multisel requires one LOV.');
             else { jsh.XExt.Alert('Error #'+data._error.Number+': '+data._error.Message); }
           }
           else{
-            var ejssource = jsh.XDom(jsh.xdroot, xgrid.TemplateID).select()[0].innerHTML;
+            var ejssource = jsh.xd(xgrid.TemplateID).element.innerHTML;
             ejssource = ejssource.replace(/<#/g,'<'+'%').replace(/#>/g,'%'+'>')
             if('_title' in data) xgrid.title = data._title;
             var ejsrslt = jsh.XExt.renderEJS(ejssource, modelid, {
               datatable:data[xgrid.modelid]
             });
-            jsh.XDom(jsh.xdroot, xgrid.PlaceholderID).content.replace(ejsrslt);
+            jsh.xd(xgrid.PlaceholderID).content.replace(ejsrslt);
 
             //Attach events
-            jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class).on('keyup', function(){ if(!jsh.XDom.class.contains(this, 'editable')) return; xcontroller.OnControlUpdate(this); });
-            jsh.XDom(jsh.xdroot, '.xelem'+xmodel.class+'.checkbox').on('change', function(){ if(!jsh.XDom.class.contains(this, 'editable')) return; xcontroller.OnControlUpdate(this); });
+            jsh.xd('.xelem'+xmodel.class).on('keyup', function(){ if(!jsh.XDom.class.contains(this, 'editable')) return; xcontroller.OnControlUpdate(this); });
+            jsh.xd('.xelem'+xmodel.class+'.checkbox').on('change', function(){ if(!jsh.XDom.class.contains(this, 'editable')) return; xcontroller.OnControlUpdate(this); });
           }
           jsh.xLoader.StopLoading(xgrid);
           if(onComplete) onComplete();
@@ -120,7 +120,7 @@ if(lovfield == '') throw new Error('Multisel requires one LOV.');
 
   xcontroller.Save = function(){
     var selected_values = [];
-    _.forEach(jsh.XDom(jsh.xdroot, xgrid.PlaceholderID+' input.xselitem').select(), function(obj){
+    _.forEach(jsh.xd(xgrid.PlaceholderID+' input.xselitem').elements, function(obj){
       if(obj.checked){
         selected_values.push(obj.value);
       }

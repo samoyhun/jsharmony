@@ -75,8 +75,8 @@ XValidate.prototype.ValidateControls = function (perms, _obj, field, parentobj) 
         _this.jsh.ignorefocusHandler = true;
         window.setTimeout(function () {
           document.activeElement && document.activeElement.blur();
-          var newobj = _this.jsh.XDom(parentobj, firstErrorControl).selectOne();
-          var subfocus = _this.jsh.XDom(newobj, '.xform_ctrl_subfocus').selectOne();
+          var newobj = _this.jsh.XDom(parentobj, firstErrorControl).element;
+          var subfocus = _this.jsh.XDom(newobj, '.xform_ctrl_subfocus').element;
           if(subfocus) newobj = subfocus;
           if (newobj) {
             newobj.focus();

@@ -19,11 +19,6 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
 var _ = require('lodash');
 
-///////////////////////////////
-// Ideas for ".select()" alternative
-// .resolve(), .get(), .multi(), .single(), .element, .el  , ._el
-///////////////////////////////
-
 var XDom = function(target, options){ return new Selector(target, options); };
 exports = module.exports = XDom;
 
@@ -237,7 +232,7 @@ var Selector = function(){
   //  isVisible -> boolean, .filter(XDom.isVisible), .omit(XDom.isVisible)
   //  animate -> void
 
-  //each => .select().forEach(...)
+  //each => .elements.forEach(...)
   //trigger = emit()
   //before => insertBefore
   //closest => parent(...selector)
@@ -293,7 +288,7 @@ XDom.resolve = function(target){
   if(_.isArray(target)) return target;
   if(_.isString(target)) return XDom.select(target);
   // sniffing the select function does not work because target may be a dom element, and elements such as `input` may have select methods
-  if(target instanceof Selector) return target.select();
+  if(target instanceof Selector) return target.elements;
   return [target];
 };
 
@@ -919,7 +914,7 @@ XDom.animate = function(target, props, duration, onComplete, options) {
 XDom.animate.height = function(tgt, to, callback, duration){
   if(!callback) callback = function(){};
   var xdobj = XDom(tgt);
-  var _el = xdobj.select();
+  var _el = xdobj.elements;
   if(_el.length != 1) {_.map(_el, function(el){ XDom.animate.height(el, to, callback, duration); }); return; }
   duration = (!duration && (duration !== 0)) ? 500 : duration;
 
@@ -970,7 +965,7 @@ XDom.animate.height = function(tgt, to, callback, duration){
 XDom.animate.opacity = function(tgt, to, callback, duration){
   if(!callback) callback = function(){};
   var xdobj = XDom(tgt);
-  var _el = xdobj.select();
+  var _el = xdobj.elements;
   if(_el.length != 1) {_.map(_el, function(el){ XDom.animate.opacity(el, to, callback, duration); }); return; }
   duration = (!duration && (duration !== 0)) ? 500 : duration;
   
