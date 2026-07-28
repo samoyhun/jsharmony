@@ -210,10 +210,10 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     xgrid.OnBeforeSelect = function(){
       var has_search_items = xcontroller.HasSearchItems(this.SearchJSON);
       if(has_search_items){ 
-        jsh.xd('.xsearchbutton<%=model.class%> span').content.replace('Reset Search');
+        jsh.xd('.xsearchbutton<%=model.class%> span').content.replaceText('Reset Search');
       }
       else{
-        jsh.xd('.xsearchbutton<%=model.class%> span').content.replace('Search');
+        jsh.xd('.xsearchbutton<%=model.class%> span').content.replaceText('Search');
       }
       xcontroller.UpdateTitleCaption();
     };
@@ -909,7 +909,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     else {
       jsh.xd('.xtitlecaption'+xmodel.class).style.display = false;
     }
-    jsh.xd('.xtitlecaption'+xmodel.class+' a').content.replace(txt);
+    jsh.xd('.xtitlecaption'+xmodel.class+' a').content.replaceText(txt);
   }
   
   xcontroller.HideColumn = function(field_name){

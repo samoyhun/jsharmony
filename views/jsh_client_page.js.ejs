@@ -633,7 +633,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       root_title = XPage.ParseEJS(root_title, jsh.XModels_root);
     }
     var xdtitle = jsh.xd('.xform_title');
-    xdtitle.content.replace(root_title);
+    xdtitle.content.replaceText(root_title);
     xdtitle.style.display = !!root_title;
   }
 
@@ -669,7 +669,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
         //Update each form title
         var title_text = xmodel.title;
         if (title_text.indexOf('<#') >= 0) jsh.XDom.content.replace(el, XPage.ParseEJS(title_text, xmodel.id));
-        else jsh.XDom.content.replace(el, title_text);
+        else jsh.XDom.content.replaceText(el, title_text);
       });
       _.forEach(jsh.xd(".xform_button.xelem" + xmodel.class+', .xnorecords.xelem'+xmodel.class+' a').elements, function (el) {
         var href = jsh.XDom.getAttribute(el, 'href');

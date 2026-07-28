@@ -131,7 +131,7 @@ var Selector = function(){
     get: function() { return this.getElements().length; },
   });
   Object.defineProperty(this, 'element', {
-    get: function() { var elements = this.getElements(); return elements && elements.length && elements[0]; },
+    get: function() { return this.getElement(); },
   });
   Object.defineProperty(this, 'elements', {
     get: function() { return this.getElements(); },
@@ -255,11 +255,11 @@ var Selector = function(){
 };
 XDom.Selector = Selector;
 
-XDom.getElement = function(selector, within){
+XDom.getElements = function(selector, within){
   return selectWithin(selector, within);
 };
 
-XDom.getElements = function(selector, within){
+XDom.getElement = function(selector, within){
   //mimics selectWithin
   if(!within){
     return selector ? document.querySelector(selector) : null; //returns one element

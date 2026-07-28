@@ -464,7 +464,7 @@ jsHarmony.prototype.InitControls = function() {
   XDom('.xaccordiontab').omit('.initialized').elements.forEach(function(el){ _this.XExt.bindAccordion(el); });
 };
 jsHarmony.prototype.refreshBodyHead = function(_el){
-  if(!_el) _el = this.xdroot.getElement('.xbodyhead');
+  if(!_el) _el = this.xdroot.getElements('.xbodyhead');
   if(_el.length === 0) return;
   var ww = window.innerWidth;
   _.each(_el, function(el){
@@ -504,7 +504,7 @@ jsHarmony.prototype.XDialogResize = function (source, params) {
   if(this.xdDialogBlock){
     this.xdDialogBlock.style.width = params.pw + 'px';
     this.xdDialogBlock.style.height = params.ph + 'px';
-    _.each(this.xdDialogBlock.getElement('.xdialogbox'), function (obj) {
+    _.each(this.xdDialogBlock.getElements('.xdialogbox'), function (obj) {
       var xdobj = XDom(obj);
       if (!XDom.isVisible(obj)) return;
       if (document.activeElement && document.activeElement.matches('input,select,textarea') && XDom(document.activeElement).parent().length) {

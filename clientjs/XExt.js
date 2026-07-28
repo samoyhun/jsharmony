@@ -2550,7 +2550,7 @@ exports = module.exports = function(jsh){
         var onInit = function (xDialogObj) {
           if (options.OnPopupOpen) if(options.OnPopupOpen(popupData[modelid])===false) return;
           numOpens++;
-          if(xgrid && (numOpens==1)) xgrid.elements;
+          if(xgrid && (numOpens==1)) xgrid.Select();
           var xdSearchVal = jsh.xd(POPUP_CONTAINER + ' .xsearch_value');
           if (xdSearchVal.isVisible()) xdSearchVal.first().focus();
           else if (jsh.xd(POPUP_CONTAINER).select('td a').length) XDom.focus(jsh.xd(POPUP_CONTAINER).select('td a').element);
@@ -2578,7 +2578,7 @@ exports = module.exports = function(jsh){
 
         var panelWidth = null;
         var panelHeight = null;
-        var xsubformPanel = jsh.xd(POPUP_CONTAINER).filter('.xsubform .xpanel').element;
+        var xsubformPanel = jsh.xd(POPUP_CONTAINER).filter('.xsubform').select('.xpanel').element;
         if(xsubformPanel) {
           panelWidth = xsubformPanel.style.width;
           panelHeight = xsubformPanel.style.height;
