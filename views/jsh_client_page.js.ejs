@@ -1002,11 +1002,11 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     if (jsh.xfileupload_ctrl.length != 1) return;
     var xdFileUploader = jsh.xd('.xfileuploader');
     var onInit = function () {
-      jsh.XDom.setValue(jsh.xdroot.select('.xfileuploader_prevtoken'), jsh.XDom.getValue(jsh.xfileupload_ctrl.children.filter('.xform_file_token')));
-      jsh.XDom.setAttribute(jsh.xdroot.select('.xfileuploader_form'), 'action', jsh._BASEURL + '_ul/');
-      XExt.clearFileInput(jsh.xdroot.selectOne('.xfileuploader_file'));
+      jsh.xd('.xfileuploader_prevtoken').value = jsh.XDom.getValue(jsh.xfileupload_ctrl.children.filter('.xform_file_token'));
+      jsh.xd('.xfileuploader_form').attr.action = jsh._BASEURL + '_ul/';
+      XExt.clearFileInput(jsh.xd('.xfileuploader_file').element);
     };
-    jsh.XDom.content.replace(xdFileUploader.select('.xfileuploader_title'), title);
+    xdFileUploader.select('.xfileuploader_title').content.replaceText(title);
     jsh.XExt.CustomPrompt(null, xdFileUploader.element, onInit);
   }
 

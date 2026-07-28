@@ -122,7 +122,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     };
     xgrid.OnDestroyingRows = function(xdObj){
       if(!xeditablegrid) return;
-      xdObj.selector('tr[data-id]').elements.forEach(function(tr){
+      xdObj.select('tr[data-id]').elements.forEach(function(tr){
         if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,tr,jsh.XDom.getData(tr, 'id'));
       });
     }
@@ -330,7 +330,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
   xcontroller.OnDestroy = function(){
     if(!xeditablegrid) return;
-    jsh.xd(xgrid.PlaceholderID).selector("tr[data-id]").elements.forEach(function(tr){
+    jsh.xd(xgrid.PlaceholderID).select("tr[data-id]").elements.forEach(function(tr){
       if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,tr,XDom.getData(tr, 'id'));
     });
   }
@@ -360,7 +360,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
                 if(key in xform.Data.Fields){
                   XExt.XModel.RenderField(
                     xform.DataSet[dbrowid],
-                    jsh.xd(xgrid.PlaceholderID).selector("tr[data-id='" + dbrowid + "']").element, 
+                    jsh.xd(xgrid.PlaceholderID).select("tr[data-id='" + dbrowid + "']").element, 
                     xmodel.id, 
                     xform.Data.Fields[key],
                     xform.DataSet[dbrowid][key],
@@ -436,20 +436,20 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
           _this.DataSet[rowid]._previous_values = {};
           _this.ApplyUnboundDefaults(_this.DataSet[rowid]);
 
-          var template = jsh.XDom.selectOne(xgrid.TemplateID);
+          var template = jsh.XDom(xgrid.TemplateID).element;
           var ejssource = template ? template.innerHTML : '';
           var ejsrslt = jsh.XExt.renderEJS(ejssource, modelid, {
             startrowid: rowid,
             datatable: [_this.DataSet[rowid]], 
           });
-          var xdObj = jsh.xd(xgrid.PlaceholderID).selector("tr[data-id='" + rowid + "']");
+          var xdObj = jsh.xd(xgrid.PlaceholderID).select("tr[data-id='" + rowid + "']");
           if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,xdObj.element,rowid);
           var container = document.createElement('template');
           container.innerHTML = ejsrslt;
           xdObj.elements.forEach(function(row) {
             row.replaceWith.apply(row, container.content.childNodes);
           });
-          xdObj = jsh.xd(xgrid.PlaceholderID).selector("tr[data-id='" + rowid + "']");
+          xdObj = jsh.xd(xgrid.PlaceholderID).select("tr[data-id='" + rowid + "']");
           _this.SetIndex(rowid,false);
           _this.Render();
           xgrid.OnRowBind(xdObj.elements, _this.DataSet[rowid]);
@@ -509,8 +509,8 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     }
     
     xform.NavTo(rowid,false);
-    var xdObj = jsh.xd(xgrid.PlaceholderID).selector("tr[data-id='" + rowid + "']");
-    var newobj = xdObj.selector('.xform_ctrl.editable:not(input[type=hidden]),.xlookup:not(input[type=hidden])').filter(jsh.XDom.isVisible).first().element;
+    var xdObj = jsh.xd(xgrid.PlaceholderID).select("tr[data-id='" + rowid + "']");
+    var newobj = xdObj.select('.xform_ctrl.editable:not(input[type=hidden]),.xlookup:not(input[type=hidden])').filter(jsh.XDom.isVisible).first().element;
     if(newobj){
       if(xeditablegrid.IsContainerActive()){
         xeditablegrid.SetFocus(newobj, null, function(){
@@ -541,7 +541,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     var ejssource = "";
     if (xgrid.TemplateHTMLFunc != null) ejssource = xgrid.TemplateHTMLFunc(data, xgrid.RowCount);
     else {
-      var template = jsh.XDom.selectOne(xgrid.TemplateID);
+      var template = jsh.XDom(xgrid.TemplateID).element;
       ejssource = template ? template.innerHTML : '';
     }
     var ejsrslt = XExt.renderEJS(ejssource, modelid, {
@@ -550,27 +550,27 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     });
 
     var jobj;
-    jsh.xd(xgrid.PlaceholderID).selector('tr.xtbl_noresults').content.clear();
+    jsh.xd(xgrid.PlaceholderID).select('tr.xtbl_noresults').content.clear();
     var ejsNodes = jsh.XDom.render(ejsrslt);
     if(xgrid.Prop.NewRowPosition=='first'){
-      var target = jsh.XDom.selectOne(xgrid.PlaceholderID, jsh.xdroot);
+      var target = jsh.xd(xgrid.PlaceholderID).element;
       target && target.prepend.apply(target, ejsNodes);
     }
-    else if(jsh.XDom.selectOne('.xtbl_loadmore', jsh.xdroot.selector(xgrid.PlaceholderID))){
+    else if(jsh.xd(xgrid.PlaceholderID).select('.xtbl_loadmore').length){
       //Prepend
-      var target = jsh.XDom.selectOne('.xtbl_loadmore', jsh.xdroot.selector(xgrid.PlaceholderID));
+      var target = jsh.xd(xgrid.PlaceholderID).select('.xtbl_loadmore').element;
       XDom.insertBefore(target && target.parentNode, ejsNodes, target);
     }
     else {
-      var target = jsh.XDom.selectOne(xgrid.PlaceholderID, jsh.xdroot);
+      var target = jsh.xd(xgrid.PlaceholderID).element;
       target && target.append.apply(target, ejsNodes);
     }
     var xdRow = jsh.XDom(ejsNodes);
 
     var oldindex = xform.Index;
     xform.NavTo(rowid,false);
-    var xdControls = xdRow.selector('.xform_ctrl.editable:not(input[type=hidden]),.xlookup:not(input[type=hidden])').filter(jsh.XDom.isVisible).first();
-    if(xdControls.selector('.xform_ctrl_subfocus').length) xdControls = xdControls.selector('.xform_ctrl_subfocus').first();
+    var xdControls = xdRow.select('.xform_ctrl.editable:not(input[type=hidden]),.xlookup:not(input[type=hidden])').filter(jsh.XDom.isVisible).first();
+    if(xdControls.select('.xform_ctrl_subfocus').length) xdControls = xdControls.select('.xform_ctrl_subfocus').first();
     xdControls.focus();
     if(xgrid.OnRowBind) xgrid.OnRowBind(xdRow.filter(jsh.XDom.isElement).elements, newrow);
     xdControls.focus();
@@ -591,8 +591,8 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
   }
 
   xcontroller.DownloadFile = function(field, title, rowid){
-    var xdRow = jsh.xd(xgrid.PlaceholderID).selector("tr[data-id='" + rowid + "']");
-    var xdCtrl_token = xdRow.selector('.xelem' + xmodel.class + ' .' + field + '_token');
+    var xdRow = jsh.xd(xgrid.PlaceholderID).select("tr[data-id='" + rowid + "']");
+    var xdCtrl_token = xdRow.select('.xelem' + xmodel.class + ' .' + field + '_token');
     var file_token = xdCtrl_token.value;
     var url = '';
     if (file_token) url = jsh._BASEURL + '_dl/_temp/' + file_token;
@@ -607,8 +607,8 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
   }
 
   xcontroller.FilePreview = function(field, title, rowid){
-    var xdRow = jsh.xd(xgrid.PlaceholderID).selector("tr[data-id='" + rowid + "']");
-    var xdCtrl_token = xdRow.selector('.xelem' + xmodel.class + ' .' + field + '_token');
+    var xdRow = jsh.xd(xgrid.PlaceholderID).select("tr[data-id='" + rowid + "']");
+    var xdCtrl_token = xdRow.select('.xelem' + xmodel.class + ' .' + field + '_token');
     var file_token = xdCtrl_token.value;
     var url = '';
     if (file_token) url = jsh._BASEURL + '_dl/_temp/' + file_token + '?view=1';
@@ -654,10 +654,10 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
           xform.DataSet[rowid]._is_dirty = false;
           xform.DataSet[rowid]._orig = null;
           xform.DataSet[rowid]._previous_values = {};
-          var xdRow = jsh.xd(xgrid.PlaceholderID).selector("tr[data-id='" + rowid + "']");
+          var xdRow = jsh.xd(xgrid.PlaceholderID).select("tr[data-id='" + rowid + "']");
           if(xmodel.onrowunbind) xmodel.onrowunbind(xmodel,xdRow.element,rowid);
           xdRow.remove();
-          if(!jsh.xd(xgrid.PlaceholderID).selector('tr').length) xgrid.RenderNoResultsMessage();
+          if(!jsh.xd(xgrid.PlaceholderID).select('tr').length) xgrid.RenderNoResultsMessage();
           xeditablegrid.CurrentCell = null;
           if(xform.Index==rowid){ 
             xform.Data._is_insert = false;
@@ -794,7 +794,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
   }
 
   xcontroller.SearchButtonClick = function(){
-    var searchButton = jsh.XDom.selectOne('.xsearchbutton'+xmodel.class+' span', jsh.xdroot);
+    var searchButton = jsh.xd('.xsearchbutton'+xmodel.class+' span').element;
     if(searchButton && searchButton.innerHTML =='Reset Search'){
       xsearch.Data.Items = [];
       xsearch.Render();
@@ -960,7 +960,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
   xcontroller.ManageColumns = function(){
     if(!xgrid.Prop.isInlinePopup) if(jsh.XPage.onGridExit(null, function(){ xcontroller.ManageColumns(); })) return;
-    var html = jsh.XDom.selectOne('.xgrid_template_manage_columns_'+xmodel.class).innerHTML;
+    var html = jsh.xd('.xgrid_template_manage_columns_'+xmodel.class).innerHTML;
     html = XExt.renderEJS(html, modelid);
     var sel = '.xgrid_manage_columns_'+xmodel.class;
     XExt.CustomPrompt(sel, html, function () { //onInit

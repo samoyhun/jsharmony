@@ -141,7 +141,7 @@ exports = module.exports = function(jsh){
       this.Data._orig = null;
     }
     if (this.xData) {
-      jsh.xd(this.xData.PlaceholderID).selector('.xform_ctrl.updated').class.remove('updated');
+      jsh.xd(this.xData.PlaceholderID).select('.xform_ctrl.updated').class.remove('updated');
     }
     this.IsDirty = false;
   };
@@ -191,7 +191,7 @@ exports = module.exports = function(jsh){
         row = jsh.parseJQueryElements(row, 'XForm.SetIndex');
         this.Data._row = row;
       }
-      else this.Data._row = jsh.xd(this.xData.PlaceholderID).selectOne("tr[data-id='" + this.Index + "']");
+      else this.Data._row = jsh.xd(this.xData.PlaceholderID).select("tr[data-id='" + this.Index + "']").element;
     }
     return true;
   };

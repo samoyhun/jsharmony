@@ -80,15 +80,15 @@ var Selector = function(){
 
   if(!_this.target && !_this.base) throw new Error('Target or base element is required');
 
-  _this.select = function(childSelector){
+  _this.getElements = function(childSelector){
     return selectWithin((_this.target + ' ' + (childSelector||'')).trim(), _this.base);
   };
 
-  _this.selectOne = function(childSelector){
-    return XDom.selectOne((_this.target + ' ' + (childSelector||'')).trim(), _this.base);
+  _this.getElement = function(childSelector){
+    return XDom.getElement((_this.target + ' ' + (childSelector||'')).trim(), _this.base);
   };
 
-  _this.selector = function(childSelector){
+  _this.select = function(childSelector){
     if(!childSelector) return _this;
     if(!_this.target) return new Selector(_this.base, childSelector);
     var _selectorPart = _this.target.split(',');
@@ -99,9 +99,6 @@ var Selector = function(){
       }).join(',');
     }).join(','));
   };
-
-  _this.xdom = _this.selector;
-  _this.xd = _this.selector;
 
   _this.class = {
     add: XDom.class.add.bind(XDom, this),
@@ -131,13 +128,13 @@ var Selector = function(){
     set: function(value) { XDom.setValue(this, value); },
   });
   Object.defineProperty(this, 'length', {
-    get: function() { return this.select().length; },
+    get: function() { return this.getElements().length; },
   });
   Object.defineProperty(this, 'element', {
-    get: function() { var elements = this.select(); return elements && elements.length && elements[0]; },
+    get: function() { var elements = this.getElements(); return elements && elements.length && elements[0]; },
   });
   Object.defineProperty(this, 'elements', {
-    get: function() { return this.select(); },
+    get: function() { return this.getElements(); },
   });
   _this.data = new Proxy({}, {
     get: function(target, prop, receiver) { return XDom.getData(_this, prop); },
@@ -243,8 +240,8 @@ var Selector = function(){
   //offset => offset() .calc.top()
   //wrap => create element, insertBefore, and then put contents inside
   //not => .omit
-  //first => .select[0]
-  //filter => .select.filter
+  //first => .first
+  //filter => .filter
   //slideUp => .animate.height(false)
   //slideDown => .animate.height(true)
   //fadeTo => .animate({ opacity: 0 })
@@ -258,11 +255,11 @@ var Selector = function(){
 };
 XDom.Selector = Selector;
 
-XDom.select = function(selector, within){
+XDom.getElement = function(selector, within){
   return selectWithin(selector, within);
 };
 
-XDom.selectOne = function(selector, within){
+XDom.getElements = function(selector, within){
   //mimics selectWithin
   if(!within){
     return selector ? document.querySelector(selector) : null; //returns one element
@@ -279,14 +276,14 @@ XDom.selectOne = function(selector, within){
   return null;
 };
 
-XDom.selector = function(selector, options){
+XDom.select = function(selector, options){
   return new Selector(selector, options);
 };
 
 XDom.resolve = function(target){
   if(!target) return [];
   if(_.isArray(target)) return target;
-  if(_.isString(target)) return XDom.select(target);
+  if(_.isString(target)) return XDom.getElements(target);
   // sniffing the select function does not work because target may be a dom element, and elements such as `input` may have select methods
   if(target instanceof Selector) return target.elements;
   return [target];

@@ -427,7 +427,7 @@ exports = module.exports = function(jsh){
   XExtXModel.GetValue = function (modelid) {
     modelid = jsh.XExt.resolveModelID(modelid);
     return function (field) {
-      var parentobj = jsh.XDom.selectOne(null, jsh.xdroot);
+      var parentobj = jsh.xdroot.element;
       if (this._row) parentobj = this._row;
       var xmodel = jsh.XModels[modelid];
       var isGrid = (xmodel.layout == 'grid');
