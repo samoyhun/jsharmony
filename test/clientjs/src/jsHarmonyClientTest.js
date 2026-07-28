@@ -278,8 +278,44 @@ var mocha = require('mocha');
 
     it('appendHtml does not execute scripts', function() {
       delete window.jsh_xdom_runs_scripts;
-      XDom('#item4').content.append('<script>window.jsh_xdom_runs_scripts = true;</script>');
+      XDom('#item4').content.append('<script>alert("hi");window.jsh_xdom_runs_scripts = true;</script>');
       assertEqual(window.jsh_xdom_runs_scripts, undefined, 'script execution');
+    });
+
+    it('appendHtml does not execute src scripts', function(done) {
+      delete window.jsh_xdom_runs_scripts;
+      XDom('#item4').content.append('<script src="script.js?_=1"></script>');
+      setTimeout(function() {
+        assertEqual(window.jsh_xdom_runs_scripts, undefined, 'src script execution');
+        done()
+      }, 100);
+    });
+
+    it('appendHtml does execute scripts with parameter', function() {
+      delete window.jsh_xdom_runs_scripts;
+      XDom('#item4').content.append('<script>window.jsh_xdom_runs_scripts = true;</script>', {evaluateScripts: true});
+      assertEqual(window.jsh_xdom_runs_scripts, true, 'script execution');
+    });
+
+    it('appendHtml does not execute other types of scripts with parameter', function() {
+      delete window.jsh_xdom_runs_scripts;
+      XDom('#item4').content.append('<script type="text/x-jsharmony-template">window.jsh_xdom_runs_scripts = true;</script>', {evaluateScripts: true});
+      assertEqual(window.jsh_xdom_runs_scripts, undefined, 'script execution');
+    });
+
+    it('appendHtml does execute javascript scripts with parameter', function() {
+      delete window.jsh_xdom_runs_scripts;
+      XDom('#item4').content.append('<script type="text/javascript">window.jsh_xdom_runs_scripts = true;</script>', {evaluateScripts: true});
+      assertEqual(window.jsh_xdom_runs_scripts, true, 'script execution');
+    });
+
+    it('appendHtml does execute src scripts with parameter', function(done) {
+      delete window.jsh_xdom_runs_scripts;
+      XDom('#item4').content.append('<script src="script.js?_=2"></script>', {evaluateScripts: true});
+      setTimeout(function() {
+        assertEqual(window.jsh_xdom_runs_scripts, true, 'src script execution with param');
+        done()
+      }, 100);
     });
 
     it('appendHtml does execute handlers', function() {
