@@ -329,7 +329,6 @@ exports = module.exports = function(jsh){
       }
       if(!containerobj) return;
     }
-    if (obj.jquery) throw new Error('SetFocus obj must not be a jquery object');
     if (obj instanceof jsh.XDom.Selector) throw new Error('SetFocus obj must not be an XDom object');
     return this.ControlEnter(containerobj, e, function(){
       if (!e && document.hasFocus && document.hasFocus()) obj && obj.focus();
@@ -338,7 +337,6 @@ exports = module.exports = function(jsh){
   };
 
   XEditableGrid.prototype.BindRow = function (obj, datarow) {
-    obj = jsh.parseJQueryElements(obj, 'XEditableGrid.BindRow');
     var _this = this;
     var modelid = _this.modelid;
     var xmodel = (modelid? jsh.XModels[modelid] : null);

@@ -158,6 +158,11 @@ Many callbacks and other interface methods formally took jquery wrapped sets. Th
 
 ```XExt.bindDragSource(*obj*)```
 
+#### XExt.findClosest(added param)
+
+```XExt.findClosest(elem, sel, *filterFunc*)```
+NOTE: now returns a DOM element or null.
+
 #### xgrid OnRowBind (first argument)
 
 ```if(xgrid.OnRowBind) xgrid.OnRowBind(xdRow.elements, newrow);```

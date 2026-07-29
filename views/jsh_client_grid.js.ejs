@@ -113,7 +113,6 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 
     xgrid.OnRowBind = function(obj,datarow,readonly){
       if(!xeditablegrid) return;
-      obj = jsh.parseJQueryElements(obj, 'jsh_client_Grid.OnBindRow');
       if (_.isArray(obj)) obj = _.filter(obj, jsh.XDom.isElement)[0];
       if(!readonly) xeditablegrid.BindRow(obj,datarow);
       xmodel.datamodel.prototype.BindLOV(xform,obj);

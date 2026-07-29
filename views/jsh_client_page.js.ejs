@@ -295,7 +295,6 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
   }
 
   XPage.RenderButtons = function(oroot){
-    oroot = jsh.parseJQueryElements(oroot, 'XPage.RenderButtons');
     if(!oroot) oroot = jsh.xdroot;
     var button_groups = {};
     //Merge buttons in tab containers with tabpos="top" with tab
@@ -812,7 +811,6 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
   }
 
   XPage.LayoutOneColumn = function(oroot, options){
-    oroot = jsh.parseJQueryElements(oroot, 'XPage.LayoutOneColumn');
     if(!oroot) oroot = jsh.xdroot;
     options = _.extend({ reset: false }, options);
     _.forEach(jsh.XDom(oroot, '.xform.onecolumn').elements, function(form){
@@ -1117,10 +1115,6 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
   }
 
   XPage.Disable = function(ctrls,field,show_lookup) {
-    if (ctrls && ctrls.jquery) {
-      console.warn('Deprecated: XPage.Disable received a jquery object. Please pass an array of dom elements.');
-      ctrls = ctrls.filter(function() {return jsh.XDom.isElement(this);}).get();
-    }
     if (ctrls && !_.isArrayLike(ctrls)) ctrls = [ctrls];
     _.forEach(ctrls, function(ctrl){
       jsh.XDom.class.remove(ctrl, 'editable');
@@ -1143,10 +1137,6 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
   }
 
   XPage.Enable = function(ctrls,field) {
-    if (ctrls && ctrls.jquery) {
-      console.warn('Deprecated: XPage.Enable received a jquery object. Please pass an array of dom elements.');
-      ctrls = ctrls.filter(function() {return jsh.XDom.isElement(this);}).get();
-    }
     if (ctrls && !_.isArrayLike(ctrls)) ctrls = [ctrls];
     _.forEach(ctrls, function(ctrl){
       jsh.XDom.class.remove(ctrl, 'uneditable');
@@ -1268,8 +1258,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       handled = true;
     }
     else if ((e.which == 78) && (e.altKey)) {//ALT+N = NEW
-      // TODO: XExt.findClosest taking a :visible selector, and returns jquery
-      jsh.XDom.emit(XExt.findClosest(e.target, '.xbuttoninsert:visible')[0], 'click');
+      jsh.XDom.emit(XExt.findClosest(e.target, '.xbuttoninsert', jsh.XDom.isVisible), 'click');
       handled = true;
     }
     else if ((e.which == 70) && (e.altKey)) {//ALT+Q = Search

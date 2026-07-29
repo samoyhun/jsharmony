@@ -127,7 +127,7 @@ var jsHarmony = function(options){
   this.mouseX = 0;
   this.mouseY = 0;
   this.mouseDown = false;
-  this.mouseDragObj = undefined; //jQuery object
+  this.mouseDragObj = undefined; //DOM object
   this.mouseCanDrop = undefined;    //function(obj){ return true; }
   this.last_clicked_time = undefined;
   this.last_clicked = undefined;
@@ -610,14 +610,6 @@ jsHarmony.prototype.runGlobalsMonitor = function(){
   },1000);
 };
 
-jsHarmony.prototype.parseJQueryElements = function(obj, method) {
-  if (obj && obj.jquery) {
-    console.warn('Deprecated: '+method+' received a jquery object. Please pass a dom element.'); // eslint-disable-line no-console
-    return obj.filter(function() {return jsHarmony.XDom.isElement(this);}).get(0);
-  } else {
-    return obj;
-  }
-};
 jsHarmony.prototype.on = function(eventName, handler){
   if(!eventName || !handler) return;
   if(!this.events[eventName]) this.events[eventName] = [];

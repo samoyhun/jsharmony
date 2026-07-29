@@ -17,7 +17,6 @@ You should have received a copy of the GNU Lesser General Public License
 along with this package.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// TODO: remaining XModel jquery refrences are wrapping arguments for calls to outside functions.
 var _ = require('lodash');
 
 exports = module.exports = function(jsh){
@@ -37,7 +36,6 @@ exports = module.exports = function(jsh){
 
   XExtXModel.GetRowID = function (modelid,obj){
     modelid = jsh.XExt.resolveModelID(modelid);
-    obj = jsh.parseJQueryElements(obj, 'XModel.GetRowID');
     var xmodel = jsh.XModels[modelid];
     var rslt = -1;
     if(jsh.XDom.class.contains(obj, 'row_independent')){ /* Do nothing */ }
@@ -604,7 +602,6 @@ exports = module.exports = function(jsh){
   XExtXModel.BindLOV = function (modelid) {
     modelid = jsh.XExt.resolveModelID(modelid);
     return function (xform, parentobj) {
-      parentobj = jsh.parseJQueryElements(parentobj, 'XModel.BindLOV');
       if (!parentobj) parentobj = jsh.xdroot.element;
       var xmodel = jsh.XModels[modelid];
       if(!xmodel) return;

@@ -188,7 +188,6 @@ exports = module.exports = function(jsh){
     this.Data._title = this.title;
     if (this.xData) {
       if(row) {
-        row = jsh.parseJQueryElements(row, 'XForm.SetIndex');
         this.Data._row = row;
       }
       else this.Data._row = jsh.xd(this.xData.PlaceholderID).select("tr[data-id='" + this.Index + "']").element;
