@@ -1136,8 +1136,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       else ctrl.readOnly = true;
       if (!show_lookup && jsh.XDom.class.contains(ctrl.nextElementSibling, 'xlookup')) jsh.XDom.class.add(ctrl.nextElementSibling, 'uneditable');
       if(!field && (jsh.XDom.class.contains(ctrl, 'xform_ctrl') || jsh.XDom.class.contains(ctrl, 'xform_file_upload'))){
-        // TODO: XExt.getFieldFromObject takes a jquery
-        field = XExt.getFieldFromObject($(ctrl));
+        field = XExt.getFieldFromObject(ctrl);
       }
       if(field && field.ondisabled) field.ondisabled(ctrl);
     });
@@ -1163,8 +1162,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       else ctrl.readOnly = false;
       if (jsh.XDom.class.contains(ctrl.nextElementSibling, 'xlookup')) jsh.XDom.class.remove(ctrl.nextElementSibling, 'uneditable');
       if(!field && (jsh.XDom.class.contains(ctrl, 'xform_ctrl') || jsh.XDom.class.contains(ctrl, 'xform_file_upload'))){
-        // TODO: XExt.getFieldFromObject takes a jquery
-        field = XExt.getFieldFromObject($(ctrl));
+        field = XExt.getFieldFromObject(ctrl);
       }
       if(field && field.onenabled) field.onenabled(ctrl);
     });
