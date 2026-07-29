@@ -192,9 +192,8 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       if(ejsrslt.indexOf(jsh.CODE_EJSPREPEND)>=0) ejsrslt = ejsrslt.replace(jsh.CODE_EJSPREPEND,ejsprepend)
       else ejsrslt = ejsprepend + ejsrslt;
       //console.log(ejsrslt); //Debug EJS output
-      // TODO: jquery html insertion
-      XDom(jsh.xdroot, '.xbody').content.replace(ejsrslt);
-      //xdxbody.content.replace(ejsrslt);
+      // Note: this operation counts on execution of scripts in the embeded code to define the model.
+      xdxbody.content.replace(ejsrslt, {evaluateScripts: true});
       var prevClasses = XExt.getClasses(xdxbody.element);
       for(var i=0;i<prevClasses.length;i++){
         if(XExt.beginsWith(prevClasses[i], 'xbody_')){
