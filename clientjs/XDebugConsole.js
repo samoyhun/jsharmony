@@ -257,11 +257,11 @@ exports = module.exports = function(jsh){
         '</label>';
     }
     this.xdDebugDialog = jsh.xd('.xdebugconsole');
-    this.xdDebugPanel = XDom(this.xdDebugDialog, '.debug-panel');
-    XDom.content.append(this.xdDebugPanel.select('.debug-settings'), settingsHtml);
-    this.xdDebugPanelMin = XDom(this.xdDebugDialog, '.debug-panel-minimized');
-    this.xdDebugPanelBody = XDom(this.xdDebugPanel, '.xdebuginfo-body');
-    var chkSource = this.xdDebugPanel.select('.xdebugconsole_source');
+    this.xdDebugPanel = this.xdDebugDialog.select('.debug-panel');
+    this.xdDebugPanel.select('.debug-settings').content.append(settingsHtml);
+    this.xdDebugPanelMin = this.xdDebugDialog.select('.debug-panel-minimized');
+    this.xdDebugPanelBody = this.xdDebugPanel.select('.xdebuginfo-body');
+    var chkSource = this.xdDebugPanel.select('.xdebugconsole_source').elements;
     for (var i=0; i<chkSource.length; i++){
       if (this.settings.sources[chkSource[i].value]){
         chkSource[i].click();
@@ -281,14 +281,14 @@ exports = module.exports = function(jsh){
       _this.saveSettings();
     } });
     //Source Checkboxes
-    XDom.on(this.xdDebugPanel, 'click', function(e){
+    this.xdDebugPanel.on('click', function(e){
       if(jsh.XDom.parent(e.target, '.xdebugconsole_source').length) {
         _this.settings.sources[e.target.value] = !!e.target.checked;
         _this.saveSettings();
         _this.updateWebSocketSources();
       }
     });
-    XDom.on(this.xdDebugDialog.select('.controls i'), 'click', function(){
+    this.xdDebugDialog.select('.controls i').on('click', function(){
       var action = XDom(this).data.action;
       if(action && _this[action]) _this[action]();
     });
@@ -303,7 +303,7 @@ exports = module.exports = function(jsh){
   };
 
   XDebugConsole.prototype.getBodyHeight = function(baseHeight){
-    return baseHeight - 31 - (this.settings.settings_visible ? jsh.XDom.calc.heightToBorder(this.xdDebugPanel.select('.debug-settings')) : 0);
+    return baseHeight - 31 - (this.settings.settings_visible ? jsh.XDom.calc.heightToBorder(this.xdDebugPanel.getElement('.debug-settings')) : 0);
   };
 
   XDebugConsole.prototype.setWindowSize = function(size){

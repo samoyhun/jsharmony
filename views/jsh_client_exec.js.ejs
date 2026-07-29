@@ -78,7 +78,7 @@ _.each(model.fields,function(field){ if(XExt.hasAction(field.actions,'B') && (fi
     jsh.xd('.xelem'+xmodel.class+'.xtagbox_base').on('input keyup', function(){ if(jsh.is_insert) return; if(!jsh.XDom.class.contains(this, 'editable')) return; xform.Data.OnControlUpdate(this); });
 
     <% _.each(model.fields,function(field){ if(!('control' in field) || !field.name) return; if(field.control=='date') {%>
-    jsh.XExt.DatePicker(jsh.xdroot.selectOne(".<%=field.name%>.xelem"+xmodel.class), { dateFormat: ('<%=(field.controlparams?field.controlparams.dateformat:'')%>'||jsh.DEFAULT_DATEFORMAT), onSelect: function(ctrl){ if(jsh.is_insert) return; xform.Data.OnControlUpdate(ctrl); } });
+    jsh.XExt.DatePicker(jsh.xd(".<%=field.name%>.xelem"+xmodel.class).element, { dateFormat: ('<%=(field.controlparams?field.controlparams.dateformat:'')%>'||jsh.DEFAULT_DATEFORMAT), onSelect: function(ctrl){ if(jsh.is_insert) return; xform.Data.OnControlUpdate(ctrl); } });
     <% } }); %>
 
     if(xmodel.unbound){

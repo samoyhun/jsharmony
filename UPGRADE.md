@@ -183,7 +183,7 @@ Many callbacks and other interface methods formally took jquery wrapped sets. Th
 ```
 XExt.XModel.RenderField(
   xform.DataSet[dbrowid],
-  jsh.xd(xgrid.PlaceholderID).selector("tr[data-id='" + dbrowid + "']").element, 
+  jsh.xd(xgrid.PlaceholderID).select("tr[data-id='" + dbrowid + "']").element, 
   xmodel.id, 
   xform.Data.Fields[key],
   xform.DataSet[dbrowid][key],
@@ -381,3 +381,7 @@ chnaged `this.MenuItems` from array of items to array of `{xdobj: XDom(item), wi
 
 Returns DOM object instead of jQuery object
   Cannot use .prop('src', ...)
+
+#### $.csv
+
+jsh.csv

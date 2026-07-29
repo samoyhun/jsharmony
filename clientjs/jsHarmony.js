@@ -25,7 +25,7 @@ var $ = require('./jquery-1.11.2');
 $.fn.$find = function(){ return $.fn.find.apply(this, arguments); };
 var jQuery = $;
 require('../public/jquery-ui/js/jquery-ui-1.10.3.custom-aspa.min.js')(jQuery);
-require('../public/js/jquery.csv.min.js')(jQuery);
+var csv = require('./csv.min.js');
 var _ = require('lodash');
 var ejs = require('ejs');
 var async = require('async');
@@ -93,6 +93,7 @@ var jsHarmony = function(options){
   this.ejs = ejs;
   this.async = async;
   this.moment = moment;
+  this.csv = csv;
   this.XDom = XDom;
   this.XGrid = XGrid(this);
   this.XForm = XForm(this);
@@ -166,7 +167,7 @@ var jsHarmony = function(options){
   this._instanceClass = this.XExt.escapeCSSClass(this._instance);
   this.root = $(document);
   this.xdroot = XDom(document);
-  this.xdom = this.xd = function(sel){ return this.xdroot.xd(sel); };
+  this.xdom = this.xd = function(sel){ return this.xdroot.select(sel); };
   this.xdDialogBlock = null;
   this.globalsMonitorCache = {};
   this.globalsMonitorTimer = null;
@@ -359,7 +360,7 @@ jsHarmony.prototype.Init = function(){
   xdDoc.on('mouseleave', function (e) {
     _this.mouseDown = false;
   });
-  XDom(this.xdroot, 'a').on('click', function () {
+  this.xd('a').on('click', function () {
     _this.last_clicked_time = Date.now();
     _this.last_clicked = XDom(this);
   });
@@ -392,11 +393,11 @@ jsHarmony.prototype.mouseDrag = function(mouseDragObj, e){
   var _this = this;
   if(!mouseDragObj) return;
   
-  var xdClone = XDom(_this.xdroot, '.xdrag');
+  var xdClone = _this.xd('.xdrag');
   xdClone.style.left = _this.mouseX+'px';
   xdClone.style.top = _this.mouseY+'px';
   var targetObj = null;
-  _this.xdroot.select('.xdrop').forEach(function(el){
+  _this.xdroot.getElements('.xdrop').forEach(function(el){
     if(_this.XExt.isMouseWithin(el)){
       if(!_this.mouseCanDrop || _this.mouseCanDrop(el)){
         if(!targetObj || _this.XExt.isChildOf(targetObj, this)) targetObj = el;
@@ -410,9 +411,9 @@ jsHarmony.prototype.mouseDrag = function(mouseDragObj, e){
 jsHarmony.prototype.mouseDragEnd = function(mouseDragObj, e){
   var _this = this;
   if(!mouseDragObj) return;
-  XDom(this.xdroot, '.xdrag').remove();
+  this.xd('.xdrag').remove();
   var targetObj = null;
-  this.xdroot.select('.xdrop').forEach(function(el){
+  this.xdroot.getElements('.xdrop').forEach(function(el){
     if(_this.XExt.isMouseWithin(el)){
       if(!_this.mouseCanDrop || _this.mouseCanDrop(el)){
         if(!targetObj || _this.XExt.isChildOf(targetObj, el)) targetObj = el;
@@ -427,7 +428,7 @@ jsHarmony.prototype.hideContextMenu = function(){
     this.xContextMenuVisible = false;
     this.xContextMenuItem = undefined;
     this.xContextMenuItemData = undefined;
-    XDom(this.xdroot, '.xcontext_menu').style.display = false;
+    this.xd('.xcontext_menu').style.display = false;
   }
 };
 
@@ -448,7 +449,7 @@ jsHarmony.prototype.DefaultErrorHandler = function(num,txt){
 };
 
 jsHarmony.prototype.XDebugInfo = function (txt,clear) {
-  var xdobj = XDom(this.xdroot, '.xdebuginfo.jsHarmonyElement_'+this._instanceClass);
+  var xdobj = this.xd('.xdebuginfo.jsHarmonyElement_'+this._instanceClass);
   xdobj.style.display = true;
   if (clear) xdobj.content.clear();
   xdobj.content.prepend(txt + '<br/>');
@@ -456,7 +457,7 @@ jsHarmony.prototype.XDebugInfo = function (txt,clear) {
 jsHarmony.prototype.InitDialogs = function () {
   var _this = this;
   this.xdroot.content.append(ejs.render(XViews['jsh_system'],{ jsh: _this }));
-  this.xdDialogBlock = XDom(this.xdroot, '.xdialogblock.jsHarmonyElement_'+this._instanceClass);
+  this.xdDialogBlock = this.xd('.xdialogblock.jsHarmonyElement_'+this._instanceClass);
 };
 jsHarmony.prototype.InitControls = function() {
   var _this = this;
@@ -464,7 +465,7 @@ jsHarmony.prototype.InitControls = function() {
   XDom('.xaccordiontab').omit('.initialized').elements.forEach(function(el){ _this.XExt.bindAccordion(el); });
 };
 jsHarmony.prototype.refreshBodyHead = function(_el){
-  if(!_el) _el = this.xdroot.select('.xbodyhead');
+  if(!_el) _el = this.xdroot.getElements('.xbodyhead');
   if(_el.length === 0) return;
   var ww = window.innerWidth;
   _.each(_el, function(el){
@@ -487,7 +488,7 @@ jsHarmony.prototype.XWindowResize = function (source) {
   var ph = ((doch > wh) ? doch : wh); //Page height = greater of document or window height
   var params = { ww: ww, wh: wh, sleft: sleft, stop: stop, docw: docw, doch: doch, pw: pw, ph: ph };
   this.refreshBodyHead();
-  XDom.setStyle(this.xdroot.select('.xhead'), 'top', (-1 * stop) + 'px');
+  XDom.setStyle(this.xdroot.getElement('.xhead'), 'top', (-1 * stop) + 'px');
   this.XDialogResize(source, params);
   this.RefreshLayout();
   this.lastWindowSize = {
@@ -496,7 +497,7 @@ jsHarmony.prototype.XWindowResize = function (source) {
   };
 };
 jsHarmony.prototype.XDialogResize = function (source, params) {
-  var xdDebugInfo = XDom(this.xdroot, '.xdebuginfo.jsHarmonyElement_'+this._instanceClass);
+  var xdDebugInfo = this.xd('.xdebuginfo.jsHarmonyElement_'+this._instanceClass);
   xdDebugInfo.style.top = params.stop + 'px';
   xdDebugInfo.style.left = params.sleft + 'px';
   xdDebugInfo.style.width = params.ww + 'px';
@@ -504,7 +505,7 @@ jsHarmony.prototype.XDialogResize = function (source, params) {
   if(this.xdDialogBlock){
     this.xdDialogBlock.style.width = params.pw + 'px';
     this.xdDialogBlock.style.height = params.ph + 'px';
-    _.each(this.xdDialogBlock.select('.xdialogbox'), function (obj) {
+    _.each(this.xdDialogBlock.getElements('.xdialogbox'), function (obj) {
       var xdobj = XDom(obj);
       if (!XDom.isVisible(obj)) return;
       if (document.activeElement && document.activeElement.matches('input,select,textarea') && XDom(document.activeElement).parent().length) {

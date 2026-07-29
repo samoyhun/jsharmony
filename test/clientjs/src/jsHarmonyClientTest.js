@@ -30,6 +30,7 @@ var mocha = require('mocha');
   window.XDom = XDom;
   var jsh = new jsHarmony({_instance: 'jshInstance'});
   var XExt = jsh.XExt;
+  var _ = jsh._;
 
   function throwError(msg){
     var errmsg = msg || 'Assertion failed';
@@ -67,7 +68,7 @@ var mocha = require('mocha');
     }
   }
 
-  describe('XDom selector', function() {
+  describe('XDom', function() {
     before(function(){
       document.querySelector('#workspace').innerHTML = [
         '<div id="item1" class="sharedClass1 sharedClass3"><p></p></div>',
@@ -76,43 +77,55 @@ var mocha = require('mocha');
         '<div id="item4" class="singleClass"></div>',
       ].join('');
     });
-    it('selector css class ', function(){
-      assert(XDom('.sharedClass1').selector('p').target ==='.sharedClass1 p', 'Target found');
+    it('XDom css class selector ', function(){
+      assert(XDom('.sharedClass1').target === '.sharedClass1', 'Target found');
+      assert(XDom('.sharedClass1 p').target === '.sharedClass1 p', 'Target found');
     });
     
-    it('selector css id ', function(){
-      assert(XDom('#item1').selector('p').target ==='#item1 p', 'Target found');
+    it('XDom css id selector ', function(){
+      assert(XDom('#item1').target === '#item1', 'Target found');
+    });
+
+    it('XDom css element selector ', function(){
+      assert(XDom('div').target === 'div', 'Target found');
+    });
+
+    it('XDom element ', function(){
+      var el = XDom('.singleClass').element;
+      assert(XDom(el).base === el, 'Target found');
     });
   });
 
   describe('XDom select', function() {
     before(function(){
       document.querySelector('#workspace').innerHTML = [
-        '<div id="item1" class="sharedClass1 sharedClass3"></div>',
-        '<div id="item2" class="sharedClass1 sharedClass2 sharedClass3"></div>',
-        '<div id="item3" class="sharedClass2 sharedClass3"></div>',
-        '<div id="item4" class="singleClass"></div>',
-        '<footer></footer>',
-        '<footer></footer>',
+        '<div class="root">',
+          '<div id="item1" class="sharedClass1 sharedClass3"></div>',
+          '<div id="item2" class="sharedClass1 sharedClass2 sharedClass3"></div>',
+          '<div id="item3" class="sharedClass2 sharedClass3"></div>',
+          '<div id="item4" class="singleClass"></div>',
+          '<footer></footer>',
+          '<footer></footer>',
+        '</div>',
       ].join('');
     });
 
-    it('select css class ', function(){
-      assert(XDom.select('.sharedClass1').length == 2, 'sharedClass1 elements found');
-      assert(XDom.select('.sharedClass2').length == 2, 'sharedClass2 elements found');
-      assert(XDom.select('.sharedClass3').length == 3, 'sharedClass3 elements found');
-      assert(XDom.select('.singleClass').length == 1, 'singleClass elements found');
+    it('select css class selector ', function(){
+      assert(XDom('.root').select('.sharedClass1').elements.length == 2, 'sharedClass1 elements found');
+      assert(XDom('.root').select('.sharedClass2').elements.length == 2, 'sharedClass2 elements found');
+      assert(XDom('.root').select('.sharedClass3').elements.length == 3, 'sharedClass3 elements found');
+      assert(XDom('.root').select('.singleClass').elements.length == 1, 'singleClass elements found');
     });
     
-    it('select css id ', function(){
-      assert(XDom.select('#item1').length == 1, 'item1 found');
-      assert(XDom.select('#item2, #item3').length == 2, 'item2, item3 found');
-      assert(XDom.select('#item5_notfound').length == 0, 'invalid item not found');
+    it('select css id selector ', function(){
+      assert(XDom('.root').select('#item1').elements.length == 1, 'item1 found');
+      assert(XDom('.root').select('#item2, #item3').elements.length == 2, 'item2, item3 found');
+      assert(XDom('.root').select('#item5_notfound').elements.length == 0, 'invalid item not found');
     });
 
-    it('select element ', function(){
-      assert(XDom.select('footer').length == 2, 'all footer elements found');
-      assert(XDom.select('nav').length == 0, 'invaid element not found');
+    it('select css element selector ', function(){
+      assert(XDom('.root').select('footer').elements.length == 2, 'all footer elements found');
+      assert(XDom('.root').select('nav').elements.length == 0, 'invaid element not found');
     });
 
     after(function(){
@@ -120,7 +133,7 @@ var mocha = require('mocha');
     });
   });
 
-  describe('XDom selectOne', function() {
+  describe('XDom element ', function() {
     before(function(){
       document.querySelector('#workspace').innerHTML = [
         '<div id="item1" class="sharedClass1 sharedClass3"></div>',
@@ -131,22 +144,22 @@ var mocha = require('mocha');
       ].join('');
     });
 
-    it('selectOne css class ', function(){
-      assert(XDom.selectOne('.sharedClass1').id === 'item1', 'one sharedClass1 element found');
-      assert(XDom.selectOne('.sharedClass2').id === 'item2', 'one sharedClass2 element found');
-      assert(XDom.selectOne('.sharedClass3').id === 'item1', 'one sharedClass3 element found');
-      assert(XDom.selectOne('.noSuchClass') === null, 'invalid class not found');
+    it('element css class ', function(){
+      assert(XDom('.sharedClass1').element.id === 'item1', 'one sharedClass1 element found');
+      assert(XDom('.sharedClass2').element.id === 'item2', 'one sharedClass2 element found');
+      assert(XDom('.sharedClass3').element.id === 'item1', 'one sharedClass3 element found');
+      assert(XDom('.noSuchClass').element === null, 'invalid class not found');
     });
 
-    it('selectOne css id ', function(){
-      assert(XDom.selectOne('#item1').id === 'item1', 'item1 found');
-      assert(XDom.selectOne('#item2').id === 'item2', 'item2 found');
-      assert(XDom.selectOne('#item5_notfound') === null, 'invalid item not found');
+    it('element css id ', function(){
+      assert(XDom('#item1').element.id === 'item1', 'item1 found');
+      assert(XDom('#item2').element.id === 'item2', 'item2 found');
+      assert(XDom('#item5_notfound').element === null, 'invalid item not found');
     });
 
-    it('selectOne element ', function(){
-      result1 = XDom.selectOne('footer');
-      result2 = XDom.selectOne('nav');
+    it('element element ', function(){
+      result1 = XDom('footer').element;
+      result2 = XDom('nav').element;
       assert(result1 instanceof Element , 'element found');
       assert(result2 === null, 'invalid element not found');
     });
@@ -230,11 +243,11 @@ var mocha = require('mocha');
 
     it('setStyle color ', function() {
       XDom.setStyle('#item1', 'color', 'red');
-      assert(XDom.selectOne('#item1').style.color === 'red', 'color set');
+      assert(XDom('#item1').element.style.color === 'red', 'color set');
 
       XDom.setStyle('.sharedClass1', 'color', 'red');
-      assert(XDom.select('.sharedClass1')[0].style.color === 'red', 'first shared class color set');
-      assert(XDom.select('.sharedClass1')[1].style.color === 'red', 'second shared class color set');
+      assert(XDom('.sharedClass1').elements[0].style.color === 'red', 'first shared class color set');
+      assert(XDom('.sharedClass1').elements[1].style.color === 'red', 'second shared class color set');
     });
 
     after(function(){
@@ -251,28 +264,28 @@ var mocha = require('mocha');
 
     it('appendHtml css id ', function() {
       XDom('#item4').content.append('<p>Test1</p>');
-      var el = XDom.selectOne('#item4');
+      var el = XDom('#item4').element;
       assert(el.querySelector('p') !== null, 'p element was appended');
       assert(el.querySelector('p').textContent === 'Test1', 'p element contains correct text');
     });
 
     it('appendHtml multiple nodes ', function() {
       XDom('#item4').content.append('before <p>Test2</p> after');
-      var el = XDom.selectOne('#item4');
+      var el = XDom('#item4').element;
       assert(el.querySelector('p') !== null, 'p element was appended');
       assert(el.querySelector('p').textContent === 'Test2', 'p element contains correct text');
     });
 
     it('appendHtml tr', function() {
       XDom('#item4').content.append('<tr><td><p>Test3</p></td></tr>');
-      var el = XDom.selectOne('#item4');
+      var el = XDom('#item4').element;
       assert(el.querySelector('tr') !== null, 'tr element was appended');
       assert(el.querySelector('p').textContent === 'Test3', 'p element contains correct text');
     });
 
     it('appendHtml input elements have a type property', function() {
       XDom('#item4').content.append('<input type="text"/>');
-      var el = XDom.selectOne('#item4');
+      var el = XDom('#item4').element;
       assertEqual(el.querySelector('input').type, 'text', 'input element has a type property');
     });
 
@@ -340,7 +353,7 @@ var mocha = require('mocha');
 
     it('prependHtml css id ', function() {
       XDom('#item4').content.prepend('<p>Test</p>');
-      var el = XDom.selectOne('#item4');
+      var el = XDom('#item4').element;
       assert(el.querySelector('p') !== null, 'p element was prepended');
       assert(el.querySelector('p').textContent === 'Test', 'p element contains correct text');
     });
@@ -359,7 +372,7 @@ var mocha = require('mocha');
 
     it('setHtml css id ', function() {
       XDom('#item1').content.replace('<p>Replacement text</p>');
-      el = XDom.selectOne('#item1');
+      el = XDom('#item1').element;
       assert(el.querySelector('p').innerHTML === 'Replacement text', 'html set');
     });
 
@@ -377,7 +390,7 @@ var mocha = require('mocha');
 
     it('clear css id ', function() {
       XDom('#item1').content.clear();
-      el = XDom.selectOne('#item1');
+      el = XDom('#item1').element;
       assert(el.querySelector('p') === null, 'html cleared');
     });
 
@@ -435,7 +448,7 @@ var mocha = require('mocha');
       XDom.on('#item1', 'click', function() {
         handlerCalled = true;
       });
-      XDom.selectOne('#item1').click();
+      XDom('#item1').element.click();
       assert(handlerCalled, 'on added event and executed');
     });
 
@@ -444,7 +457,7 @@ var mocha = require('mocha');
       XDom.on('#item1', 'click foo', function() {
         handlerCalled++;
       });
-      XDom.selectOne('#item1').click();
+      XDom('#item1').element.click();
       XDom('#item1').emit('foo');
       assertEqual(handlerCalled, 2, 'both events executed');
     });
@@ -468,7 +481,7 @@ var mocha = require('mocha');
       }
       XDom.on('#item1', 'click', handler);
       XDom.off('#item1', 'click', handler);
-      XDom.selectOne('#item1').click();
+      XDom('#item1').element.click();
       assert(!handlerCalled, 'off removed added event');
     });
 
@@ -479,7 +492,7 @@ var mocha = require('mocha');
       }
       XDom.on('#item1', 'click foo', handler);
       XDom.off('#item1', 'click foo', handler);
-      XDom.selectOne('#item1').click();
+      XDom('#item1').element.click();
       XDom('#item1').emit('foo');
       assertEqual(handlerCalled, 0, 'off removed all events');
     });
@@ -592,7 +605,7 @@ var mocha = require('mocha');
     it('getData css id ', function() {
       assert(XDom.getData('#item1', 'userId') === '77', 'getData returned the correct data');
       assert(XDom.getData('#item1', 'status') === 'active', 'getData returned the correct data');
-      assert(XDom.selector('#item1').data.userId == '77', 'Secondary method works...');
+      assert(XDom.select('#item1').data.userId == '77', 'Secondary method works...');
     });
 
     after(function(){
@@ -631,31 +644,31 @@ var mocha = require('mocha');
 
     it('style display css id ', function() {
       XDom.style.display('#item1', false);
-      assert(XDom.selectOne('#item1').style.display === 'none', 'display set to none');
+      assert(XDom('#item1').element.style.display === 'none', 'display set to none');
 
       XDom.style.display('.sharedClass1', true);
-      assert(XDom.select('.sharedClass1')[0].style.display === '', 'first sharedClass1 display cleared');
-      assert(XDom.select('.sharedClass1')[1].style.display === '', 'second sharedClass1 display cleared');
+      assert(XDom('.sharedClass1').elements[0].style.display === '', 'first sharedClass1 display cleared');
+      assert(XDom('.sharedClass1').elements[1].style.display === '', 'second sharedClass1 display cleared');
 
       XDom.style.display('#item1', 'block');
-      assert(XDom.selectOne('#item1').style.display === 'block', 'display set to block');
+      assert(XDom('#item1').element.style.display === 'block', 'display set to block');
     });
     it('style width css id ', function() {
       XDom.style.width('#item2', 100);
-      assert(XDom.selectOne('#item2').style.width === '100px', 'width set as px for number');
+      assert(XDom('#item2').element.style.width === '100px', 'width set as px for number');
 
       XDom.style.width('.sharedClass3', '50%');
-      assert(XDom.select('.sharedClass3')[0].style.width === '50%', 'first sharedClass3 width set');
-      assert(XDom.select('.sharedClass3')[1].style.width === '50%', 'second sharedClass3 width set');
+      assert(XDom('.sharedClass3').elements[0].style.width === '50%', 'first sharedClass3 width set');
+      assert(XDom('.sharedClass3').elements[1].style.width === '50%', 'second sharedClass3 width set');
 
       assert(typeof XDom.style.width('#no_such_item') === 'undefined', 'width getter returns undefined for missing target');
     });
     it('style height css id ', function() {
       XDom.style.height('#item3', 40);
-      assert(XDom.selectOne('#item3').style.height === '40px', 'height set as px for number');
+      assert(XDom('#item3').element.style.height === '40px', 'height set as px for number');
 
       XDom.style.height('#item4', null);
-      assert(XDom.selectOne('#item4').style.height === '', 'height cleared when null');
+      assert(XDom('#item4').element.style.height === '', 'height cleared when null');
     });
 
     after(function(){
@@ -864,54 +877,54 @@ var mocha = require('mocha');
     it('insert into empty parent', function() {
       setup();
       var el = document.createElement('div');
-      XDom.selector('#child1').insertBefore(el, null);
-      assert(XDom.selector('#child1').children.length == 1, 'an empty target now has one child');
+      XDom('#child1').insertBefore(el, null);
+      assert(XDom('#child1').children.length == 1, 'an empty target now has one child');
     });
 
     it('insert with no reference', function() {
       setup();
       var el = document.createElement('div');
-      XDom.selector('#parent').insertBefore(el, null);
-      assert(XDom.selector('#parent').children.elements[2] == el, 'inserted at end');
+      XDom('#parent').insertBefore(el, null);
+      assert(XDom('#parent').children.elements[2] == el, 'inserted at end');
     });
 
     it('before first element', function() {
       setup();
       var el = document.createElement('div');
       var ref = document.getElementById('child1');
-      XDom.selector('#parent').insertBefore(el, ref);
-      assert(XDom.selector('#parent').children.elements[0] == el, 'inserted at beginning');
+      XDom('#parent').insertBefore(el, ref);
+      assert(XDom('#parent').children.elements[0] == el, 'inserted at beginning');
     });
 
     it('in the middle', function() {
       setup();
       var el = document.createElement('div');
       var ref = document.getElementById('child2');
-      XDom.selector('#parent').insertBefore(el, ref);
-      assert(XDom.selector('#parent').children.elements[1] == el, 'inserted at middle');
+      XDom('#parent').insertBefore(el, ref);
+      assert(XDom('#parent').children.elements[1] == el, 'inserted at middle');
     });
 
     it('no target', function() {
       setup();
       var el = document.createElement('div');
-      XDom.selector('.not.found').insertBefore(el, null);
+      XDom('.not.found').insertBefore(el, null);
       assert(el.parentNode == null, 'node was not inserted');
     });
 
     it('multiple targets', function() {
       setup();
       var el = document.createElement('div');
-      XDom.selector('.child').insertBefore(el, null);
-      assert(XDom.selector('#child1').children.length == 0, 'not in child1');
-      assert(XDom.selector('#child2').children.length == 1, 'in child2');
+      XDom('.child').insertBefore(el, null);
+      assert(XDom('#child1').children.length == 0, 'not in child1');
+      assert(XDom('#child2').children.length == 1, 'in child2');
     });
 
     it('multiple elements', function() {
       setup();
       var _el = XDom.render('before <div>inside</div> after');
       var ref = document.getElementById('child2');
-      XDom.selector('#parent').insertBefore(_el, ref);
-      assertEqual(XDom.selector('#parent').elements[0].textContent, '1before inside after2', 'inserted all nodes in order');
+      XDom('#parent').insertBefore(_el, ref);
+      assertEqual(XDom('#parent').elements[0].textContent, '1before inside after2', 'inserted all nodes in order');
     });
 
     after(function(){
@@ -930,10 +943,10 @@ var mocha = require('mocha');
     });
 
     it('calc width css id ', function() {
-      assert(XDom.selector('#item1').calc.width() === 200, 'found correct offsetwidth');
+      assert(XDom('#item1').calc.width() === 200, 'found correct offsetwidth');
     });
     it('calc height css id ', function() {
-      assert(XDom.selector('#item2').calc.height() === 200, 'found correct offsetheight');
+      assert(XDom('#item2').calc.height() === 200, 'found correct offsetheight');
     });
 
     after(function(){
@@ -969,7 +982,7 @@ var mocha = require('mocha');
 
     // it('resolve selector ', function() { //selector is not well understood to test
     //   assert(XDom.resolve({selector: '.sharedClass1'}).length == 2, 'Resolved selector');
-    //   assert(XDom.resolve(XDom.selector('.sharedClass1')).length == 2, 'Resolved selector');
+    //   assert(XDom.resolve(XDom('.sharedClass1')).length == 2, 'Resolved selector');
     // });
 
     it('resolve DOM elem query ', function() {
@@ -1141,103 +1154,105 @@ var mocha = require('mocha');
 
     it('animate duration zero ', function(done) {
       var sharedClass1_el = XDom('.sharedClass1');
-      sharedClass1_el.animate({width: '400px'}, 0, function(){
-        assert(XDom.selector('#item1').calc.width() === 400, 'found correct width');
-        assert(XDom.selector('#item2').calc.width() === 400, 'found correct width');
+      sharedClass1_el.animate({width: '400px'}, 0, _.after(2, function(){
+        assert(XDom('#item1').calc.width() === 400, 'found correct width');
+        assert(XDom('#item2').calc.width() === 400, 'found correct width');
         done();
-      });
+      }));
     });
 
     it('animate duration non zero ', function(done) {
       var sharedClass1_el = XDom('.sharedClass1');
-      sharedClass1_el.animate({width: '400px'}, 100, function(){
-        assert(XDom.selector('#item1').calc.width() === 400, 'found correct width');
-        assert(XDom.selector('#item2').calc.width() === 400, 'found correct width');
+      sharedClass1_el.animate({width: '400px'}, 100, _.after(2, function(){
+        assert(XDom('#item1').calc.width() === 400, 'found correct width');
+        assert(XDom('#item2').calc.width() === 400, 'found correct width');
         done();
-      });
+      }));
     });
       
-    it('animate stopped full set ', function(done) {
+    it('animate all stopped ', function(done) {
       var sharedClass1_el = XDom('.sharedClass1');
+      sharedClass1_el.animate({width: '400px'}, 100);
       setTimeout(function(){
         sharedClass1_el.stop();
+        assert(XDom('#item1').calc.width() !== 400, 'found correct width');
+        assert(XDom('#item2').calc.width() !== 400, 'found correct width');
         done();
       }, 50);
-      sharedClass1_el.animate({width: '400px'}, 100, function(){
-        assert(XDom.selector('#item1').calc.width() !== 400, 'found correct width');
-        assert(XDom.selector('#item2').calc.width() !== 400, 'found correct width');
-        done(err);
-      });
     });
 
-    it('animate stopped full set with callback ', function(done) {
+    it('animate all stopped with callback ', function(done) {
       var check = 0;
       var sharedClass1_el = XDom('.sharedClass1');
       var callback = function(){check = 1;};
       sharedClass1_el.animate({width: '400px'}, 100, function(){check = 1});
       setTimeout(function(){
         sharedClass1_el.stop();
-        assert(XDom.selector('#item1').calc.width() !== 400, 'found correct width');
-        assert(XDom.selector('#item2').calc.width() !== 400, 'found correct width');
+        assert(XDom('#item1').calc.width() !== 400, 'found correct width');
+        assert(XDom('#item2').calc.width() !== 400, 'found correct width');
         assert(check === 0, 'callback never fires');
         done();
       }, 50);
     });
 
-    it('animate stopped subset ', function(done) {
+    it('animate partial stop ', function(done) {
       var sharedClass1_el = XDom('.sharedClass1');
       var first_el = XDom('#item1');
+      sharedClass1_el.animate({width: '400px'}, 100, function(){
+        assert(XDom('#item2').calc.width() === 400, 'found correct width');
+          done();
+      });
       setTimeout(function(){
         first_el.stop();
+        assert(XDom('#item1').calc.width() !== 400, 'found correct width');
       }, 50);
-      sharedClass1_el.animate({width: '400px'}, 100, function(){
-        assert(XDom.selector('#item1').calc.width() !== 400, 'found correct width');
-        assert(XDom.selector('#item2').calc.width() === 400, 'found correct width');
-        done();
-      });
     });
 
     it('animate multi props ', function(done) {
       var sharedClass1_el = XDom('.sharedClass1');
-      sharedClass1_el.animate({width: '400px', height: '400px', opacity: 0}, 100, function(){
-        assert(XDom.selector('#item1').calc.width() === 400, 'found correct width');
-        assert(XDom.selector('#item2').calc.width() === 400, 'found correct width');
-        assert(XDom.selector('#item1').calc.height() === 400, 'found correct height');
-        assert(XDom.selector('#item2').calc.height() === 400, 'found correct height');
+      sharedClass1_el.animate({width: '400px', height: '400px', opacity: 0}, 100, _.after(2, function(){
+        assert(XDom('#item1').calc.width() === 400, 'found correct width');
+        assert(XDom('#item2').calc.width() === 400, 'found correct width');
+        assert(XDom('#item1').calc.height() === 400, 'found correct height');
+        assert(XDom('#item2').calc.height() === 400, 'found correct height');
         done();
-      });
+      }));
     });
 
     it('animate color props rgb ', function(done) {
       var sharedClass1_el = XDom('.sharedClass1');
-      sharedClass1_el.animate({color: 'rgb(1, 2, 3)'}, 100, function(){
-        assert(XDom.selector('#item1').style.color === 'rgb(1, 2, 3)', 'found correct color');
+      sharedClass1_el.animate({color: 'rgb(1, 2, 3)'}, 100, _.after(2, function(){
+        assert(XDom('#item1').style.color === 'rgb(1, 2, 3)', 'found correct color');
+        assert(XDom('#item2').style.color === 'rgb(1, 2, 3)', 'found correct color');
         done();
-      });
+      }));
     });
 
     it('animate color props rgba ', function(done) {
       var sharedClass1_el = XDom('.sharedClass1');
-      sharedClass1_el.animate({color: 'rgba(1, 2, 3, 0.95)'}, 100, function(){
-        assert(XDom.selector('#item1').style.color === 'rgba(1, 2, 3, 0.95)', 'found correct color');
+      sharedClass1_el.animate({color: 'rgba(1, 2, 3, 0.95)'}, 100, _.after(2, function(){
+        assert(XDom('#item1').style.color === 'rgba(1, 2, 3, 0.95)', 'found correct color');
+        assert(XDom('#item2').style.color === 'rgba(1, 2, 3, 0.95)', 'found correct color');
         done();
-      });
+      }));
     });
 
     it('animate color props hex RRGGBB ', function(done) {
       var sharedClass1_el = XDom('.sharedClass1');
-      sharedClass1_el.animate({color: '#FF00FF'}, 100, function(){
-        assert(XDom.selector('#item1').style.color === 'rgb(255, 0, 255)', 'found correct color');
+      sharedClass1_el.animate({color: '#FF00FF'}, 100, _.after(2, function(){
+        assert(XDom('#item1').style.color === 'rgb(255, 0, 255)', 'found correct color');
+        assert(XDom('#item2').style.color === 'rgb(255, 0, 255)', 'found correct color');
         done();
-      });
+      }));
     });
 
     it('animate color props hex RRGGBBAA ', function(done) {
       var sharedClass1_el = XDom('.sharedClass1');
-      sharedClass1_el.animate({color: '#FF00FFF5'}, 100, function(){
-        assert(XDom.selector('#item1').style.color === 'rgba(255, 0, 255, 0.96)', 'found correct color');
+      sharedClass1_el.animate({color: '#FF00FFF5'}, 100, _.after(2, function(){
+        assert(XDom('#item1').style.color === 'rgba(255, 0, 255, 0.96)', 'found correct color');
+        assert(XDom('#item2').style.color === 'rgba(255, 0, 255, 0.96)', 'found correct color');
         done();
-      });
+      }));
     });
     
     after(function(){
