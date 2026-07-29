@@ -17,8 +17,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this package.  If not, see <http://www.gnu.org/licenses/>.
 */
 (function(jsh){
-  var $ = jsh.$;
-  //var jQuery = $;
+  //var $ = jsh.$;
   var _ = jsh._;
   var ejs = jsh.ejs;
   var async = jsh.async;
@@ -193,9 +192,8 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       if(ejsrslt.indexOf(jsh.CODE_EJSPREPEND)>=0) ejsrslt = ejsrslt.replace(jsh.CODE_EJSPREPEND,ejsprepend)
       else ejsrslt = ejsprepend + ejsrslt;
       //console.log(ejsrslt); //Debug EJS output
-      // TODO: jquery html insertion
-      jsh.$root('.xbody').html(ejsrslt);
-      //xdxbody.content.replace(ejsrslt);
+      // Note: this operation counts on execution of scripts in the embeded code to define the model.
+      xdxbody.content.replace(ejsrslt, {evaluateScripts: true});
       var prevClasses = XExt.getClasses(xdxbody.element);
       for(var i=0;i<prevClasses.length;i++){
         if(XExt.beginsWith(prevClasses[i], 'xbody_')){
@@ -450,7 +448,6 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
   jsh.XPage.bindEvents();
   jsh.trigger('jsh_render_init');
 
-  //$(document).ready(function(){
   jsh.XDom.on(document, 'DOMContentLoaded', function(){
     jsh.title_html = "\r\n"+'<h1 style="display:inline-block;" class="xform_title">&nbsp;</h1>' + "\r\n";
     jsh.state = jsh.GetState();
