@@ -372,7 +372,10 @@ XDom.evaluateScriptsWithin = function(target) {
 
 function elementApplyEval(el, method, val, options) {
   if(el && el[method]) {
-    var nodes = [].concat(XDom.render(val));
+    var rendered = XDom.render(val);
+    // null will render as 'null'. But if the operation is replace, we still need to perform it, because it removes the prior contents.
+    if (!rendered) rendered = '';
+    var nodes = [].concat(rendered);
     el[method].apply(el, nodes);
     if(options && options.evaluateScripts) XDom.evaluateScriptsWithin(nodes);
   }
