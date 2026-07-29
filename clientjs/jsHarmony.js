@@ -396,7 +396,7 @@ jsHarmony.prototype.mouseDrag = function(mouseDragObj, e){
   xdClone.style.left = _this.mouseX+'px';
   xdClone.style.top = _this.mouseY+'px';
   var targetObj = null;
-  _this.xdroot.getElement('.xdrop').forEach(function(el){
+  _this.xdroot.getElements('.xdrop').forEach(function(el){
     if(_this.XExt.isMouseWithin(el)){
       if(!_this.mouseCanDrop || _this.mouseCanDrop(el)){
         if(!targetObj || _this.XExt.isChildOf(targetObj, this)) targetObj = el;
@@ -412,7 +412,7 @@ jsHarmony.prototype.mouseDragEnd = function(mouseDragObj, e){
   if(!mouseDragObj) return;
   this.xd('.xdrag').remove();
   var targetObj = null;
-  this.xdroot.getElement('.xdrop').forEach(function(el){
+  this.xdroot.getElements('.xdrop').forEach(function(el){
     if(_this.XExt.isMouseWithin(el)){
       if(!_this.mouseCanDrop || _this.mouseCanDrop(el)){
         if(!targetObj || _this.XExt.isChildOf(targetObj, el)) targetObj = el;

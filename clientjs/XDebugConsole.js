@@ -303,7 +303,7 @@ exports = module.exports = function(jsh){
   };
 
   XDebugConsole.prototype.getBodyHeight = function(baseHeight){
-    return baseHeight - 31 - (this.settings.settings_visible ? jsh.XDom.calc.heightToBorder(this.xdDebugPanel.getElements('.debug-settings')) : 0);
+    return baseHeight - 31 - (this.settings.settings_visible ? jsh.XDom.calc.heightToBorder(this.xdDebugPanel.getElement('.debug-settings')) : 0);
   };
 
   XDebugConsole.prototype.setWindowSize = function(size){
