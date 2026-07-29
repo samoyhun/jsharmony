@@ -20,7 +20,6 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 var _ = require('lodash');
 
 exports = module.exports = function(jsh){
-  var XDom = jsh.XDom;
   function XPayment() {
     this.Loader = {};
     this.Initialized = false;

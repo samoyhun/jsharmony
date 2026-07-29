@@ -871,7 +871,7 @@ XDom.stop = function(target) {
 XDom.easing = {
   sine: function(x){ return Math.abs(-(Math.cos(Math.PI * x) - 1) / 2); },
   linear: function(x){ return x; }
-}
+};
 
 XDom.animate = function(target, props, duration, onComplete, options) {
   options = _.extend({easing: XDom.easing.sine}, options);
