@@ -254,9 +254,9 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
   jsh.ResetLinks = function(rootobj){
     _.forEach(jsh.XDom(rootobj || jsh.xdroot, 'a').elements, function(obj,i){
       if(jsh.XDom.getAttribute(obj, 'onclick')) return;
-      if(jsh.XDom.parent(obj, '.mce-content-body,[contenteditable],.htmlarea_container')) return;
+      if(jsh.XDom.parent(obj, '.mce-content-body,[contenteditable],.htmlarea_container').length) return;
       if(jsh.XDom.getAttribute(obj, 'target')) return;
-      jsh.XDom.setAttribute('onclick','return <%-req.jshsite.instance%>.Navigate(this);');
+      jsh.XDom.setAttribute(obj, 'onclick','return <%-req.jshsite.instance%>.Navigate(this);');
     });
   }
 

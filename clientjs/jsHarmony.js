@@ -25,7 +25,7 @@ var $ = require('./jquery-1.11.2');
 $.fn.$find = function(){ return $.fn.find.apply(this, arguments); };
 var jQuery = $;
 require('../public/jquery-ui/js/jquery-ui-1.10.3.custom-aspa.min.js')(jQuery);
-require('../public/js/jquery.csv.min.js')(jQuery);
+var csv = require('./csv.min.js');
 var _ = require('lodash');
 var ejs = require('ejs');
 var async = require('async');
@@ -93,6 +93,7 @@ var jsHarmony = function(options){
   this.ejs = ejs;
   this.async = async;
   this.moment = moment;
+  this.csv = csv;
   this.XDom = XDom;
   this.XGrid = XGrid(this);
   this.XForm = XForm(this);

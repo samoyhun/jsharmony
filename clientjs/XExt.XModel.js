@@ -114,7 +114,7 @@ exports = module.exports = function(jsh){
         XExtXModel.RenderField(_this, parentobj, modelid, field);
       });
       if (xmodel.layout == 'form-m') {
-        jsh.xd('.navtext_' + xmodel.class).content.replace((xmodel.controller.form.Index + 1) + ' of ' + xmodel.controller.form.Count());
+        jsh.xd('.navtext_' + xmodel.class).content.replaceText((xmodel.controller.form.Index + 1) + ' of ' + xmodel.controller.form.Count());
       }
     };
   };

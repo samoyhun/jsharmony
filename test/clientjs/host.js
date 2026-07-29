@@ -21284,6 +21284,7 @@ var mocha = require('mocha');
   window.XDom = XDom;
   var jsh = new jsHarmony({_instance: 'jshInstance'});
   var XExt = jsh.XExt;
+  var _ = jsh._;
 
   function throwError(msg){
     var errmsg = msg || 'Assertion failed';
@@ -22371,22 +22372,20 @@ var mocha = require('mocha');
 
     it('animate duration zero ', function(done) {
       var sharedClass1_el = XDom('.sharedClass1');
-      sharedClass1_el.animate({width: '400px'});
-      setTimeout(function(){
+      sharedClass1_el.animate({width: '400px'}, 0, _.after(2, function(){
         assert(XDom('#item1').calc.width() === 400, 'found correct width');
         assert(XDom('#item2').calc.width() === 400, 'found correct width');
         done();
-      }, 5);
+      }));
     });
 
     it('animate duration non zero ', function(done) {
       var sharedClass1_el = XDom('.sharedClass1');
-      sharedClass1_el.animate({width: '400px'}, 100);
-      setTimeout(function(){
+      sharedClass1_el.animate({width: '400px'}, 100, _.after(2, function(){
         assert(XDom('#item1').calc.width() === 400, 'found correct width');
         assert(XDom('#item2').calc.width() === 400, 'found correct width');
         done();
-      }, 110);
+      }));
     });
       
     it('animate all stopped ', function(done) {
@@ -22417,63 +22416,61 @@ var mocha = require('mocha');
     it('animate partial stop ', function(done) {
       var sharedClass1_el = XDom('.sharedClass1');
       var first_el = XDom('#item1');
-      sharedClass1_el.animate({width: '400px'}, 100);
+      sharedClass1_el.animate({width: '400px'}, 100, function(){
+        assert(XDom('#item2').calc.width() === 400, 'found correct width');
+          done();
+      });
       setTimeout(function(){
         first_el.stop();
         assert(XDom('#item1').calc.width() !== 400, 'found correct width');
-        setTimeout(function(){
-          assert(XDom('#item2').calc.width() === 400, 'found correct width');
-          done();
-        }, 60);
       }, 50);
     });
 
     it('animate multi props ', function(done) {
       var sharedClass1_el = XDom('.sharedClass1');
-      sharedClass1_el.animate({width: '400px', height: '400px', opacity: 0}, 100);
-      setTimeout(function(){
+      sharedClass1_el.animate({width: '400px', height: '400px', opacity: 0}, 100, _.after(2, function(){
         assert(XDom('#item1').calc.width() === 400, 'found correct width');
         assert(XDom('#item2').calc.width() === 400, 'found correct width');
         assert(XDom('#item1').calc.height() === 400, 'found correct height');
         assert(XDom('#item2').calc.height() === 400, 'found correct height');
         done();
-      }, 110);
+      }));
     });
 
     it('animate color props rgb ', function(done) {
       var sharedClass1_el = XDom('.sharedClass1');
-      sharedClass1_el.animate({color: 'rgb(1, 2, 3)'}, 100);
-      setTimeout(function(){
+      sharedClass1_el.animate({color: 'rgb(1, 2, 3)'}, 100, _.after(2, function(){
         assert(XDom('#item1').style.color === 'rgb(1, 2, 3)', 'found correct color');
+        assert(XDom('#item2').style.color === 'rgb(1, 2, 3)', 'found correct color');
         done();
-      }, 110);
+      }));
     });
 
     it('animate color props rgba ', function(done) {
       var sharedClass1_el = XDom('.sharedClass1');
-      sharedClass1_el.animate({color: 'rgba(1, 2, 3, 0.95)'}, 100);
-      setTimeout(function(){
+      sharedClass1_el.animate({color: 'rgba(1, 2, 3, 0.95)'}, 100, _.after(2, function(){
         assert(XDom('#item1').style.color === 'rgba(1, 2, 3, 0.95)', 'found correct color');
+        assert(XDom('#item2').style.color === 'rgba(1, 2, 3, 0.95)', 'found correct color');
         done();
-      }, 110);
+      }));
     });
 
     it('animate color props hex RRGGBB ', function(done) {
       var sharedClass1_el = XDom('.sharedClass1');
-      sharedClass1_el.animate({color: '#FF00FF'}, 100);
-      setTimeout(function(){
+      sharedClass1_el.animate({color: '#FF00FF'}, 100, _.after(2, function(){
         assert(XDom('#item1').style.color === 'rgb(255, 0, 255)', 'found correct color');
+        assert(XDom('#item2').style.color === 'rgb(255, 0, 255)', 'found correct color');
         done();
-      }, 110);
+      }));
     });
 
     it('animate color props hex RRGGBBAA ', function(done) {
       var sharedClass1_el = XDom('.sharedClass1');
-      sharedClass1_el.animate({color: '#FF00FFF5'}, 100);
-      setTimeout(function(){
+      sharedClass1_el.animate({color: '#FF00FFF5'}, 100, _.after(2, function(){
         assert(XDom('#item1').style.color === 'rgba(255, 0, 255, 0.96)', 'found correct color');
+        assert(XDom('#item2').style.color === 'rgba(255, 0, 255, 0.96)', 'found correct color');
         done();
-      }, 110);
+      }));
     });
     
     after(function(){
