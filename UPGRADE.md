@@ -386,3 +386,7 @@ chnaged `this.MenuItems` from array of items to array of `{xdobj: XDom(item), wi
 
 Returns DOM object instead of jQuery object
   Cannot use .prop('src', ...)
+
+#### $.csv
+
+jsh.csv

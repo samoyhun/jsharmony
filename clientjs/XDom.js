@@ -80,140 +80,6 @@ var Selector = function(){
 
   if(!_this.target && !_this.base) throw new Error('Target or base element is required');
 
-  _this.getElements = function(childSelector){
-    return selectWithin((_this.target + ' ' + (childSelector||'')).trim(), _this.base);
-  };
-
-  _this.getElement = function(childSelector){
-    return XDom.getElement((_this.target + ' ' + (childSelector||'')).trim(), _this.base);
-  };
-
-  _this.select = function(childSelector){
-    if(!childSelector) return _this;
-    if(!_this.target) return new Selector(_this.base, childSelector);
-    var _selectorPart = _this.target.split(',');
-    var _childSelectorPart = childSelector.split(',');
-    return new Selector(_this.base, _.map(_selectorPart, function(selectorPart){
-      return _.map(_childSelectorPart, function(childSelectorPart){
-        return (selectorPart.trim() + ' ' + childSelectorPart.trim()).trim();
-      }).join(',');
-    }).join(','));
-  };
-
-  _this.class = {
-    add: XDom.class.add.bind(XDom, this),
-    remove: XDom.class.remove.bind(XDom, this),
-    contains: XDom.class.contains.bind(XDom, this),
-  };
-  _this.content = {
-    append: XDom.content.append.bind(XDom, this),
-    prepend: XDom.content.prepend.bind(XDom, this),
-    replace: XDom.content.replace.bind(XDom, this),
-    replaceText: XDom.content.replaceText.bind(XDom, this),
-    clear: XDom.content.clear.bind(XDom, this),
-  };
-  _this.attr = new Proxy({}, {
-    get: function(target, prop, receiver) { return XDom.getAttribute(_this, prop); },
-    set: function(target, prop, value) { return XDom.setAttribute(_this, prop, value); },
-  });
-  _this.on = XDom.on.bind(XDom, this);
-  _this.off = XDom.off.bind(XDom, this);
-  _this.emit = XDom.emit.bind(XDom, this);
-  _this.animate = XDom.animate.bind(XDom, this);
-  _this.animate.height = XDom.animate.height.bind(XDom, this);
-  _this.animate.opacity = XDom.animate.opacity.bind(XDom, this);
-  _this.stop = function(){ return XDom.stop(this); };
-  Object.defineProperty(this, 'value', {
-    get: function() { return XDom.getValue(this); },
-    set: function(value) { XDom.setValue(this, value); },
-  });
-  Object.defineProperty(this, 'length', {
-    get: function() { return this.getElements().length; },
-  });
-  Object.defineProperty(this, 'element', {
-    get: function() { return this.getElement(); },
-  });
-  Object.defineProperty(this, 'elements', {
-    get: function() { return this.getElements(); },
-  });
-  _this.data = new Proxy({}, {
-    get: function(target, prop, receiver) { return XDom.getData(_this, prop); },
-    set: function(target, prop, value) { return XDom.setData(_this, prop, value); },
-  });
-  _this.style = new Proxy({}, {
-    get: function(target, prop, receiver) {
-      if(prop in XDom.style) return XDom.style[prop](_this);
-      return XDom.getStyle(_this, prop);
-    },
-    set: function(target, prop, value) {
-      if(prop == 'calc') throw new Error('Cannot set calculated style');
-      else if(prop in XDom.style) return XDom.style[prop](_this, value);
-      return XDom.setStyle(_this, prop, value);
-    },
-  });
-  Object.defineProperty(this, 'innerHTML', {
-    get: function() { return XDom.innerHTML(this); },
-  });
-  Object.defineProperty(this, 'innerText', {
-    get: function() { return XDom.innerText(this); },
-  });
-  Object.defineProperty(this, 'outerHTML', {
-    get: function() { return XDom.outerHTML(this); },
-  });
-  _this.calc = {
-    width: XDom.calc.width.bind(XDom, this),
-    widthToPadding: XDom.calc.widthToPadding.bind(XDom, this),
-    widthToBorder: XDom.calc.widthToBorder.bind(XDom, this),
-    widthToMargin: XDom.calc.widthToMargin.bind(XDom, this),
-    widthToContent: XDom.calc.widthToContent.bind(XDom, this),
-    height: XDom.calc.height.bind(XDom, this),
-    heightToPadding: XDom.calc.heightToPadding.bind(XDom, this),
-    heightToBorder: XDom.calc.heightToBorder.bind(XDom, this),
-    heightToMargin: XDom.calc.heightToMargin.bind(XDom, this),
-    heightToContent: XDom.calc.heightToContent.bind(XDom, this),
-    top: XDom.calc.top.bind(XDom, this),
-    topFromDocument: XDom.calc.topFromDocument.bind(XDom, this),
-    topFromParent: XDom.calc.topFromParent.bind(XDom, this),
-    topFromOffsetParent: XDom.calc.topFromOffsetParent.bind(XDom, this),
-    topFrom: XDom.calc.topFrom.bind(XDom, this),
-    left: XDom.calc.left.bind(XDom, this),
-    leftFromDocument: XDom.calc.leftFromDocument.bind(XDom, this),
-    leftFromParent: XDom.calc.leftFromParent.bind(XDom, this),
-    leftFromOffsetParent: XDom.calc.leftFromOffsetParent.bind(XDom, this),
-    leftFrom: XDom.calc.leftFrom.bind(XDom, this),
-  };
-  _this.parent = function(parentSelector){
-    return new Selector(XDom.parent(this, parentSelector));
-  };
-  _this.nextSibling = function(siblingSelector){
-    return new Selector(XDom.nextSibling(this, siblingSelector));
-  };
-  _this.previousSibling = function(siblingSelector){
-    return new Selector(XDom.previousSibling(this, siblingSelector));
-  };
-  _this.first = function(){
-    return new Selector(XDom.first(this) || []);
-  };
-  _this.last = function(){
-    return new Selector(XDom.last(this) || []);
-  };
-  _this.filter = function(f){
-    return new Selector(XDom.filter(this, f));
-  };
-  _this.omit = function(f){
-    return new Selector(XDom.omit(this, f));
-  };
-  _this.getChildren = function(childrenSelector){
-    return new Selector(XDom.getChildren(this, childrenSelector));
-  };
-  _this.isVisible = XDom.isVisible.bind(XDom, this);
-  _this.insertBefore = XDom.insertBefore.bind(XDom, this);
-  _this.remove = XDom.remove.bind(XDom, this);
-  _this.focus = XDom.focus.bind(XDom, this);
-  _this.blur = XDom.blur.bind(XDom, this);
-  Object.defineProperty(this, 'children', {
-    get: function() { return new Selector(XDom.getChildren(this)); },
-  });
   //core functions
   //  children -> selector                             XDom.children([a,b,c])
   //  parent(selector) parent('div') -> selector       XDom.parent([a,b,c])
@@ -254,6 +120,143 @@ var Selector = function(){
   //$.param -> XExt.escapeQuery
 };
 XDom.Selector = Selector;
+
+var P = Selector.prototype;
+
+P.getElements = function(childSelector){
+  return selectWithin((this.target + ' ' + (childSelector||'')).trim(), this.base);
+};
+
+P.getElement = function(childSelector){
+  return XDom.getElement((this.target + ' ' + (childSelector||'')).trim(), this.base);
+};
+
+P.select = function(childSelector){
+  if(!childSelector) return this;
+  if(!this.target) return new Selector(this.base, childSelector);
+  var _selectorPart = this.target.split(',');
+  var _childSelectorPart = childSelector.split(',');
+  return new Selector(this.base, _.map(_selectorPart, function(selectorPart){
+    return _.map(_childSelectorPart, function(childSelectorPart){
+      return (selectorPart.trim() + ' ' + childSelectorPart.trim()).trim();
+    }).join(',');
+  }).join(','));
+};
+
+[
+  'on',
+  'off',
+  'emit',
+  'stop',
+  'isVisible',
+  'insertBefore',
+  'remove',
+  'focus',
+  'blur',
+].forEach(function(method) {
+  P[method] = function(){ return XDom[method](this, ...arguments); };
+});
+
+[
+  'parent',
+  'nextSibling',
+  'previousSibling',
+  'filter',
+  'omit',
+  'getChildren',
+].forEach(function(method) {
+  P[method] = function(){ return new Selector(XDom[method](this, ...arguments)); };
+});
+
+P.first = function(){ return new Selector(XDom.first(this) || []); };
+P.last = function(){ return new Selector(XDom.last(this) || []); };
+
+Object.defineProperty(P, 'value', {
+  get: function() { return XDom.getValue(this); },
+  set: function(value) { XDom.setValue(this, value); },
+});
+Object.defineProperty(P, 'length', {
+  get: function() { return this.getElements().length; },
+});
+Object.defineProperty(P, 'element', {
+  get: function() { return this.getElement(); },
+});
+Object.defineProperty(P, 'elements', {
+  get: function() { return this.getElements(); },
+});
+Object.defineProperty(P, 'innerHTML', {
+  get: function() { return XDom.innerHTML(this); },
+});
+Object.defineProperty(P, 'innerText', {
+  get: function() { return XDom.innerText(this); },
+});
+Object.defineProperty(P, 'outerHTML', {
+  get: function() { return XDom.outerHTML(this); },
+});
+Object.defineProperty(P, 'children', {
+  get: function() { return new Selector(XDom.getChildren(this)); },
+});
+Object.defineProperty(P, 'animate', {
+  get: function() {
+    var animate = XDom.animate.bind(XDom, this);
+    animate.height = XDom.animate.height.bind(XDom, this);
+    animate.opacity = XDom.animate.opacity.bind(XDom, this);
+    return animate;
+  },
+});
+Object.defineProperty(P, 'attr', {
+  get: function() {
+    var _this = this;
+    return new Proxy({}, {
+      get: function(target, prop, receiver) { return XDom.getAttribute(_this, prop); },
+      set: function(target, prop, value) { return XDom.setAttribute(_this, prop, value); },
+    });
+  },
+});
+Object.defineProperty(P, 'data', {
+  get: function() {
+    var _this = this;
+    return new Proxy({}, {
+      get: function(target, prop, receiver) { return XDom.getData(_this, prop); },
+      set: function(target, prop, value) { return XDom.setData(_this, prop, value); },
+    });
+  },
+});
+Object.defineProperty(P, 'style', {
+  get: function() {
+    var _this = this;
+    return new Proxy({}, {
+      get: function(target, prop, receiver) {
+        if(prop in XDom.style) return XDom.style[prop](_this);
+        return XDom.getStyle(_this, prop);
+      },
+      set: function(target, prop, value) {
+        if(prop == 'calc') throw new Error('Cannot set calculated style');
+        else if(prop in XDom.style) return XDom.style[prop](_this, value);
+        return XDom.setStyle(_this, prop, value);
+      },
+    });
+  },
+});
+
+function defineSubProperty(target, property, static) {
+  Object.defineProperty(target, property, {
+    get: function() {
+      var _this = this;
+      var obj = {};
+      _.each(static, function(val, key) {
+        obj[key] = val.bind(XDom, _this);
+      });
+      return obj;
+    },
+  });
+}
+
+function defineDependentProperties() {
+  defineSubProperty(P, 'class', XDom.class);
+  defineSubProperty(P, 'content', XDom.content);
+  defineSubProperty(P, 'calc', XDom.calc);
+}
 
 XDom.getElements = function(selector, within){
   return selectWithin(selector, within);
@@ -372,7 +375,10 @@ XDom.evaluateScriptsWithin = function(target) {
 
 function elementApplyEval(el, method, val, options) {
   if(el && el[method]) {
-    var nodes = [].concat(XDom.render(val));
+    var rendered = XDom.render(val);
+    // null will render as 'null'. But if the operation is replace, we still need to perform it, because it removes the prior contents.
+    if (!rendered) rendered = '';
+    var nodes = [].concat(rendered);
     el[method].apply(el, nodes);
     if(options && options.evaluateScripts) XDom.evaluateScriptsWithin(nodes);
   }
@@ -902,7 +908,7 @@ XDom.stop = function(target) {
 XDom.easing = {
   sine: function(x){ return Math.abs(-(Math.cos(Math.PI * x) - 1) / 2); },
   linear: function(x){ return x; }
-}
+};
 
 XDom.animate = function(target, props, duration, onComplete, options) {
   options = _.extend({easing: XDom.easing.sine}, options);
@@ -1016,3 +1022,5 @@ XDom.animate.opacity = function(tgt, to, callback, duration){
     callback();
   });
 };
+
+defineDependentProperties();

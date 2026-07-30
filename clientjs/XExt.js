@@ -2560,7 +2560,7 @@ exports = module.exports = function(jsh){
 
         var panelWidth = null;
         var panelHeight = null;
-        var xsubformPanel = jsh.xd(POPUP_CONTAINER).filter('.xsubform').select('.xpanel').element;
+        var xsubformPanel = jsh.xd(POPUP_CONTAINER + '.xsubform').select('.xpanel').element;
         if(xsubformPanel) {
           panelWidth = xsubformPanel.style.width;
           panelHeight = xsubformPanel.style.height;
