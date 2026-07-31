@@ -257,7 +257,7 @@ exports = module.exports = function(jsh){
     if(!this.isInitialized) return;
 
     if (jsh.xd('.xmenu').length == 0) return;
-    var maxw = window.innerWidth-1;
+    var maxw = document.documentElement.clientWidth - 1;
     
     //Refresh dimensions, if necessary
     var newDimensions = _this.CalcDimensions();
@@ -299,7 +299,7 @@ exports = module.exports = function(jsh){
     var _this = this;
     var xdSubMenu = _this.getSubmenu();
     if(!xdSubMenu.length) return;
-    var maxw = window.innerWidth-1;
+    var maxw = document.documentElement.clientWidth - 1;
 
     //Refresh dimensions, if necessary
     _this.CalcSubmenuDimensions();
