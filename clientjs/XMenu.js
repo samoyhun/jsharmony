@@ -257,6 +257,8 @@ exports = module.exports = function(jsh){
     if(!this.isInitialized) return;
 
     if (jsh.xd('.xmenu').length == 0) return;
+    // this can happen in headless mode. Don't fully understand why, but it doesn't make much sense to do layout in a practically nonexistant window.
+    if (window.innerWidth <= 1) return;
     var maxw = window.innerWidth-1;
     
     //Refresh dimensions, if necessary
