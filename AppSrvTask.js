@@ -1335,7 +1335,6 @@ AppSrvTask.prototype.exec_read_xlsx = function(model, command, params, options, 
   if(command.fields){
     column_headers = _.map(command.fields, function(field){ if(_.isString(field)) return field; return field.name; });
   }
-  var hasError = false;
   var hasReadFinished = false;
   var hasFinished = false;
   var hasWorksheet = false;
@@ -1401,28 +1400,27 @@ AppSrvTask.prototype.exec_read_xlsx = function(model, command, params, options, 
 
   function finish(err){
     if(hasFinished) return;
-
+  
     hasFinished = true;
+  
+    if(err){
+      rows = [];
+      if(f && f.destroy) f.destroy();
+    }
+  
     options.exec_counter.pop();
-
+    
     if(err) return command_cb(err);
-
     if(commandLocals && commandLocals.length) return _this.drainLocals(commandLocals, command_cb);
     return command_cb();
   }
-
+  
   function fail(err){
-    if(hasError || hasFinished) return;
-
-    hasError = true;
-    rows = [];
-    if(f && f.destroy) f.destroy();
-
     return finish(err);
   }
 
   function processRow(row, row_cb){
-    if(hasError) return;
+    if(hasFinished) return;
     rowcnt++;
 
     //Validate
@@ -1455,7 +1453,7 @@ AppSrvTask.prototype.exec_read_xlsx = function(model, command, params, options, 
   }
 
   function processRowHandler(err){
-    if(hasError || hasFinished) return;
+    if(hasFinished) return;
 
     if(err) return fail(err);
 
@@ -1478,7 +1476,7 @@ AppSrvTask.prototype.exec_read_xlsx = function(model, command, params, options, 
     hasWorksheet = true;
 
     worksheetReader.on('row', function(excelRow){
-      if(hasError || hasFinished) return;
+      if(hasFinished) return;
       var row = convertRow(excelRow);
 
       //Skip header row
@@ -1494,7 +1492,7 @@ AppSrvTask.prototype.exec_read_xlsx = function(model, command, params, options, 
   workbookReader.on('error', fail);
 
   workbookReader.on('end', function(){
-    if(hasError || hasFinished) return;
+    if(hasFinished) return;
     if(!hasWorksheet) return fail(new Error('Excel file does not contain a worksheet'));
 
     hasReadFinished = true;
