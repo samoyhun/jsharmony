@@ -4,6 +4,45 @@
 
 jsHarmony 2.0 replaces jQuery with a new library, XDom, which is typically accessed via jsh.XDom.
 
+core functions
+  children -> selector                             XDom.children([a,b,c])
+  parent(selector) parent('div') -> selector       XDom.parent([a,b,c])
+  nextSibling() -> selector                        XDom.nextSibling([a,b,c])
+  previousSibling() -> selector                    XDom.previousSibling([a,b,c])
+  first() -> selector                              XDom.first([a,b,c])
+  last() -> selector                               XDom.last([a,b,c])
+  filter (selector) (function) -> selector         XDom.filter([a,b,c])
+  omit (selector) (function) -> selector           XDom.omit([a,b,c])
+  emit -> void                                     XDom.emit(...)
+  insertBefore -> void                             XDom.insertBefore(referenceNode)
+  calc.top, calc.left // calc.top({ from: 'document' })  calc.top({ from: 'parent' })  calc.top({ from: 'offsetparent' })  calc.top({ from: [object] }) -> Number
+  isVisible -> boolean, .filter(XDom.isVisible), .omit(XDom.isVisible)
+  animate -> void
+
+  each => .elements.forEach(...)
+  trigger = emit()
+  before => insertBefore
+  closest => parent(...selector)
+  insertBefore => insertBefore
+  next => nextSibling
+  prev => previousSibling
+  offsetParent => .calc.top({ from: 'offsetparent' })
+  offset => offset() .calc.top()
+  wrap => create element, insertBefore, and then put contents inside
+  not => .omit
+  first => .first
+  filter => .filter
+  slideUp => .animate.height(false)
+  slideDown => .animate.height(true)
+  fadeTo => .animate({ opacity: 0 })
+  is(:visible) => .isVisible
+  empty => .content.clear()
+  html('html string') => .content.replace('html string')
+  outerWidth => .calc.widthToBorder
+  outerWidth(true) => .calc.widthToMargin
+  outerHeight => .calc.heightToBorder
+  param -> XExt.escapeQuery
+
 #### Existance check
 jQuery:
 ```$('.selector').length```
@@ -157,6 +196,11 @@ Many callbacks and other interface methods formally took jquery wrapped sets. Th
 #### XExt.bindDragSource(first argument)
 
 ```XExt.bindDragSource(*obj*)```
+
+#### XExt.findClosest(added param)
+
+```XExt.selectClosest(elem, sel, *filterFunc*)```
+NOTE: now returns a DOM element or null.
 
 #### xgrid OnRowBind (first argument)
 
@@ -361,7 +405,7 @@ the `XExt.renderTemplate` function is added to return an XDom selector containin
 
 #### CustomPrompt
 
-Add `43px` to the in-line `width` style to account for `box-sizing: border-box;` change to all xdialogbox containers (only if an in-line style exists).
+Add `42px` to the in-line `width` style to account for `box-sizing: border-box;` change to all xdialogbox containers (only if an in-line style exists).
 removed option from customprompt `options.reuse`
 `onInit()` now passes `onInit(*xDialogObj*)` was `onInit(acceptfunc, cancelfunc)`
 `onClosed()` now passes `onClosed(*xDialogObj*)` was `onClosed()`

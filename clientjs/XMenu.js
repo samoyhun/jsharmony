@@ -257,9 +257,9 @@ exports = module.exports = function(jsh){
     if(!this.isInitialized) return;
 
     if (jsh.xd('.xmenu').length == 0) return;
-    // this can happen in headless mode. Don't fully understand why, but it doesn't make much sense to do layout in a practically nonexistant window.
-    if (window.innerWidth <= 1) return;
-    var maxw = window.innerWidth-1;
+    var maxw = document.documentElement.clientWidth - 1;
+    // this can happen in headless mode.
+    if (maxw <= 0) return;
     
     //Refresh dimensions, if necessary
     var newDimensions = _this.CalcDimensions();
@@ -301,7 +301,7 @@ exports = module.exports = function(jsh){
     var _this = this;
     var xdSubMenu = _this.getSubmenu();
     if(!xdSubMenu.length) return;
-    var maxw = window.innerWidth-1;
+    var maxw = document.documentElement.clientWidth - 1;
 
     //Refresh dimensions, if necessary
     _this.CalcSubmenuDimensions();
@@ -309,10 +309,8 @@ exports = module.exports = function(jsh){
     var showmore = false;
     //Find out if we need to show "more" menu
     var curleft = _this.SubMenuOverhang;
-    //jsh.$root('.dev_marker').remove();
     for (var i = 0; i < _this.SubMenuItems.length; i++) {
       curleft += _this.SubMenuItems[i].width;
-      //jsh.root.prepend('<div class="dev_marker" style="background-color:red;width:1px;height:120px;position:absolute;top:0px;left:'+curleft+'px;z-index:9999;"></div>');
     }
     if (curleft > maxw) showmore = true;
     

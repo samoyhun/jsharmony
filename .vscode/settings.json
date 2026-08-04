@@ -3,11 +3,9 @@
         "**/public/js/ckeditor": true,
         "**/public/js/jsHarmony.dev.js": true,
         "**/public/js/jsHarmony.js": true,
-        "**/clientjs/jquery-1.11.2.js": true,
         "**/.git": true,
         "node_modules": true,
         "data": true,
         "**/public/js/tinymce": true,
-        "**/public/jquery-ui": true,
     }
 }

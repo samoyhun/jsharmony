@@ -46,7 +46,6 @@ exports = module.exports = function(jsh){
   };
 
   XExt.RenderLOV = function (_data, ctrl, LOV) {
-    ctrl = jsh.parseJQueryElements(ctrl, 'XExt.RenderLOV');
     jsh.XDom.content.replace(ctrl, jsh.ejs.render('\
       <% for(var i=0;i<data.length;i++){ %>\
       <option value="<%=data[i][jsh.uimap.code_val]%>"><%=data[i][jsh.uimap.code_txt]%></option>\
@@ -56,7 +55,6 @@ exports = module.exports = function(jsh){
   };
 
   XExt.RenderParentLOV = function (_data, ctrl, parentvals, LOV, field, plural) {
-    ctrl = jsh.parseJQueryElements(ctrl, 'XExt.RenderParentLOV');
     //Get Previous Value
     var prevval = _data[field.name];
     if (prevval == null) prevval = '';
@@ -96,15 +94,11 @@ exports = module.exports = function(jsh){
   };
 
   XExt.TagBox_Refresh = function(ctrl, baseinputctrl){
-    ctrl = jsh.parseJQueryElements(ctrl,'XExt.TagBox_Refresh');
-    baseinputctrl = jsh.parseJQueryElements(baseinputctrl,'XExt.TagBox_Refresh');
     XDom(ctrl, 'span').remove();
     XExt.TagBox_AddTags(ctrl, baseinputctrl, XDom(baseinputctrl).value.split(','));
   };
 
   XExt.TagBox_Save = function(ctrl, baseinputctrl){
-    ctrl = jsh.parseJQueryElements(ctrl,'XExt.TagBox_Save');
-    baseinputctrl = jsh.parseJQueryElements(baseinputctrl,'XExt.TagBox_Save');
     var tags = [];
     XDom(ctrl).getChildren('span').elements.forEach(function(el){ tags.push(XDom(el).data.val); });
     var xdBaseInputCtrl = XDom(baseinputctrl);
@@ -127,8 +121,6 @@ exports = module.exports = function(jsh){
   };
 
   XExt.TagBox_AddTags = function(ctrl, baseinputctrl, new_tags){
-    ctrl = jsh.parseJQueryElements(ctrl,'XExt.TagBox_AddTags');
-    baseinputctrl = jsh.parseJQueryElements(baseinputctrl,'XExt.TagBox_AddTags');
     var xdctrl = XDom(ctrl);
     var addTag = function(val){
       val = val.trim();
@@ -154,8 +146,6 @@ exports = module.exports = function(jsh){
   };
 
   XExt.TagBox_Render = function(ctrl, baseinputctrl){
-    ctrl = jsh.parseJQueryElements(ctrl,'XExt.TagBox_Render');
-    baseinputctrl = jsh.parseJQueryElements(baseinputctrl,'XExt.TagBox_Render');
     var xdctrl = XDom(ctrl);
     var xdbaseinputctrl = XDom(baseinputctrl);
 
@@ -747,8 +737,6 @@ exports = module.exports = function(jsh){
     if(typeof val == 'undefined') return '';
     return encodeURI(val);
   };
-
-  // encode a value like jQuery.param
   XExt.escapeQuery = function(query) {
     function pair(key, value) {
       return encodeURIComponent(key.toString()) + '=' + encodeURIComponent((value || typeof(value) == 'number') ? value.toString() : '');
@@ -787,14 +775,12 @@ exports = module.exports = function(jsh){
 
     return objectValue(query, '');
   };
-
   XExt.pad = function (val, padding, length) {
     var rslt = val.toString();
     while (rslt.length < length) rslt = padding + rslt;
     return rslt;
   };
   XExt.getMargin = function(ctrl){
-    ctrl = jsh.parseJQueryElements(ctrl, 'XExt.getMargin');
     var xdctrl = XDom(ctrl);
     var xdctrlStyles = xdctrl.style.calc;
     return {
@@ -805,7 +791,6 @@ exports = module.exports = function(jsh){
     };
   };
   XExt.getPadding = function(ctrl){
-    ctrl = jsh.parseJQueryElements(ctrl, 'XExt.getPadding');
     var xdctrl = XDom(ctrl);
     var xdctrlStyles = xdctrl.style.calc;
     return {
@@ -816,7 +801,6 @@ exports = module.exports = function(jsh){
     };
   };
   XExt.getBorder = function(ctrl){
-    ctrl = jsh.parseJQueryElements(ctrl, 'XExt.getBorder');
     var xdctrl = XDom(ctrl);
     var xdctrlStyles = xdctrl.style.calc;
     return {
@@ -1326,7 +1310,6 @@ exports = module.exports = function(jsh){
   }
 
   XExt.TreeRender = function (ctrl, LOV, field) {
-    ctrl = jsh.parseJQueryElements(ctrl,'XExt.TreeRender');
     var xdctrl = XDom(ctrl);
     //Create Cache of Opened Nodes
     var firstRender = !xdctrl.children.length;
@@ -1732,7 +1715,6 @@ exports = module.exports = function(jsh){
   };
 
   XExt.TreeSelectNode = function (ctrl, nodevalue, options) {
-    ctrl = jsh.parseJQueryElements(ctrl,'XExt.TreeSelectNode');
     if(!options) options = { triggerChange: true, source: '' };
     if(!('triggerChange' in options)) options.triggerChange = true;
 
@@ -1840,7 +1822,6 @@ exports = module.exports = function(jsh){
     return rslt;
   };
   XExt.TreeExpandAll = function (ctrl) {
-    ctrl = jsh.parseJQueryElements(ctrl,'XExt.TreeExpandAll');
     var xdctrl = XDom(ctrl).parent('.xform_ctrl.tree');
     var xdTreeItem = XDom(xdctrl, '.tree_item');
     if(!xdctrl.select('.tree_render_lazy').elements.length){
@@ -1928,8 +1909,7 @@ exports = module.exports = function(jsh){
   };
 
   XExt.XInputAction = function (_obj, _overrideFunc) {
-    if (_obj && (_obj.jquery) && (_obj.length)) this.obj = _obj[0];
-    else this.obj = _obj;
+    this.obj = _obj;
     this.tstamp = Date.now();
     this.mouseX = jsh.mouseX;
     this.mouseY = jsh.mouseY;
@@ -2249,7 +2229,7 @@ exports = module.exports = function(jsh){
     }
     else {
       reuse = true;
-      customPrompt = jsh.parseJQueryElements(html,'XExt.CustomPrompt');
+      customPrompt = html;
       if(!customPrompt) customPrompt = document.createElement('div');
       for(var j=0;j<jsh.xDialog.length;j++){
         if(jsh.xDialog[j].obj == customPrompt){
@@ -2554,7 +2534,6 @@ exports = module.exports = function(jsh){
           var xdSearchVal = jsh.xd(POPUP_CONTAINER + ' .xsearch_value');
           if (xdSearchVal.isVisible()) xdSearchVal.first().focus();
           else if (jsh.xd(POPUP_CONTAINER).select('td a').length) XDom.focus(jsh.xd(POPUP_CONTAINER).select('td a').element);
-          //else jsh.$root(POPUP_CONTAINER).$find('input,select,textarea').first().focus();
 
           xDialogObj.bindDialogHandler(XDom(xDialogObj.obj, '.xpopupbox_content').element, 'scroll', function(){ jsh.refreshBodyHead(xdPopup.select('.xbodyhead').element); });
         };
@@ -2632,7 +2611,6 @@ exports = module.exports = function(jsh){
   };
 
   XExt.getModelId = function (obj) {
-    obj = jsh.parseJQueryElements(obj,'XExt.getModelId');
     var xdobj = XDom(obj);
     var xid = xdobj.parent('.xtbl').data.id;
     if (!xid) xid = xdobj.parent('.xform').data.id;
@@ -2789,12 +2767,13 @@ exports = module.exports = function(jsh){
     return rslt;
   };
 
-  XExt.findClosest = function (elem, sel) {
-    var xdobj = XDom(elem, sel);
-    if (xdobj.length) return xdobj;
-    var parent = XDom(elem).parent();
-    if (!parent.length) return parent;
-    return XExt.findClosest(parent.element, sel);
+  XExt.selectClosest = function (elem, sel, filterFunc) {
+    var xdobj = XDom(elem).select(sel);
+    if (filterFunc) xdobj = xdobj.filter(filterFunc);
+    if (xdobj.length) return xdobj.element;
+    var xdparent = XDom(elem).parent();
+    if (!xdparent.length) return null;
+    return XExt.selectClosest(xdparent.element, sel, filterFunc);
   };
 
   XExt.getToken = function (onComplete, onFail) {
@@ -3171,8 +3150,6 @@ exports = module.exports = function(jsh){
     }
   };
   XExt.scrollObjIntoView = function(container, obj){
-    container = jsh.parseJQueryElements(container, 'XExt.scrollObjIntoView');
-    obj = jsh.parseJQueryElements(obj, 'XExt.scrollObjIntoView');
     var xdcontainer = XDom(container);
     var xdobj = XDom(obj);
     var objpos = {top: xdobj.calc.top(), left: xdobj.calc.left()};

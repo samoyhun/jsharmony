@@ -17,8 +17,6 @@ You should have received a copy of the GNU Lesser General Public License
 along with this package.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-var $ = require('./jquery-1.11.2');
-$.fn.$find = function(){ return $.fn.find.apply(this, arguments); };
 var _ = require('lodash');
 
 exports = module.exports = function(jsh){
@@ -377,7 +375,7 @@ exports = module.exports = function(jsh){
   };
 
   XAPIGrid.jsHarmony.prototype.ExportCSV = function(params, callback){
-    var url = jsh._BASEURL + '_csv/' + this.modelid + '/?'+$.param(params);
+    var url = jsh._BASEURL + '_csv/' + this.modelid + '/?'+jsh.XExt.escapeQuery(params);
     jsh.getFileProxy().src = url;
     if(callback) callback();
   };

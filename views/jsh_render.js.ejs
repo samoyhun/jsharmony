@@ -17,7 +17,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this package.  If not, see <http://www.gnu.org/licenses/>.
 */
 (function(jsh){
-  //var $ = jsh.$;
+  var XDom = jsh.XDom;
   var _ = jsh._;
   var ejs = jsh.ejs;
   var async = jsh.async;
@@ -448,7 +448,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
   jsh.XPage.bindEvents();
   jsh.trigger('jsh_render_init');
 
-  jsh.XDom.on(document, 'DOMContentLoaded', function(){
+  jsh.XDom.onPageLoad(function(){
     jsh.title_html = "\r\n"+'<h1 style="display:inline-block;" class="xform_title">&nbsp;</h1>' + "\r\n";
     jsh.state = jsh.GetState();
     if(!jsh.state) return;

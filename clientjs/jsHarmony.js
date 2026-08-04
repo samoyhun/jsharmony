@@ -21,10 +21,6 @@ require('./polyfill.js');
 require('./crypto-md5-2.5.3.js');
 
 //Libraries
-var $ = require('./jquery-1.11.2');
-$.fn.$find = function(){ return $.fn.find.apply(this, arguments); };
-var jQuery = $;
-require('../public/jquery-ui/js/jquery-ui-1.10.3.custom-aspa.min.js')(jQuery);
 var csv = require('./csv.min.js');
 var _ = require('lodash');
 var ejs = require('ejs');
@@ -88,7 +84,6 @@ var jsHarmony = function(options){
   for(var key in options) this[key] = options[key];
 
   //Libraries
-  this.$ = $;
   this._ = _;
   this.ejs = ejs;
   this.async = async;
@@ -134,7 +129,7 @@ var jsHarmony = function(options){
   this.mouseX = 0;
   this.mouseY = 0;
   this.mouseDown = false;
-  this.mouseDragObj = undefined; //jQuery object
+  this.mouseDragObj = undefined; //DOM object
   this.mouseCanDrop = undefined;    //function(obj){ return true; }
   this.last_clicked_time = undefined;
   this.last_clicked = undefined;
@@ -165,7 +160,6 @@ var jsHarmony = function(options){
   this.cancelExit = false;
 
   this._instanceClass = this.XExt.escapeCSSClass(this._instance);
-  this.root = $(document);
   this.xdroot = XDom(document);
   this.xdom = this.xd = function(sel){ return this.xdroot.select(sel); };
   this.xdDialogBlock = null;
@@ -214,15 +208,11 @@ var jsHarmony = function(options){
   jsHarmony.Instances.push(this);
 
   if(options.globalScope){
-    window.$ = $;
-    window.jQuery = $;
     window.moment = moment;
     window.jsh = this;
     if(!_this._instance) _this._instance = 'jsh';
   }
 };
-
-jsHarmony.prototype.$root = function(sel){ return this.root.$find(sel); };
 
 jsHarmony.prototype.getInstance = function(){
   if(!this._instance) throw new Error('jsHarmony._instance is required');
@@ -314,8 +304,6 @@ jsHarmony.prototype.BindEvents = function(){
 
 jsHarmony.prototype.Init = function(){
   var _this = this;
-  // TODO: Remove below when jsh.root is nolonger in use
-  if(_this.root.$find('body').length) _this.root = _this.root.$find('body');
   if(_this.xd('body').length) _this.xdroot = _this.xd('body');
   if(_this.XExt.isMobile()) _this.xd('.xmain').class.add('xmain_mobile');
   _this.InitFileUpload();
@@ -472,7 +460,7 @@ jsHarmony.prototype.refreshBodyHead = function(_el){
     var bodyhead_width = (ww - XDom.calc.left(el) - 10);
     var dialogParent = XDom.parent(el, '.xdialogbox');
     if(dialogParent.length){
-      bodyhead_width = XDom.calc.width(dialogParent) - XDom.calc.leftFromOffsetParent(el) - 10;
+      bodyhead_width = XDom.calc.width(dialogParent);
     }
     XDom.setStyle(el, 'max-width', bodyhead_width + 'px');
   });
@@ -624,14 +612,6 @@ jsHarmony.prototype.runGlobalsMonitor = function(){
   },1000);
 };
 
-jsHarmony.prototype.parseJQueryElements = function(obj, method) {
-  if (obj && obj.jquery) {
-    console.warn('Deprecated: '+method+' received a jquery object. Please pass a dom element.'); // eslint-disable-line no-console
-    return obj.filter(function() {return jsHarmony.XDom.isElement(this);}).get(0);
-  } else {
-    return obj;
-  }
-};
 jsHarmony.prototype.on = function(eventName, handler){
   if(!eventName || !handler) return;
   if(!this.events[eventName]) this.events[eventName] = [];
@@ -660,7 +640,6 @@ var instances = [];
 if(global.jsHarmony) instances = global.jsHarmony.Instances;
 if(window.jsHarmony) instances = window.jsHarmony.Instances;
 jsHarmony.Instances = instances;
-jsHarmony.jQuery = $;
 jsHarmony.XDom = XDom;
 
 global.jsHarmony = jsHarmony;
