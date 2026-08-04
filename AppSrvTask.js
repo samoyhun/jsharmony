@@ -1342,7 +1342,7 @@ AppSrvTask.prototype.exec_read_xlsx = function(model, command, params, options, 
   var isProcessing = false;
   var rows = [];
   var headerNames = null;
-  var worksheetIndex = 1;
+  var worksheetIndex = 0;
   var f = fs.createReadStream(fpath);
   if(command.pipe){
     var fpipe = Helper.JSEval(command.pipe, _this, {
@@ -1412,7 +1412,7 @@ AppSrvTask.prototype.exec_read_xlsx = function(model, command, params, options, 
   }
 
   function fail(err){
-    if(hasError) return;
+    if(hasError || hasFinished) return;
 
     hasError = true;
     rows = [];
@@ -1455,7 +1455,7 @@ AppSrvTask.prototype.exec_read_xlsx = function(model, command, params, options, 
   }
 
   function processRowHandler(err){
-    if(hasError) return;
+    if(hasError || hasFinished) return;
 
     if(err) return fail(err);
 
@@ -1472,7 +1472,7 @@ AppSrvTask.prototype.exec_read_xlsx = function(model, command, params, options, 
   }
 
   workbookReader.on('worksheet', function(worksheetReader){
-    var selectedWorksheet = ((worksheetIndex++) === 1);
+    var selectedWorksheet = (++worksheetIndex === 1);
     if(!selectedWorksheet) return;
 
     hasWorksheet = true;
