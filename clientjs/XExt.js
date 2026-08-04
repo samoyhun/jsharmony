@@ -737,8 +737,6 @@ exports = module.exports = function(jsh){
     if(typeof val == 'undefined') return '';
     return encodeURI(val);
   };
-
-  // encode a value like jQuery.param
   XExt.escapeQuery = function(query) {
     function pair(key, value) {
       return encodeURIComponent(key.toString()) + '=' + encodeURIComponent((value || typeof(value) == 'number') ? value.toString() : '');
@@ -777,7 +775,6 @@ exports = module.exports = function(jsh){
 
     return objectValue(query, '');
   };
-
   XExt.pad = function (val, padding, length) {
     var rslt = val.toString();
     while (rslt.length < length) rslt = padding + rslt;
@@ -2770,13 +2767,13 @@ exports = module.exports = function(jsh){
     return rslt;
   };
 
-  XExt.findClosest = function (elem, sel, filterFunc) {
+  XExt.selectClosest = function (elem, sel, filterFunc) {
     var xdobj = XDom(elem).select(sel);
     if (filterFunc) xdobj = xdobj.filter(filterFunc);
     if (xdobj.length) return xdobj.element;
     var xdparent = XDom(elem).parent();
     if (!xdparent.length) return null;
-    return XExt.findClosest(xdparent.element, sel, filterFunc);
+    return XExt.selectClosest(xdparent.element, sel, filterFunc);
   };
 
   XExt.getToken = function (onComplete, onFail) {

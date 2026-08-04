@@ -1258,7 +1258,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       handled = true;
     }
     else if ((e.which == 78) && (e.altKey)) {//ALT+N = NEW
-      jsh.XDom.emit(XExt.findClosest(e.target, '.xbuttoninsert', jsh.XDom.isVisible), 'click');
+      jsh.XDom.emit(XExt.selectClosest(e.target, '.xbuttoninsert', jsh.XDom.isVisible), 'click');
       handled = true;
     }
     else if ((e.which == 70) && (e.altKey)) {//ALT+Q = Search
