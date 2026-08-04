@@ -258,6 +258,8 @@ exports = module.exports = function(jsh){
 
     if (jsh.xd('.xmenu').length == 0) return;
     var maxw = document.documentElement.clientWidth - 1;
+    // this can happen in headless mode.
+    if (maxw <= 0) return;
     
     //Refresh dimensions, if necessary
     var newDimensions = _this.CalcDimensions();
