@@ -154,7 +154,7 @@ P.select = function(childSelector){
   'focus',
   'blur',
 ].forEach(function(method) {
-  P[method] = function(){ return XDom[method](this, ...arguments); };
+  P[method] = function(){ return XDom[method](this, ...arguments); }; // eslint-disable-line es5/no-spread
 });
 
 [
@@ -165,7 +165,7 @@ P.select = function(childSelector){
   'omit',
   'getChildren',
 ].forEach(function(method) {
-  P[method] = function(){ return new Selector(XDom[method](this, ...arguments)); };
+  P[method] = function(){ return new Selector(XDom[method](this, ...arguments)); }; // eslint-disable-line es5/no-spread
 });
 
 P.first = function(){ return new Selector(XDom.first(this) || []); };
