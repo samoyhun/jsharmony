@@ -366,7 +366,7 @@ the `XExt.renderTemplate` function is added to return an XDom selector containin
 
 #### CustomPrompt
 
-Add `43px` to the in-line `width` style to account for `box-sizing: border-box;` change to all xdialogbox containers (only if an in-line style exists).
+Add `42px` to the in-line `width` style to account for `box-sizing: border-box;` change to all xdialogbox containers (only if an in-line style exists).
 removed option from customprompt `options.reuse`
 `onInit()` now passes `onInit(*xDialogObj*)` was `onInit(acceptfunc, cancelfunc)`
 `onClosed()` now passes `onClosed(*xDialogObj*)` was `onClosed()`

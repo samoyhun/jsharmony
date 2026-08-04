@@ -460,7 +460,7 @@ jsHarmony.prototype.refreshBodyHead = function(_el){
     var bodyhead_width = (ww - XDom.calc.left(el) - 10);
     var dialogParent = XDom.parent(el, '.xdialogbox');
     if(dialogParent.length){
-      bodyhead_width = XDom.calc.width(dialogParent) - XDom.calc.leftFromOffsetParent(el) - 10;
+      bodyhead_width = XDom.calc.width(dialogParent);
     }
     XDom.setStyle(el, 'max-width', bodyhead_width + 'px');
   });
