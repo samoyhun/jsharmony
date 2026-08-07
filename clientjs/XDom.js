@@ -447,12 +447,12 @@ XDom.emit = function(target, event, data){
   if (typeof(event) == 'string') {
     // Note: it seems only a MouseEvent will trigger a checkbox to change value
     if(data){
-      event = new CustomEvent(event, {detail: data});
+      event = new CustomEvent(event, {bubbles: true, detail: data});
     }
     else if (['click', 'dblclick', 'mouseup', 'mousedown'].indexOf(event) != -1) {
-      event = new MouseEvent(event);
+      event = new MouseEvent(event, {bubbles: true});
     } else {
-      event = new Event(event);
+      event = new Event(event, {bubbles: true});
     }
   }
   _.each(XDom.resolve(target), function(el){
