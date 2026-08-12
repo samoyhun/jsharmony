@@ -2535,7 +2535,7 @@ exports = module.exports = function(jsh){
           if (xdSearchVal.isVisible()) xdSearchVal.first().focus();
           else if (jsh.xd(POPUP_CONTAINER).select('td a').length) XDom.focus(jsh.xd(POPUP_CONTAINER).select('td a').element);
 
-          xDialogObj.bindDialogHandler(XDom(xDialogObj.obj, '.xpopupbox_content').element, 'scroll', function(){ jsh.refreshBodyHead(xdPopup.select('.xbodyhead').element); });
+          xDialogObj.bindDialogHandler(XDom(xDialogObj.obj, '.xpopupbox_content').element, 'scroll', function(){ jsh.refreshBodyHead(xdPopup.select('.xbodyhead').elements); });
         };
         var onClosed = function () {
           if (parentobj && (typeof popupData[modelid].result !== 'undefined')) {
@@ -2570,7 +2570,6 @@ exports = module.exports = function(jsh){
           XDom(xdPopup, 'a.xpopupbox_header_close').on('click', function(){ XExt.CancelDialog(); });
         }
 
-        jsh.refreshBodyHead(xdPopup.select('.xbodyhead').elements);
         XDom(xdPopup, '.xpopupbox_header_title').content.replaceText(title);
         var xdPopContext = XDom(xdPopup, '.xpopupbox_content');
         if(panelWidth) xdPopContext.style.width = panelWidth;
