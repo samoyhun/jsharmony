@@ -103,6 +103,7 @@ P.select = function(childSelector){
     }).join(',');
   }).join(','));
 };
+P.get = P.select;
 
 [
   'on',
@@ -153,6 +154,14 @@ Object.defineProperty(P, 'innerText', {
 });
 Object.defineProperty(P, 'outerHTML', {
   get: function() { return XDom.outerHTML(this); },
+});
+Object.defineProperty(P, 'text', {
+  get: function() { return XDom.innerText(this); },
+  set: function(value) { XDom.content.replaceText(this, value); },
+});
+Object.defineProperty(P, 'html', {
+  get: function() { return XDom.innerHTML(this); },
+  set: function(value) { XDom.content.replace(this, value); },
 });
 Object.defineProperty(P, 'children', {
   get: function() { return new Selector(XDom.getChildren(this)); },
