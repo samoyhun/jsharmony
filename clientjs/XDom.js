@@ -20,7 +20,16 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
 var _ = require('lodash');
 
 var XDom = function(target, options){ return new Selector(target, options); };
+XDom.renderers = {};
 exports = module.exports = XDom;
+
+XDom.with = function(options){
+  var rslt = function(target, options){ return new Selector(target, options); };
+  Object.assign(rslt, XDom);
+  rslt.render = genRenderProxy(rslt);
+  if(options && options.renderers) rslt.renderers = options.renderers;
+  return rslt;
+}
 
 function selectWithin(selector, within){
   if(!within){
@@ -289,29 +298,43 @@ XDom.class = {
   },
 };
 
-XDom.render = function(html){
-  if(!html) return null;
-  if(html instanceof Element) return html;
-  if(html instanceof Selector) {
-    if(!html.length) return null;
-    var _el = XDom.resolve(html);
-    html = '';
-    for(var i=0; i<_el.length; i++){
-      html += _el[i].outerHTML;
-    }
-  }
-  html = html.toString();
-  var container = document.createElement('template');
-  container.innerHTML = html;
-  // childNodes is a live NodeList, if we return it directly, it will likely have surprising results as nodes are moved elsewhere.
-  if(container.content.childNodes.length == 1){
-    return container.content.childNodes[0];
-  }
-  else if(container.content.childNodes.length > 1){
-    return Array.prototype.slice.call(container.content.childNodes);
-  }
-  return null;
+function genRenderProxy(thisArg){
+  return new Proxy(thisArg, {
+    apply: function(target, _this, args){
+      var html = args[0];
+      if(!html) return null;
+      if(html instanceof Element) return html;
+      if(html instanceof Selector) {
+        if(!html.length) return null;
+        var _el = XDom.resolve(html);
+        html = '';
+        for(var i=0; i<_el.length; i++){
+          html += _el[i].outerHTML;
+        }
+      }
+      if(html instanceof Array) return html;
+      html = html.toString();
+      var container = document.createElement('template');
+      container.innerHTML = html;
+      // childNodes is a live NodeList, if we return it directly, it will likely have surprising results as nodes are moved elsewhere.
+      if(container.content.childNodes.length == 1){
+        return container.content.childNodes[0];
+      }
+      else if(container.content.childNodes.length > 1){
+        return Array.prototype.slice.call(container.content.childNodes);
+      }
+      return null;
+    },
+    get: function(target, prop, receiver){
+      var renderer = target.renderers[prop];
+      return function(tmpl, params){
+        if(!tmpl || !renderer) return null;
+        return target.render(renderer(tmpl, params));
+      };
+    },
+  });
 };
+XDom.render = genRenderProxy(XDom);
 
 XDom.renderText = function(txt){
   var container = document.createElement('template');
@@ -917,7 +940,7 @@ XDom.animate = function(target, props, duration, onComplete, options) {
  */
 XDom.animate.height = function(tgt, to, callback, duration){
   if(!callback) callback = function(){};
-  var xdobj = XDom(tgt);
+  var xdobj = new Selector(tgt);
   var _el = xdobj.elements;
   if(_el.length != 1) {_.map(_el, function(el){ XDom.animate.height(el, to, callback, duration); }); return; }
   duration = (!duration && (duration !== 0)) ? 500 : duration;
@@ -968,7 +991,7 @@ XDom.animate.height = function(tgt, to, callback, duration){
  */
 XDom.animate.opacity = function(tgt, to, callback, duration){
   if(!callback) callback = function(){};
-  var xdobj = XDom(tgt);
+  var xdobj = new Selector(tgt);
   var _el = xdobj.elements;
   if(_el.length != 1) {_.map(_el, function(el){ XDom.animate.opacity(el, to, callback, duration); }); return; }
   duration = (!duration && (duration !== 0)) ? 500 : duration;
