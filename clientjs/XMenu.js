@@ -46,7 +46,25 @@ exports = module.exports = function(jsh){
       _this.Menus[menuType].Select(selectedmenu);
     }
   };
-
+  function mapMenuItems(_items){
+    if(!_items || !_items.length) return [];
+    return _items.map(function(obj){
+      var xdobj = XDom(obj);
+      return {
+        href: obj.href,
+        text: obj.innerText,
+        onClick: xdobj.attr.onclick,
+        id: jsh.XExt.escapeCSSClass(xdobj.data.id),
+        isSelected: xdobj.class.contains('selected'),
+      };
+    });
+  }
+  XMenu.getSubMenuItems = function(){
+    return mapMenuItems(jsh.xd('.xsubmenu').filter(XDom.isVisible).getChildren('a').omit('.xsubmenu_more').elements);
+  };
+  XMenu.getMenuItems = function(){
+    return mapMenuItems(jsh.xd('.xmenu a').omit('.xmenu_more').elements);
+  };
   //-----------------------------
   //XMenuBase :: Menu Base Object
   //-----------------------------
@@ -115,13 +133,12 @@ exports = module.exports = function(jsh){
       //Create xmenuside
       var xmenuside = jsh.xd('.xmenuside');
       if (xmenuside.length > 0) {
-        for (var i = 0; i < _this.MenuItems.length; i++) {
-          var xmenuitem = _this.MenuItems[i].xdobj;
-          var link_onclick = xmenuitem.attr.onclick;
+        for (var item of XMenu.getMenuItems()) {
+          var link_onclick = item.onclick;
           if(link_onclick){
             link_onclick = 'onclick="' + link_onclick + ' ;"';
           }
-          var htmlobj = '<a href="' + xmenuitem.attr.href + '" ' + link_onclick + ' class="xmenusideitem xmenusideitem_' + jsh.XExt.escapeCSSClass(xmenuitem.data.id) + ' ' + (xmenuitem.class.contains('selected')?'selected':'') + '">' + xmenuitem.innerHTML + '</a>';
+          var htmlobj = '<a href="' + item.href + '" ' + link_onclick + ' class="xmenusideitem xmenusideitem_' + item.id + ' ' + (item.isSelected?'selected':'') + '">' + item.text + '</a>';
           xmenuside.content.append(htmlobj);
         }
       }
@@ -370,16 +387,13 @@ exports = module.exports = function(jsh){
     //Initialize xsubmenuside for this submenu
     var xsubmenuside = jsh.xd('.xsubmenuside');
     if (xsubmenuside.length > 0) {
-      for (var i = 0; i < _this.SubMenuItems.length; i++) {
-        var xsubmenuitem = _this.SubMenuItems[i].xdobj;
-        if (xsubmenuitem.filter('a').length) {
-          var link_onclick = xsubmenuitem.attr.onclick;
-          if(link_onclick){
-            link_onclick = 'onclick="'+jsh.getInstance()+'.XDom('+jsh.getInstance()+'.xdroot, \'.xsubmenuside\').style.display = false; ' + link_onclick + ';"';
-          }
-          var htmlobj = '<a href="' + xsubmenuitem.attr.href + '" ' + link_onclick + ' class="xsubmenusideitem xsubmenusideitem_' + jsh.XExt.escapeCSSClass(xsubmenuitem.data.id) + ' ' + (xsubmenuitem.class.contains('selected')?'selected':'') + '">' + xsubmenuitem.innerHTML + '</a>';
-          xsubmenuside.content.append(htmlobj);
+      for (var item of XMenu.getSubMenuItems()) {
+        var link_onclick = item.onclick;
+        if(link_onclick){
+          link_onclick = 'onclick="'+jsh.getInstance()+'.XDom('+jsh.getInstance()+'.xdroot, \'.xsubmenuside\').style.display = false; ' + link_onclick + ';"';
         }
+        var htmlobj = '<a href="' + item.href + '" ' + link_onclick + ' class="xsubmenusideitem xsubmenusideitem_' + item.id + ' ' + (item.isSelected?'selected':'') + '">' + item.text + '</a>';
+        xsubmenuside.content.append(htmlobj);
       }
     }
     _this.RefreshLayout();
