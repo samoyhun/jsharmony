@@ -459,7 +459,7 @@ jsHarmony.prototype.refreshBodyHead = function(_el){
   _.each(_el, function(el){
     var bodyhead_width = null;
     var dialogParent = XDom.parent(el, '.xdialogbox');
-    if(dialogParent.length && XDom.filter(dialogParent, ".xpopupbox").length){
+    if(dialogParent.length && XDom.filter(dialogParent, '.xpopupbox').length){
       bodyhead_width = XDom.calc.width(dialogParent) - XDom.calc.leftFromOffsetParent(el) - 10;
     }
     else bodyhead_width = (ww - XDom.calc.left(el) - 10);

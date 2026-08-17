@@ -25,11 +25,11 @@ exports = module.exports = XDom;
 
 XDom.with = function(options){
   var rslt = function(target, options){ return new Selector(target, options); };
-  Object.assign(rslt, XDom);
+  Object.assign(rslt, XDom); // eslint-disable-line es5/no-es6-static-methods
   rslt.render = genRenderProxy(rslt);
   if(options && options.renderers) rslt.renderers = options.renderers;
   return rslt;
-}
+};
 
 function selectWithin(selector, within){
   if(!within){
@@ -174,6 +174,9 @@ Object.defineProperty(P, 'html', {
 });
 Object.defineProperty(P, 'children', {
   get: function() { return new Selector(XDom.getChildren(this)); },
+});
+Object.defineProperty(P, 'items', {
+  get: function() { return _.map(this.elements, function(el){ return new Selector(el); }); },
 });
 Object.defineProperty(P, 'animate', {
   get: function() {
@@ -333,7 +336,7 @@ function genRenderProxy(thisArg){
       };
     },
   });
-};
+}
 XDom.render = genRenderProxy(XDom);
 
 XDom.renderText = function(txt){
@@ -648,7 +651,7 @@ function filterElements(_el, expr, exclude){
   if(_.isFunction(expr)) f = expr;
   else if(_.isString(expr)) f = function(el){ return el.matches(expr); };
   else if(_.isArray(expr)) f = function(el){ return _.includes(expr, el); };
-  else if((typeof expr == 'undefined') || (expr === null)) return [];
+  else if((typeof expr == 'undefined') || (expr === null)) f = function(el){ return false; };
   else f = function(el){ return el === expr; };
   _el.forEach(function(el){
     if(f(el) ^ exclude) rslt.push(el);

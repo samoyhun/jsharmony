@@ -46,25 +46,6 @@ exports = module.exports = function(jsh){
       _this.Menus[menuType].Select(selectedmenu);
     }
   };
-  function mapMenuItems(_items){
-    if(!_items || !_items.length) return [];
-    return _items.map(function(obj){
-      var xdobj = XDom(obj);
-      return {
-        href: obj.href,
-        text: obj.innerText,
-        onClick: xdobj.attr.onclick,
-        id: jsh.XExt.escapeCSSClass(xdobj.data.id),
-        isSelected: xdobj.class.contains('selected'),
-      };
-    });
-  }
-  XMenu.getSubMenuItems = function(){
-    return mapMenuItems(jsh.xd('.xsubmenu').filter(XDom.isVisible).getChildren('a').omit('.xsubmenu_more').elements);
-  };
-  XMenu.getMenuItems = function(){
-    return mapMenuItems(jsh.xd('.xmenu a').omit('.xmenu_more').elements);
-  };
   //-----------------------------
   //XMenuBase :: Menu Base Object
   //-----------------------------
@@ -83,6 +64,8 @@ exports = module.exports = function(jsh){
     this.isInitialized = true;
     return true;
   };
+  XMenuBase.prototype.getMenuItems = function(){ return []; };
+  XMenuBase.prototype.getSubMenuItems = function(){ return []; };
   XMenuBase.prototype.Select = function(selectedmenu){ };
   XMenuBase.isActive = function(){ return false; };   //Must be implemented for each Menu Type - not a prototype function
   XMenuBase.prototype.RefreshLayout = function(){ };
@@ -133,14 +116,14 @@ exports = module.exports = function(jsh){
       //Create xmenuside
       var xmenuside = jsh.xd('.xmenuside');
       if (xmenuside.length > 0) {
-        for (var item of XMenu.getMenuItems()) {
+        _.each(_this.getMenuItems(), function(item){
           var link_onclick = item.onclick;
           if(link_onclick){
             link_onclick = 'onclick="' + link_onclick + ' ;"';
           }
-          var htmlobj = '<a href="' + item.href + '" ' + link_onclick + ' class="xmenusideitem xmenusideitem_' + item.id + ' ' + (item.isSelected?'selected':'') + '">' + item.text + '</a>';
+          var htmlobj = '<a href="' + item.href + '" ' + link_onclick + ' class="xmenusideitem xmenusideitem_' + jsh.XExt.escapeCSSClass(item.id) + ' ' + (item.isSelected?'selected':'') + '">' + item.text + '</a>';
           xmenuside.content.append(htmlobj);
-        }
+        });
       }
     }
     //Delegate click handler to xsubmenu_more
@@ -150,6 +133,30 @@ exports = module.exports = function(jsh){
       else xsubmenuside.style.display = false;
       return false;
     }));
+  };
+  
+  XMenuHorizontal.prototype.getMenuItems = function(){
+    return jsh.xd('.xmenu a').omit('.xmenu_more').items.map(function(xdobj){
+      return {
+        href: xdobj.attr.href,
+        text: xdobj.text,
+        onClick: xdobj.attr.onclick,
+        id: xdobj.data.id,
+        isSelected: xdobj.class.contains('selected'),
+      };
+    });
+  };
+
+  XMenuHorizontal.prototype.getSubMenuItems = function(){
+    return this.getSubmenu().getChildren('a').omit('.xsubmenu_more').items.map(function(xdobj){
+      return {
+        href: xdobj.attr.href,
+        text: xdobj.text,
+        onClick: xdobj.attr.onclick,
+        id: xdobj.data.id,
+        isSelected: xdobj.class.contains('selected'),
+      };
+    });
   };
 
   XMenuHorizontal.prototype.RenderPaddle = function(newDimensions){
@@ -387,14 +394,14 @@ exports = module.exports = function(jsh){
     //Initialize xsubmenuside for this submenu
     var xsubmenuside = jsh.xd('.xsubmenuside');
     if (xsubmenuside.length > 0) {
-      for (var item of XMenu.getSubMenuItems()) {
+      _.each(_this.getSubMenuItems(), function(item){
         var link_onclick = item.onclick;
         if(link_onclick){
           link_onclick = 'onclick="'+jsh.getInstance()+'.XDom('+jsh.getInstance()+'.xdroot, \'.xsubmenuside\').style.display = false; ' + link_onclick + ';"';
         }
-        var htmlobj = '<a href="' + item.href + '" ' + link_onclick + ' class="xsubmenusideitem xsubmenusideitem_' + item.id + ' ' + (item.isSelected?'selected':'') + '">' + item.text + '</a>';
+        var htmlobj = '<a href="' + item.href + '" ' + link_onclick + ' class="xsubmenusideitem xsubmenusideitem_' + jsh.XExt.escapeCSSClass(item.id) + ' ' + (item.isSelected?'selected':'') + '">' + item.text + '</a>';
         xsubmenuside.content.append(htmlobj);
-      }
+      });
     }
     _this.RefreshLayout();
   };
