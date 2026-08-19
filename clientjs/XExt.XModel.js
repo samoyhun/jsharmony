@@ -210,8 +210,10 @@ exports = module.exports = function(jsh){
         //Delete action (either delete temp file or DB file
         xdCtrl.class.add('nodocument');
         if (ctrl_token) ctrl_token.value = '';
-        if (ctrl_dbexists && ctrl_dbexists.value == '1') ctrl_dbdelete.value = '1';
-        else if(ctrl_dbdelete) ctrl_dbdelete.value = '0';
+        if (ctrl_dbdelete) {
+          if (ctrl_dbexists && ctrl_dbexists.value == '1') ctrl_dbdelete.value = '1';
+          else ctrl_dbdelete.value = '0';
+        }
       }
       else if (_.isString(val)) {
         //Uploaded new temp file
