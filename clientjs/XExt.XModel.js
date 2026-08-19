@@ -211,7 +211,7 @@ exports = module.exports = function(jsh){
         xdCtrl.class.add('nodocument');
         if (ctrl_token) ctrl_token.value = '';
         if (ctrl_dbexists && ctrl_dbexists.value == '1') ctrl_dbdelete.value = '1';
-        else ctrl_dbdelete.value = '0';
+        else if(ctrl_dbdelete) ctrl_dbdelete.value = '0';
       }
       else if (_.isString(val)) {
         //Uploaded new temp file
@@ -247,7 +247,7 @@ exports = module.exports = function(jsh){
       else checkval = jsh.XFormat.bool_decode(val);
       xdCtrl.element.checked = checkval;
       if (checkhidden) xdCtrl.style.visibility = 'hidden';
-      else if (checkhidden) xdCtrl.style.visibility = 'visible';
+      else xdCtrl.style.visibility = 'visible';
     }
     else if ((xdCtrl.length > 0) && xdCtrl.class.contains('xform_label')) {
       var showLabel = true;

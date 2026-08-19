@@ -238,7 +238,7 @@ jsHarmony.prototype.postFileProxy = function(url, params){
     form.appendChild(input);
   }
   xdform_container.content.append(form);
-  XDom.emit(form, 'submit');
+  form.submit();
   XDom.remove(form);
 };
 
