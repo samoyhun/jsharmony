@@ -111,7 +111,7 @@ exports = module.exports = function(jsh){
     if(rowstart > 0){
       if(_this.EOF) return;
       jsh.xd(_this.PlaceholderID).get('tr.xtbl_loadmore').remove();
-      jsh.xd(_this.PlaceholderID).content.append('<tr class="xtbl_loadmore"><td colspan="'+_this.ColSpan+'"><a href="#">Loading...</div></td></tr>');
+      jsh.xd(_this.PlaceholderID).append('<tr class="xtbl_loadmore"><td colspan="'+_this.ColSpan+'"><a href="#">Loading...</div></td></tr>');
     }
     var starttime = (new Date()).getTime();
     
@@ -229,7 +229,7 @@ exports = module.exports = function(jsh){
         
         if (rowstart == 0) {
           if (_this.OnDestroyingRows) _this.OnDestroyingRows(jsh.xd(_this.PlaceholderID).children);
-          jsh.xd(_this.PlaceholderID).content.clear();
+          jsh.xd(_this.PlaceholderID).clear();
           _this.RowCount = 0;
           if (_this.OnResetDataSet) _this.OnResetDataSet(data);
         }
@@ -245,7 +245,7 @@ exports = module.exports = function(jsh){
               startrowid: undefined,
               datatable: data[_this.modelid],
             });
-            jsh.xd(_this.PlaceholderID).content.append(ejsrslt);
+            jsh.xd(_this.PlaceholderID).append(ejsrslt);
             _this.RowCount = jsh.xd(_this.PlaceholderID).get('tr').length;
             return f();
           }
@@ -255,7 +255,7 @@ exports = module.exports = function(jsh){
         if(renderData){
           _this.EOF = data['_eof_' + _this.modelid];
           if ((_this.Paging) && (!_this.EOF)) {
-            jsh.xd(_this.PlaceholderID).content.append('<tr class="xtbl_loadmore"><td colspan="' + _this.ColSpan + '"><a href="#">Load More Data</div></td></tr>');
+            jsh.xd(_this.PlaceholderID).append('<tr class="xtbl_loadmore"><td colspan="' + _this.ColSpan + '"><a href="#">Load More Data</div></td></tr>');
             jsh.xd(_this.PlaceholderID).get('.xtbl_loadmore').on('click', function () {
               if (_this.OnLoadMoreData) { _this.OnLoadMoreData(); return false; }
               _this.Load(_this.RowCount);
@@ -293,7 +293,7 @@ exports = module.exports = function(jsh){
     var noresultsmessage = _this.NoResultsMessage.replace(/%%%FORSEARCHPHRASE%%%/g, (_this.hasSearch()?'for selected search phrase':''));
     if (_this.RequireSearch && !options.search) noresultsmessage = _this.RequireSearchMessage;
     else if (!options.search && _this.NoDataMessage) noresultsmessage = _this.NoDataMessage;
-    jsh.xd(_this.PlaceholderID).content.replace('<tr class="xtbl_noresults"><td colspan="' + _this.ColSpan + '" align="center" class="xtbl_noresults">' + noresultsmessage + '</td></tr>');
+    jsh.xd(_this.PlaceholderID).html = '<tr class="xtbl_noresults"><td colspan="' + _this.ColSpan + '" align="center" class="xtbl_noresults">' + noresultsmessage + '</td></tr>';
   };
   XGrid.prototype.ResetSortGlyphs = function (xd_tbl){
     var xd_thead = xd_tbl.get('thead tr');

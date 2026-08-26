@@ -72,9 +72,9 @@ exports = module.exports = function(jsh){
     }
     else if(this.TemplateID){
       var ejssource = jsh.xd(this.TemplateID).first().innerHTML;
-      jsh.xd(this.PlaceholderID).content.replace(jsh.XExt.renderEJS(ejssource, undefined, {
+      jsh.xd(this.PlaceholderID).html = jsh.XExt.renderEJS(ejssource, undefined, {
         data:this.Data
-      }));
+      });
     }
     if (this.OnAfterRender) this.OnAfterRender();
   };

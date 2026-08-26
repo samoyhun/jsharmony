@@ -36,8 +36,8 @@ core functions
   slideDown => .animate.height(true)
   fadeTo => .animate({ opacity: 0 })
   is(:visible) => .isVisible
-  empty => .content.clear()
-  html('html string') => .content.replace('html string')
+  empty => .clear()
+  html('html string') => .html = 'html string'
   outerWidth => .calc.widthToBorder
   outerWidth(true) => .calc.widthToMargin
   outerHeight => .calc.heightToBorder
@@ -72,7 +72,7 @@ jQuery:
 ```jsh.$root(_this.PlaceholderID).append(ejsrslt);```
 
 XDom:
-```jsh.XDom(_this.PlaceholderID).content.append(ejsrslt);```
+```jsh.XDom(_this.PlaceholderID).append(ejsrslt);```
 
 
 #### Class manipulation

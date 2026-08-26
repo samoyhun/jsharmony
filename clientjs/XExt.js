@@ -46,12 +46,12 @@ exports = module.exports = function(jsh){
   };
 
   XExt.RenderLOV = function (_data, ctrl, LOV) {
-    jsh.XDom.content.replace(ctrl, jsh.ejs.render('\
+    XDom(ctrl).html = jsh.ejs.render('\
       <% for(var i=0;i<data.length;i++){ %>\
       <option value="<%=data[i][jsh.uimap.code_val]%>"><%=data[i][jsh.uimap.code_txt]%></option>\
       <% } %>'
     , { data: LOV, jsh: jsh }
-    ));
+    );
   };
 
   XExt.RenderParentLOV = function (_data, ctrl, parentvals, LOV, field, plural) {
@@ -82,12 +82,12 @@ exports = module.exports = function(jsh){
     if ((!plural) && (!(jsh.uimap.code_parent in LOV[0]))) cLOV.unshift(LOV[0]);
     else if ((plural) && (!((jsh.uimap.code_parent + '1') in LOV[0]))) cLOV.unshift(LOV[0]);
     else if ('lovblank' in field) cLOV.unshift(LOV[0]);
-    jsh.XDom.content.replace(ctrl, jsh.ejs.render('\
+    XDom(ctrl).html = jsh.ejs.render('\
       <% for(var i=0;i<data.length;i++){ %>\
       <option value="<%=data[i][jsh.uimap.code_val]%>"><%=data[i][jsh.uimap.code_txt]%></option>\
       <% } %>'
     , { data: cLOV, jsh: jsh }
-    ));
+    );
     //Apply prevval
     var lov_matches = _.filter(ctrl.children, function (el) { return String(el.value).toUpperCase() == String(prevval).toUpperCase(); }).length;
     if (lov_matches > 0) ctrl.value = prevval;
@@ -150,11 +150,11 @@ exports = module.exports = function(jsh){
     var xdbaseinputctrl = XDom(baseinputctrl);
 
     xdbaseinputctrl.style.display = false;
-    xdctrl.content.clear();
+    xdctrl.clear();
 
     xdctrl.style.display = 'inline-block';
     xdctrl.class.add('xtag_focusable');
-    xdctrl.content.append('<input class="xtag_input inactive xtag_focusable" size="1" />');
+    xdctrl.append('<input class="xtag_input inactive xtag_focusable" size="1" />');
 
     var xdinput = XDom(xdctrl, '.xtag_input');
 
@@ -253,7 +253,7 @@ exports = module.exports = function(jsh){
   XExt.DatePickerRender = function(ctrl, date, options){
     options = _.extend({ dateFormat: jsh.DEFAULT_DATEFORMAT, onSelect: null}, options);
     if(jsh.xd('.xdatepicker').length) XExt.DatePickerRemove();
-    XDom('body').content.append(
+    XDom('body').append(
       '<div class="xdatepicker" style="display: none">\
         <div class="xdatepicker_banner">\
           <div class="xdatepicker_nav"><a class="xdatepicker_prev">&lt</a></div>\
@@ -312,26 +312,26 @@ exports = module.exports = function(jsh){
     var totalDays = new Date(year, month + 1, 0).getDate();
     //Load banner years
     var xdSelectYear = XDom(xdDatePicker, '.select_year');
-    xdSelectYear.content.clear();
+    xdSelectYear.clear();
     for(var i=-10; i<=10; i++){
       var value = year+i;
-      xdSelectYear.content.append('<option value="'+ value +'">'+ value +'</option>');
+      xdSelectYear.append('<option value="'+ value +'">'+ value +'</option>');
     }
     //Update banner values
     XDom(xdDatePicker, '.select_month').value = month;
     XDom(xdDatePicker, '.select_year').value = year;
     //Clear table body for update
     var xdTable = XDom(xdDatePicker, 'tbody');
-    xdTable.content.clear();
+    xdTable.clear();
     var xdCurrentTr = XDom(XDom.render('<tr></tr>'));
     //Append empty cells for beginning of month
     for(var j=0; j<firstDay; j++){
-      xdCurrentTr.content.append('<td></td>');
+      xdCurrentTr.append('<td></td>');
     }
     //Fill out cells with dates
     for(var day_idx = 1; day_idx<=totalDays; day_idx++){
       if((day_idx + firstDay - 1) % 7 === 0){
-        xdTable.content.append(xdCurrentTr);
+        xdTable.append(xdCurrentTr);
         xdCurrentTr = XDom(XDom.render('<tr></tr>'));
       }
       var xdCell = XDom(XDom.render('<td><a class="entry">' + day_idx + '</a></td>'));
@@ -339,10 +339,10 @@ exports = module.exports = function(jsh){
       xdEntry.data.month = month;
       xdEntry.data.year = year;
       if(selDate.year == year && selDate.month == month && selDate.day == day_idx) xdEntry.class.add('selected');
-      xdCurrentTr.content.append(xdCell);
+      xdCurrentTr.append(xdCell);
     }
     //Append last incomplete row
-    if(xdCurrentTr.children.length > 0) xdTable.content.append(xdCurrentTr);
+    if(xdCurrentTr.children.length > 0) xdTable.append(xdCurrentTr);
   };
 
   XExt.DatePickerRemove = function(){
@@ -1320,7 +1320,7 @@ exports = module.exports = function(jsh){
     var nodes = {};
     var sortednodes = [];
     
-    xdctrl.content.clear();
+    xdctrl.clear();
     if (LOV.length == 0) return;
     
     //Create Tree
@@ -1372,7 +1372,7 @@ exports = module.exports = function(jsh){
       while(jsh.xd('[data-treeid="'+treeid+'"]').length) treeid++;
       xdctrl.data.treeid = treeid;
     }
-    xdctrl.content.replace(body);
+    xdctrl.html = body;
 
     function renderLazy(){
       var xdthis = XDom(this);
@@ -1387,7 +1387,7 @@ exports = module.exports = function(jsh){
       xdthis.class.remove('tree_render_lazy');
       xdthis.off('tree_render_lazy', renderLazy);
       var xdSibChildren = xdthis.nextSibling('.children');
-      xdSibChildren.content.append(childrenHtml);
+      xdSibChildren.append(childrenHtml);
       XDom(xdSibChildren, '.tree_render_lazy').on('tree_render_lazy', renderLazy);
     }
     XDom(xdctrl, '.tree_render_lazy').on('tree_render_lazy', renderLazy);
@@ -1798,7 +1798,7 @@ exports = module.exports = function(jsh){
   XExt.TreeCollapseNode = function (ctrl, nodeid) {
     var xdctrl = XDom(ctrl).parent('.xform_ctrl.tree');
     XDom(xdctrl, '.tree_item_' + nodeid).class.remove('expanded');
-    XDom(xdctrl, '.tree_item.tree_item_' + nodeid + ' > .glyph').content.replace('&#x25b7;');
+    XDom(xdctrl, '.tree_item.tree_item_' + nodeid + ' > .glyph').html = '&#x25b7;';
   };
 
   XExt.TreeExpandNode = function (ctrl, nodeid) {
@@ -1806,7 +1806,7 @@ exports = module.exports = function(jsh){
     var xdTreenode = XDom(xdctrl, '.tree_item_' + nodeid);
     if(xdTreenode.class.contains('tree_render_lazy')) xdTreenode.emit('tree_render_lazy');
     xdTreenode.class.add('expanded');
-    XDom(xdctrl, '.tree_item.tree_item_' + nodeid + ' > .glyph').content.replace('&#x25e2;');
+    XDom(xdctrl, '.tree_item.tree_item_' + nodeid + ' > .glyph').html = '&#x25e2;';
   };
 
   XExt.TreeExpandToSelected = function (ctrl) {
@@ -1827,7 +1827,7 @@ exports = module.exports = function(jsh){
     if(!xdctrl.get('.tree_render_lazy').elements.length){
       xdTreeItem.class.add('expanded');
       XDom(xdctrl, '.children').class.add('expanded');
-      XDom(xdctrl, '.glyph').content.replace('&#x25e2;');
+      XDom(xdctrl, '.glyph').html = '&#x25e2;';
     }
     else{
       var unexpanded = xdTreeItem.omit('.expanded');
@@ -2054,7 +2054,7 @@ exports = module.exports = function(jsh){
     xdobj.style.zIndex = jsh.xDialog.length;
     var oldactive = document.activeElement;
     XDom(oldactive).blur();
-    XDom(xdobj, '.xalertmessage').content.replace(msg);
+    XDom(xdobj, '.xalertmessage').html = msg;
     var isClosing = false;
     var acceptfunc = function(){
       isClosing = true;
@@ -2118,7 +2118,7 @@ exports = module.exports = function(jsh){
     xdobj.style.zIndex = jsh.xDialog.length;
 
     // prep content, values, and handlers for confirm box
-    XDom(xdobj, '.xconfirmmessage').content.replace(msg);
+    XDom(xdobj, '.xconfirmmessage').html = msg;
     var cancelfunc = XExt.dialogButtonFunc(confirmBox, oldactive, (options.onCancel ? options.onCancel : onNo));
     var acceptfunc = XExt.dialogButtonFunc(confirmBox, oldactive, onYes);
     var xdBtnOK = XDom(xdobj, 'input.button_ok');
@@ -2193,7 +2193,7 @@ exports = module.exports = function(jsh){
     
     var oldactive = document.activeElement;
     XDom(oldactive).blur();
-    XDom(xdobj, '.xpromptmessage').content.replace(msg);
+    XDom(xdobj, '.xpromptmessage').html = msg;
     var xdPromptField = XDom(xdobj, '.xpromptfield');
     xdPromptField.value = dflt;
     var cancelfunc = XExt.dialogButtonFunc(promptBox, oldactive, function () { if (onComplete) onComplete(null); });
@@ -2375,7 +2375,7 @@ exports = module.exports = function(jsh){
     
     var oldactive = document.activeElement;
     XDom(oldactive).blur();
-    XDom(xdobj, '.xtextzoommessage').content.replace(caption);
+    XDom(xdobj, '.xtextzoommessage').html = caption;
     var xdTextZoomField = XDom(xdobj, '.xtextzoomfield');
     xdTextZoomField.value = val;
     
@@ -2416,7 +2416,7 @@ exports = module.exports = function(jsh){
 
     var oldactive = document.activeElement;
     XDom(oldactive).blur();
-    XDom(xdobj, '.xhintsmessage').content.replace(caption);
+    XDom(xdobj, '.xhintsmessage').html = caption;
 
     var hintsListing = xdobj.get('.xhints_listing').element;
     var tmplRow = XDom(jsh.xdDialogBlock, 'script.xhints_rowtemplate').innerHTML;
@@ -2425,7 +2425,7 @@ exports = module.exports = function(jsh){
       var xdRow = XDom(XDom.render(tmplRow));
       var xdRowInput = XDom(xdRow, 'input');
       xdRowInput.value = item[jsh.uimap.code_val];
-      XDom(xdRow, 'span').content.replace(item[jsh.uimap.code_txt]);
+      XDom(xdRow, 'span').text = item[jsh.uimap.code_txt];
       if(options.readonly) xdRowInput.remove();
       hintsListing.append(xdRow.element);
     });
@@ -2522,7 +2522,7 @@ exports = module.exports = function(jsh){
         if(xgrid){
           xgrid.RowCount = 0;
           if (xgrid.Prop) xgrid.Prop.Enabled = true;
-          jsh.xd(xgrid.PlaceholderID).content.clear();
+          jsh.xd(xgrid.PlaceholderID).clear();
         }
         if(xform && xform.Prop){ xform.Prop.Enabled = true; }
         var orig_jsh_ignorefocusHandler = jsh.ignorefocusHandler;
@@ -2570,7 +2570,7 @@ exports = module.exports = function(jsh){
           XDom(xdPopup, 'a.xpopupbox_header_close').on('click', function(){ XExt.CancelDialog(); });
         }
 
-        XDom(xdPopup, '.xpopupbox_header_title').content.replaceText(title);
+        XDom(xdPopup, '.xpopupbox_header_title').text = title;
         var xdPopContext = XDom(xdPopup, '.xpopupbox_content');
         if(panelWidth) xdPopContext.style.width = panelWidth;
         if(panelHeight) xdPopContext.style.minHeight = panelHeight;
@@ -3255,12 +3255,12 @@ exports = module.exports = function(jsh){
     var hideBody = function(){
       xdobj.class.remove('expanded');
       xdbody.animate.height(false);
-      xdState.content.replace(rightArrow);
+      xdState.html = rightArrow;
     };
     var showBody = function(){
       xdobj.class.add('expanded');
       xdbody.animate.height(true);
-      xdState.content.replace(downArrow);
+      xdState.html = downArrow;
     };
 
 
@@ -3385,7 +3385,7 @@ exports = module.exports = function(jsh){
     var script = document.createElement('script');
     script.async = true;
     script.src = XExt.AppendUrlParams(url, params);
-    jsh.XDom.on(script, 'load error', function(e) {
+    XDom.on(script, 'load error', function(e) {
       script.remove();
       delete window[callbackName];
       if (options.error && e.type == 'error') {

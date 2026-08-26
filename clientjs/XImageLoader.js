@@ -26,7 +26,7 @@ exports = module.exports = function(jsh){
     
     this.loaded = new Array();
     
-    jsh.xdroot.content.append('<img class="XImageLoader jsHarmonyElement jsHarmonyElement_'+jsh._instanceClass+'" style="position:absolute;top:0px;left:0px;z-index:0;visibility:hidden;" />');
+    jsh.xdroot.append('<img class="XImageLoader jsHarmonyElement jsHarmonyElement_'+jsh._instanceClass+'" style="position:absolute;top:0px;left:0px;z-index:0;visibility:hidden;" />');
     this.loaderimg = jsh.xd('.XImageLoader.jsHarmonyElement_'+jsh._instanceClass);
     this.onLoad = null;
     

@@ -110,7 +110,7 @@ exports = module.exports = function(jsh){
         XExtXModel.RenderField(_this, parentobj, modelid, field);
       });
       if (xmodel.layout == 'form-m') {
-        jsh.xd('.navtext_' + xmodel.class).content.replaceText((xmodel.controller.form.Index + 1) + ' of ' + xmodel.controller.form.Count());
+        jsh.xd('.navtext_' + xmodel.class).text = (xmodel.controller.form.Index + 1) + ' of ' + xmodel.controller.form.Count();
       }
     };
   };
@@ -265,11 +265,11 @@ exports = module.exports = function(jsh){
             obj: xdCtrl.element,
             enabled: (xdCtrl.class.contains('editable') ? true : xdCtrl.class.contains('uneditable') ? false : null),
           });
-          xdCtrl.content.replace(val);
+          xdCtrl.html = val;
           showLabel = !!val;
         }
       }
-      else{ xdCtrl.content.replace(jsh.XExt.escapeHTMLBR(val)); }
+      else{ xdCtrl.html = jsh.XExt.escapeHTMLBR(val); }
       if(field.type && xdCtrl.parent().class.contains('xform_link')){
         showLabel = showLabel && !!dataval;
       }
@@ -289,7 +289,7 @@ exports = module.exports = function(jsh){
           enabled: (xdCtrl.class.contains('editable') ? true : xdCtrl.class.contains('uneditable') ? false : null),
         });
       }
-      xdCtrl.content.replace(val);
+      xdCtrl.html = val;
       if (val) {
         xdCtrl.class.remove('hidden');
       } else {
@@ -310,7 +310,7 @@ exports = module.exports = function(jsh){
           var newOption = document.createElement('option');
           newOption.value = val;
           newOption.text = codtxt;
-          xdCtrl.content.append(newOption.outerHTML);
+          xdCtrl.append(newOption.outerHTML);
         }
         xdCtrl.value = val;
       }

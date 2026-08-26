@@ -89,7 +89,7 @@ if(lovfield == '') throw new Error('Multisel requires one LOV.');
             var ejsrslt = jsh.XExt.renderEJS(ejssource, modelid, {
               datatable:data[xgrid.modelid]
             });
-            jsh.xd(xgrid.PlaceholderID).content.replace(ejsrslt);
+            jsh.xd(xgrid.PlaceholderID).html = ejsrslt;
 
             //Attach events
             jsh.xd('.xelem'+xmodel.class).on('keyup', function(){ if(!jsh.XDom.class.contains(this, 'editable')) return; xcontroller.OnControlUpdate(this); });

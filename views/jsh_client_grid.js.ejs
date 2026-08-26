@@ -153,7 +153,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
               datatable: data[_this.modelid],
             });
             var xdParent = jsh.xd(_this.PlaceholderID);
-            xdParent.content.append(ejsrslt);
+            xdParent.append(ejsrslt);
 
             //Get an array of all rows by id
             var rows = {};
@@ -185,7 +185,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
               startrowid: _this.RowCount,
               datatable: data[_this.modelid],
             });
-            jsh.XDom.content.append(_this.PlaceholderID, ejsrslt);
+            jsh.XDom.append(_this.PlaceholderID, ejsrslt);
             return render_cb();
           }
         },
@@ -208,10 +208,10 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     xgrid.OnBeforeSelect = function(){
       var has_search_items = xcontroller.HasSearchItems(this.SearchJSON);
       if(has_search_items){ 
-        jsh.xd('.xsearchbutton<%=model.class%> span').content.replaceText('Reset Search');
+        jsh.xd('.xsearchbutton<%=model.class%> span').text = 'Reset Search';
       }
       else{
-        jsh.xd('.xsearchbutton<%=model.class%> span').content.replaceText('Search');
+        jsh.xd('.xsearchbutton<%=model.class%> span').text = 'Search';
       }
       xcontroller.UpdateTitleCaption();
     };
@@ -547,7 +547,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       datatable: [newrow],
     });
 
-    jsh.xd(xgrid.PlaceholderID).get('tr.xtbl_noresults').content.clear();
+    jsh.xd(xgrid.PlaceholderID).get('tr.xtbl_noresults').clear();
     var ejsNodes = jsh.XDom.render(ejsrslt);
     if(xgrid.Prop.NewRowPosition=='first'){
       var target = jsh.xd(xgrid.PlaceholderID).element;
@@ -906,7 +906,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
     else {
       jsh.xd('.xtitlecaption'+xmodel.class).style.display = false;
     }
-    jsh.xd('.xtitlecaption'+xmodel.class+' a').content.replaceText(txt);
+    jsh.xd('.xtitlecaption'+xmodel.class+' a').text = txt;
   }
   
   xcontroller.HideColumn = function(field_name){

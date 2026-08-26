@@ -263,41 +263,41 @@ var mocha = require('mocha');
     });
 
     it('appendHtml css id ', function() {
-      XDom('#item4').content.append('<p>Test1</p>');
+      XDom('#item4').append('<p>Test1</p>');
       var el = XDom('#item4').element;
       assert(el.querySelector('p') !== null, 'p element was appended');
       assert(el.querySelector('p').textContent === 'Test1', 'p element contains correct text');
     });
 
     it('appendHtml multiple nodes ', function() {
-      XDom('#item4').content.append('before <p>Test2</p> after');
+      XDom('#item4').append('before <p>Test2</p> after');
       var el = XDom('#item4').element;
       assert(el.querySelector('p') !== null, 'p element was appended');
       assert(el.querySelector('p').textContent === 'Test2', 'p element contains correct text');
     });
 
     it('appendHtml tr', function() {
-      XDom('#item4').content.append('<tr><td><p>Test3</p></td></tr>');
+      XDom('#item4').append('<tr><td><p>Test3</p></td></tr>');
       var el = XDom('#item4').element;
       assert(el.querySelector('tr') !== null, 'tr element was appended');
       assert(el.querySelector('p').textContent === 'Test3', 'p element contains correct text');
     });
 
     it('appendHtml input elements have a type property', function() {
-      XDom('#item4').content.append('<input type="text"/>');
+      XDom('#item4').append('<input type="text"/>');
       var el = XDom('#item4').element;
       assertEqual(el.querySelector('input').type, 'text', 'input element has a type property');
     });
 
     it('appendHtml does not execute scripts', function() {
       delete window.jsh_xdom_runs_scripts;
-      XDom('#item4').content.append('<script>alert("hi");window.jsh_xdom_runs_scripts = true;</script>');
+      XDom('#item4').append('<script>alert("hi");window.jsh_xdom_runs_scripts = true;</script>');
       assertEqual(window.jsh_xdom_runs_scripts, undefined, 'script execution');
     });
 
     it('appendHtml does not execute src scripts', function(done) {
       delete window.jsh_xdom_runs_scripts;
-      XDom('#item4').content.append('<script src="script.js?_=1"></script>');
+      XDom('#item4').append('<script src="script.js?_=1"></script>');
       setTimeout(function() {
         assertEqual(window.jsh_xdom_runs_scripts, undefined, 'src script execution');
         done()
@@ -306,25 +306,25 @@ var mocha = require('mocha');
 
     it('appendHtml does execute scripts with parameter', function() {
       delete window.jsh_xdom_runs_scripts;
-      XDom('#item4').content.append('<script>window.jsh_xdom_runs_scripts = true;</script>', {evaluateScripts: true});
+      XDom('#item4').append('<script>window.jsh_xdom_runs_scripts = true;</script>', {evaluateScripts: true});
       assertEqual(window.jsh_xdom_runs_scripts, true, 'script execution');
     });
 
     it('appendHtml does not execute other types of scripts with parameter', function() {
       delete window.jsh_xdom_runs_scripts;
-      XDom('#item4').content.append('<script type="text/x-jsharmony-template">window.jsh_xdom_runs_scripts = true;</script>', {evaluateScripts: true});
+      XDom('#item4').append('<script type="text/x-jsharmony-template">window.jsh_xdom_runs_scripts = true;</script>', {evaluateScripts: true});
       assertEqual(window.jsh_xdom_runs_scripts, undefined, 'script execution');
     });
 
     it('appendHtml does execute javascript scripts with parameter', function() {
       delete window.jsh_xdom_runs_scripts;
-      XDom('#item4').content.append('<script type="text/javascript">window.jsh_xdom_runs_scripts = true;</script>', {evaluateScripts: true});
+      XDom('#item4').append('<script type="text/javascript">window.jsh_xdom_runs_scripts = true;</script>', {evaluateScripts: true});
       assertEqual(window.jsh_xdom_runs_scripts, true, 'script execution');
     });
 
     it('appendHtml does execute src scripts with parameter', function(done) {
       delete window.jsh_xdom_runs_scripts;
-      XDom('#item4').content.append('<script src="script.js?_=2"></script>', {evaluateScripts: true});
+      XDom('#item4').append('<script src="script.js?_=2"></script>', {evaluateScripts: true});
       setTimeout(function() {
         assertEqual(window.jsh_xdom_runs_scripts, true, 'src script execution with param');
         done()
@@ -333,7 +333,7 @@ var mocha = require('mocha');
 
     it('appendHtml does execute handlers', function() {
       delete window.jsh_xdom_runs_handlers;
-      XDom('#item4').content.append('<div id="clickable" onclick="window.jsh_xdom_runs_handlers = true;"></div>');
+      XDom('#item4').append('<div id="clickable" onclick="window.jsh_xdom_runs_handlers = true;"></div>');
       XDom('#clickable').emit('click');
       assertEqual(window.jsh_xdom_runs_handlers, true, 'script execution');
       delete window.jsh_xdom_runs_handlers;
@@ -352,7 +352,7 @@ var mocha = require('mocha');
     });
 
     it('prependHtml css id ', function() {
-      XDom('#item4').content.prepend('<p>Test</p>');
+      XDom('#item4').prepend('<p>Test</p>');
       var el = XDom('#item4').element;
       assert(el.querySelector('p') !== null, 'p element was prepended');
       assert(el.querySelector('p').textContent === 'Test', 'p element contains correct text');
@@ -371,7 +371,7 @@ var mocha = require('mocha');
     });
 
     it('setHtml css id ', function() {
-      XDom('#item1').content.replace('<p>Replacement text</p>');
+      XDom('#item1').html = '<p>Replacement text</p>';
       el = XDom('#item1').element;
       assert(el.querySelector('p').innerHTML === 'Replacement text', 'html set');
     });
@@ -389,7 +389,7 @@ var mocha = require('mocha');
     });
 
     it('clear css id ', function() {
-      XDom('#item1').content.clear();
+      XDom('#item1').clear();
       el = XDom('#item1').element;
       assert(el.querySelector('p') === null, 'html cleared');
     });

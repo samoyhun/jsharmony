@@ -258,7 +258,7 @@ exports = module.exports = function(jsh){
     }
     this.xdDebugDialog = jsh.xd('.xdebugconsole');
     this.xdDebugPanel = this.xdDebugDialog.get('.debug-panel');
-    this.xdDebugPanel.get('.debug-settings').content.append(settingsHtml);
+    this.xdDebugPanel.get('.debug-settings').append(settingsHtml);
     this.xdDebugPanelMin = this.xdDebugDialog.get('.debug-panel-minimized');
     this.xdDebugPanelBody = this.xdDebugPanel.get('.xdebuginfo-body');
     var chkSource = this.xdDebugPanel.get('.xdebugconsole_source').elements;
@@ -375,12 +375,12 @@ exports = module.exports = function(jsh){
   };
 
   XDebugConsole.prototype.clear = function() {
-    this.xdDebugPanelBody.content.clear();
+    this.xdDebugPanelBody.clear();
   };
 
   XDebugConsole.prototype.log = function (txt, clear) {
     if(clear) this.clear();
-    this.xdDebugPanelBody.content.prepend('<div class="info-message">'+txt+'</div>');
+    this.xdDebugPanelBody.prepend('<div class="info-message">'+txt+'</div>');
   };
 
   return XDebugConsole;

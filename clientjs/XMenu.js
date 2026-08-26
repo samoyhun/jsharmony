@@ -122,7 +122,7 @@ exports = module.exports = function(jsh){
             link_onclick = 'onclick="' + link_onclick + ' ;"';
           }
           var htmlobj = '<a href="' + item.href + '" ' + link_onclick + ' class="xmenusideitem xmenusideitem_' + jsh.XExt.escapeCSSClass(item.id) + ' ' + (item.isSelected?'selected':'') + '">' + item.text + '</a>';
-          xmenuside.content.append(htmlobj);
+          xmenuside.append(htmlobj);
         });
       }
     }
@@ -380,7 +380,7 @@ exports = module.exports = function(jsh){
     jsh.xd('.xsubmenu').style.display = false;
     var xdSubMenuSide = jsh.xd('.xsubmenuside');
     xdSubMenuSide.style.display = false;
-    xdSubMenuSide.content.clear();
+    xdSubMenuSide.clear();
 
     if (xdSubMenu.length > 0) {
       xdSubMenu.style.display = true;
@@ -400,7 +400,7 @@ exports = module.exports = function(jsh){
           link_onclick = 'onclick="'+jsh.getInstance()+'.XDom('+jsh.getInstance()+'.xdroot, \'.xsubmenuside\').style.display = false; ' + link_onclick + ';"';
         }
         var htmlobj = '<a href="' + item.href + '" ' + link_onclick + ' class="xsubmenusideitem xsubmenusideitem_' + jsh.XExt.escapeCSSClass(item.id) + ' ' + (item.isSelected?'selected':'') + '">' + item.text + '</a>';
-        xsubmenuside.content.append(htmlobj);
+        xsubmenuside.append(htmlobj);
       });
     }
     _this.RefreshLayout();

@@ -227,7 +227,7 @@ jsHarmony.prototype.getFileProxy = function(){
 jsHarmony.prototype.postFileProxy = function(url, params){
   var _this = this;
   var xdform_container = XDom('#'+_this.getInstance()+'_xfileform_container');
-  xdform_container.content.clear();
+  xdform_container.clear();
   var form = XDom.render('<form method="post" id="'+_this.getInstance()+'_xfileform"></form>');
   form.action = url;
   form.target = _this.getInstance()+'_xfileproxy';
@@ -237,7 +237,7 @@ jsHarmony.prototype.postFileProxy = function(url, params){
     input.value = (params[key]||'').toString();
     form.appendChild(input);
   }
-  xdform_container.content.append(form);
+  xdform_container.append(form);
   form.submit();
   XDom.remove(form);
 };
@@ -372,7 +372,7 @@ jsHarmony.prototype.mouseDragBegin = function(mouseDragObj, mouseCanDrop, e){
   xdClone.style.top = _this.mouseY+'px';
   xdClone.class.add('xdrag');
   xdClone.class.remove('xdrop');
-  _this.xdroot.content.prepend(xdClone);
+  _this.xdroot.prepend(xdClone);
 
   _this.trigger('jsh_mouseDragBegin', [mouseDragObj, e]);
 };
@@ -439,12 +439,12 @@ jsHarmony.prototype.DefaultErrorHandler = function(num,txt){
 jsHarmony.prototype.XDebugInfo = function (txt,clear) {
   var xdobj = this.xd('.xdebuginfo.jsHarmonyElement_'+this._instanceClass);
   xdobj.style.display = true;
-  if (clear) xdobj.content.clear();
-  xdobj.content.prepend(txt + '<br/>');
+  if (clear) xdobj.clear();
+  xdobj.prepend(txt + '<br/>');
 };
 jsHarmony.prototype.InitDialogs = function () {
   var _this = this;
-  this.xdroot.content.append(ejs.render(XViews['jsh_system'],{ jsh: _this }));
+  this.xdroot.append(ejs.render(XViews['jsh_system'],{ jsh: _this }));
   this.xdDialogBlock = this.xd('.xdialogblock.jsHarmonyElement_'+this._instanceClass);
 };
 jsHarmony.prototype.InitControls = function() {
@@ -545,7 +545,7 @@ jsHarmony.prototype.getTopDialogContainer = function () {
 jsHarmony.prototype.InitFileUpload = function () {
   if (this.xfileuploadLoader != null) return;
   this.xfileuploadLoader = new Object();
-  this.xdroot.content.append(
+  this.xdroot.append(
     '<div style="display:none;">\
       <div class="xdialogbox xfileuploader" align="center" style="height:130px;"><div style="position:relative;">\
         <strong class="xfileuploader_title"></strong>\

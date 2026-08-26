@@ -68,7 +68,7 @@ exports = module.exports = function(jsh){
   SearchQuery.prototype.HasUpdates = function (_PlaceholderID) {
     var _this = this;
     var newitems = [];
-    jsh.xd(_PlaceholderID + ' div').select.forEach(function (obj, i) {
+    jsh.xd(_PlaceholderID + ' div').elements.forEach(function (obj, i) {
       var v_column = jsh.XDom(obj, 'select.xsearch_column').value;
       var v_value = jsh.XDom(obj, 'input.xsearch_value').value;
       var v_join = jsh.XDom(obj, 'input.xsearch_join').value;

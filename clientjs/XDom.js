@@ -127,7 +127,8 @@ P.get = function(childSelector){
   'map',
   'append',
   'prepend',
-  'clear'
+  'clear',
+  'setHtml'
 ].forEach(function(method) {
   P[method] = function(){ return XDom[method](this, ...arguments); }; // eslint-disable-line es5/no-spread
 });
@@ -172,11 +173,11 @@ Object.defineProperty(P, 'outerHTML', {
 });
 Object.defineProperty(P, 'text', {
   get: function() { return XDom.innerText(this); },
-  set: function(value) { XDom.content.replaceText(this, value); },
+  set: function(value) { XDom.setText(this, value); },
 });
 Object.defineProperty(P, 'html', {
   get: function() { return XDom.innerHTML(this); },
-  set: function(value) { XDom.content.replace(this, value); },
+  set: function(value) { XDom.setHtml(this, value); },
 });
 Object.defineProperty(P, 'children', {
   get: function() { return new Selector(XDom.getChildren(this)); },
@@ -242,7 +243,6 @@ function defineSubProperty(target, property, static) {
 
 function defineDependentProperties() {
   defineSubProperty(P, 'class', XDom.class);
-  defineSubProperty(P, 'content', XDom.content);
   defineSubProperty(P, 'calc', XDom.calc);
 }
 
@@ -411,36 +411,31 @@ function elementApplyEval(el, method, val, options) {
 }
 
 // script execution happens here rather than XDom.render in case the code assumes elements from the template will be findable in document or xdroot
-XDom.content = {
-  append: function(target, val, options){
-    _.each(XDom.resolve(target), function(el){
-      elementApplyEval(el, 'append', val, options);
-    });
-  },
-  prepend: function(target, val, options){
-    _.each(XDom.resolve(target), function(el){
-      elementApplyEval(el, 'prepend', val, options);
-    });
-  },
-  replace: function(target, val, options){
-    _.each(XDom.resolve(target), function(el){
-      elementApplyEval(el, 'replaceChildren', val, options);
-    });
-  },
-  replaceText: function(target, val){
-    _.each(XDom.resolve(target), function(el){
-      if(el && el.replaceChildren) el.replaceChildren.apply(el, XDom.renderText(val));
-    });
-  },
-  clear: function(target){
-    _.each(XDom.resolve(target), function(el){
-      if(el && el.replaceChildren) el.replaceChildren();
-    });
-  },
+XDom.setHtml = function(target, val, options){
+  _.each(XDom.resolve(target), function(el){
+    elementApplyEval(el, 'replaceChildren', val, options);
+  });
 };
-XDom.append = XDom.content.append;
-XDom.prepend = XDom.content.prepend;
-XDom.clear = XDom.content.clear;
+XDom.setText = function(target, val){
+  _.each(XDom.resolve(target), function(el){
+    if(el && el.replaceChildren) el.replaceChildren.apply(el, XDom.renderText(val));
+  });
+};
+XDom.append = function(target, val, options){
+  _.each(XDom.resolve(target), function(el){
+    elementApplyEval(el, 'append', val, options);
+  });
+};
+XDom.prepend = function(target, val, options){
+  _.each(XDom.resolve(target), function(el){
+    elementApplyEval(el, 'prepend', val, options);
+  });
+};
+XDom.clear = function(target){
+  _.each(XDom.resolve(target), function(el){
+    if(el && el.replaceChildren) el.replaceChildren();
+  });
+};
 
 XDom.insertBefore = function(target, newNode, referenceNode){
   var _el = XDom.resolve(target);
