@@ -283,7 +283,7 @@ XDom.resolve = function(target){
 XDom.class = {
   add: function(target, className){
     if(!className) throw new Error('Invalid class');
-    var _classNames = className.split(' ');
+    var _classNames = className.trim().split(' ');
     var _el = XDom.resolve(target);
     _.each(_el, function(el){
       if(el && el.classList && el.classList.add) {
@@ -293,7 +293,7 @@ XDom.class = {
   },
   remove: function(target, className){
     if(!className) throw new Error('Invalid class');
-    var _classNames = className.split(' ');
+    var _classNames = className.trim().split(' ');
     var _el = XDom.resolve(target);
     _.each(_el, function(el){
       if(el && el.classList && el.classList.add) {
