@@ -283,16 +283,22 @@ XDom.resolve = function(target){
 XDom.class = {
   add: function(target, className){
     if(!className) throw new Error('Invalid class');
+    var _classNames = className.split(' ');
     var _el = XDom.resolve(target);
     _.each(_el, function(el){
-      if(el && el.classList && el.classList.add) el.classList.add(className);
+      if(el && el.classList && el.classList.add) {
+        _.each(_classNames, function(name) {if (name) el.classList.add(name);});
+      }
     });
   },
   remove: function(target, className){
     if(!className) throw new Error('Invalid class');
+    var _classNames = className.split(' ');
     var _el = XDom.resolve(target);
     _.each(_el, function(el){
-      if(el && el.classList && el.classList.remove) el.classList.remove(className);
+      if(el && el.classList && el.classList.add) {
+        _.each(_classNames, function(name) {if (name) el.classList.remove(name);});
+      }
     });
   },
   contains: function(target, className){

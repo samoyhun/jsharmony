@@ -188,7 +188,7 @@ var mocha = require('mocha');
     });
   });
 
-  describe('XDom addClass', function() {
+  describe('XDom class.add', function() {
     before(function(){
       document.querySelector('#workspace').innerHTML = [
         '<div id="item1" class="sharedClass1 sharedClass3"></div>',
@@ -198,8 +198,19 @@ var mocha = require('mocha');
       ].join('');
     });
 
-    it('addClass css class ', function(){
+    it('class.add css class ', function(){
       XDom('#item1').class.add('addedClass');
+      assert(XDom('#item1').class.contains('addedClass'), 'Class added');
+    });
+
+    it('class.add multiple css class ', function(){
+      XDom('#item1').class.add('addedClass1 addedClass2');
+      assert(XDom('#item1').class.contains('addedClass1'), 'Class added');
+      assert(XDom('#item1').class.contains('addedClass2'), 'Class added');
+    });
+
+    it('class.add css class with space', function(){
+      XDom('#item1').class.add(' addedClass');
       assert(XDom('#item1').class.contains('addedClass'), 'Class added');
     });
 
@@ -208,7 +219,7 @@ var mocha = require('mocha');
     });
   });
 
-  describe('XDom removeClass', function() {
+  describe('XDom class.remove', function() {
     before(function(){
       document.querySelector('#workspace').innerHTML = [
         '<div id="item1" class="sharedClass1 sharedClass3"></div>',
@@ -218,13 +229,24 @@ var mocha = require('mocha');
       ].join('');
     });
 
-    it('removeClass css class ', function(){
+    it('class.remove css class ', function(){
       XDom('#item1').class.remove('sharedClass1');
       assert(!XDom('#item1').class.contains('sharedClass1'), 'Class removed');
       XDom('#item2').class.remove('sharedClass2');
       assert(XDom('#item2').class.contains('sharedClass1')&&(XDom('#item2').class.contains('sharedClass3')), 'No class was removed classes');
       XDom('#item3').class.remove('sharedClass2');
       assert(!XDom('#item3').class.contains('sharedClass2'), 'All duplicate classes removed');
+    });
+
+    it('class.remove multiple css class ', function(){
+      XDom('#item1').class.remove('sharedClass1 sharedClass3');
+      assert(!XDom('#item1').class.contains('sharedClass1'), 'Class removed');
+      assert(!XDom('#item1').class.contains('sharedClass3'), 'Class removed');
+    });
+
+    it('class.remove css class with space', function(){
+      XDom('#item1').class.remove(' sharedClass1');
+      assert(!XDom('#item1').class.contains('sharedClass1'), 'Class removed');
     });
 
     after(function(){
