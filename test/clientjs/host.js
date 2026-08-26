@@ -19190,21 +19190,21 @@ var mocha = require('mocha');
     });
 
     it('select css class selector ', function(){
-      assert(XDom('.root').select('.sharedClass1').elements.length == 2, 'sharedClass1 elements found');
-      assert(XDom('.root').select('.sharedClass2').elements.length == 2, 'sharedClass2 elements found');
-      assert(XDom('.root').select('.sharedClass3').elements.length == 3, 'sharedClass3 elements found');
-      assert(XDom('.root').select('.singleClass').elements.length == 1, 'singleClass elements found');
+      assert(XDom('.root').get('.sharedClass1').elements.length == 2, 'sharedClass1 elements found');
+      assert(XDom('.root').get('.sharedClass2').elements.length == 2, 'sharedClass2 elements found');
+      assert(XDom('.root').get('.sharedClass3').elements.length == 3, 'sharedClass3 elements found');
+      assert(XDom('.root').get('.singleClass').elements.length == 1, 'singleClass elements found');
     });
     
     it('select css id selector ', function(){
-      assert(XDom('.root').select('#item1').elements.length == 1, 'item1 found');
-      assert(XDom('.root').select('#item2, #item3').elements.length == 2, 'item2, item3 found');
-      assert(XDom('.root').select('#item5_notfound').elements.length == 0, 'invalid item not found');
+      assert(XDom('.root').get('#item1').elements.length == 1, 'item1 found');
+      assert(XDom('.root').get('#item2, #item3').elements.length == 2, 'item2, item3 found');
+      assert(XDom('.root').get('#item5_notfound').elements.length == 0, 'invalid item not found');
     });
 
     it('select css element selector ', function(){
-      assert(XDom('.root').select('footer').elements.length == 2, 'all footer elements found');
-      assert(XDom('.root').select('nav').elements.length == 0, 'invaid element not found');
+      assert(XDom('.root').get('footer').elements.length == 2, 'all footer elements found');
+      assert(XDom('.root').get('nav').elements.length == 0, 'invaid element not found');
     });
 
     after(function(){
@@ -19684,7 +19684,7 @@ var mocha = require('mocha');
     it('getData css id ', function() {
       assert(XDom.getData('#item1', 'userId') === '77', 'getData returned the correct data');
       assert(XDom.getData('#item1', 'status') === 'active', 'getData returned the correct data');
-      assert(XDom.select('#item1').data.userId == '77', 'Secondary method works...');
+      assert(XDom.get('#item1').data.userId == '77', 'Secondary method works...');
     });
 
     after(function(){

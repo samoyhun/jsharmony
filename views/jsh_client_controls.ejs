@@ -52,7 +52,7 @@ for(var i=0;i<model.fields.length;i++){
         if(field.captioncolon===true) captioncolon = ': ';
         else captioncolon = field.captioncolon;
       }
-      if(field.control=='checkbox') caption_onclick = jsh._instance+".XDom(this).nextSibling('.xform_checkbox_container').select('input').emit('click');"
+      if(field.control=='checkbox') caption_onclick = jsh._instance+".XDom(this).nextSibling('.xform_checkbox_container').get('input').emit('click');"
       if((field.nl) && !('captionstyle' in field) && (dflt_captionstyle != "")){ 
         %><div class="<%=captionclass%> <%=xejs.iif(leadingfield,'leading')%>" style="<%=dflt_captionstyle%>" onclick="<%-caption_onclick%>"><%-xejs.escapeHTMLN(field.caption+((field.caption != '')?captioncolon:''))%></div><%
       }

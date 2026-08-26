@@ -101,7 +101,7 @@ P.getElement = function(childSelector){
   return XDom.getElement((this.target + ' ' + (childSelector||'')).trim(), this.base);
 };
 
-P.select = function(childSelector){
+P.get = function(childSelector){
   if(!childSelector) return this;
   if(!this.target) return new Selector(this.base, childSelector);
   var _selectorPart = this.target.split(',');
@@ -112,7 +112,6 @@ P.select = function(childSelector){
     }).join(',');
   }).join(','));
 };
-P.get = P.select;
 
 [
   'on',
@@ -124,6 +123,11 @@ P.get = P.select;
   'remove',
   'focus',
   'blur',
+  'for',
+  'map',
+  'append',
+  'prepend',
+  'clear'
 ].forEach(function(method) {
   P[method] = function(){ return XDom[method](this, ...arguments); }; // eslint-disable-line es5/no-spread
 });
@@ -141,6 +145,8 @@ P.get = P.select;
 
 P.first = function(){ return new Selector(XDom.first(this) || []); };
 P.last = function(){ return new Selector(XDom.last(this) || []); };
+P.for = function(f){ _.each(this.items, f); };
+P.map = function(f){ return _.map(this.items, f); };
 
 Object.defineProperty(P, 'value', {
   get: function() { return XDom.getValue(this); },
@@ -261,7 +267,7 @@ XDom.getElement = function(selector, within){
   return null;
 };
 
-XDom.select = function(selector, options){
+XDom.get = function(selector, options){
   return new Selector(selector, options);
 };
 
@@ -301,6 +307,27 @@ XDom.class = {
   },
 };
 
+function renderNode(container, def){
+  if(!def || !container) return;
+  for(var key in def){
+    var el = document.createElement(key);
+    var eldef = def[key];
+    for(var prop in eldef){
+      if((prop == 'children')||(prop == 'text')||(prop == 'html')) continue;
+      else {
+        if(el.setAttribute) el.setAttribute(prop, eldef[prop]);
+      }
+    }
+    if(eldef.text) el.innerText = eldef.text;
+    if(eldef.html) el.innerHTML = eldef.html;
+    if(eldef.children){
+      if(eldef.children instanceof Array) _.each(eldef.children, function(child){ renderNode(el, child); });
+      else renderNode(el, eldef.children);
+    }
+    container.append(el);
+  }
+}
+
 function genRenderProxy(thisArg){
   return new Proxy(thisArg, {
     apply: function(target, _this, args){
@@ -316,9 +343,12 @@ function genRenderProxy(thisArg){
         }
       }
       if(html instanceof Array) return html;
-      html = html.toString();
       var container = document.createElement('template');
-      container.innerHTML = html;
+      if(typeof(html) == 'string'){
+        html = html.toString();
+        container.innerHTML = html;
+      }
+      else renderNode(container.content, html);
       // childNodes is a live NodeList, if we return it directly, it will likely have surprising results as nodes are moved elsewhere.
       if(container.content.childNodes.length == 1){
         return container.content.childNodes[0];
@@ -408,6 +438,9 @@ XDom.content = {
     });
   },
 };
+XDom.append = XDom.content.append;
+XDom.prepend = XDom.content.prepend;
+XDom.clear = XDom.content.clear;
 
 XDom.insertBefore = function(target, newNode, referenceNode){
   var _el = XDom.resolve(target);
@@ -1017,6 +1050,36 @@ XDom.animate.opacity = function(tgt, to, callback, duration){
     if(!to) xdobj.style.display = false;
     callback();
   });
+};
+
+
+/**
+ * Change the display of one or more elements
+ * @param {overloaded} tgt    - this can be a XDom obj, element, selector string, or array of elements of which to be animated
+ * @param {overloaded} to     - a boolean (true: visible, false: hidden, null/undefined: toggle(true/false))
+ * @param {function} callback - callback called after operation is complete
+ * @returns undefined
+ */
+XDom.animate.display = function(tgt, to, callback){
+  if(!callback) callback = function(){};
+  var xdobj = new Selector(tgt);
+  var _el = xdobj.elements;
+  if(_el.length != 1) {_.map(_el, function(el){ XDom.animate.display(el, to, callback); }); return; }
+
+  var isVisible = xdobj.isVisible();
+  if(to === null || to === undefined) to = !isVisible;
+
+  if(to) {
+    if(!isVisible){
+      xdobj.style.display = true;
+    }
+  }
+  else {
+    if(isVisible){
+      xdobj.style.display = false;
+    }
+  }
+  callback();
 };
 
 defineDependentProperties();

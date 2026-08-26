@@ -227,7 +227,7 @@ NOTE: now returns a DOM element or null.
 ```
 XExt.XModel.RenderField(
   xform.DataSet[dbrowid],
-  jsh.xd(xgrid.PlaceholderID).select("tr[data-id='" + dbrowid + "']").element, 
+  jsh.xd(xgrid.PlaceholderID).get("tr[data-id='" + dbrowid + "']").element, 
   xmodel.id, 
   xform.Data.Fields[key],
   xform.DataSet[dbrowid][key],

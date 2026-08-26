@@ -38,7 +38,7 @@ exports = module.exports = function(jsh){
     this._this = this;
     this.TemplateID = options.TemplateID;
     this.PlaceholderID = options.PlaceholderID;
-    this.ColSpan = jsh.xd(this.PlaceholderID).parent().select('thead th').length;
+    this.ColSpan = jsh.xd(this.PlaceholderID).parent().get('thead th').length;
     this.modelid = options.modelid;
     
     this.CustomScroll = options.CustomScroll || undefined;
@@ -110,7 +110,7 @@ exports = module.exports = function(jsh){
     
     if(rowstart > 0){
       if(_this.EOF) return;
-      jsh.xd(_this.PlaceholderID).select('tr.xtbl_loadmore').remove();
+      jsh.xd(_this.PlaceholderID).get('tr.xtbl_loadmore').remove();
       jsh.xd(_this.PlaceholderID).content.append('<tr class="xtbl_loadmore"><td colspan="'+_this.ColSpan+'"><a href="#">Loading...</div></td></tr>');
     }
     var starttime = (new Date()).getTime();
@@ -167,7 +167,7 @@ exports = module.exports = function(jsh){
     var _this = this;
     var loader = jsh.xLoader;
     if(rowstart > 0){
-      jsh.xd(_this.PlaceholderID).select('tr.xtbl_loadmore').remove();
+      jsh.xd(_this.PlaceholderID).get('tr.xtbl_loadmore').remove();
     }
     var renderData = false;
     var ejssource = '';
@@ -246,7 +246,7 @@ exports = module.exports = function(jsh){
               datatable: data[_this.modelid],
             });
             jsh.xd(_this.PlaceholderID).content.append(ejsrslt);
-            _this.RowCount = jsh.xd(_this.PlaceholderID).select('tr').length;
+            _this.RowCount = jsh.xd(_this.PlaceholderID).get('tr').length;
             return f();
           }
         }
@@ -256,7 +256,7 @@ exports = module.exports = function(jsh){
           _this.EOF = data['_eof_' + _this.modelid];
           if ((_this.Paging) && (!_this.EOF)) {
             jsh.xd(_this.PlaceholderID).content.append('<tr class="xtbl_loadmore"><td colspan="' + _this.ColSpan + '"><a href="#">Load More Data</div></td></tr>');
-            jsh.xd(_this.PlaceholderID).select('.xtbl_loadmore').on('click', function () {
+            jsh.xd(_this.PlaceholderID).get('.xtbl_loadmore').on('click', function () {
               if (_this.OnLoadMoreData) { _this.OnLoadMoreData(); return false; }
               _this.Load(_this.RowCount);
               return false;
@@ -296,13 +296,13 @@ exports = module.exports = function(jsh){
     jsh.xd(_this.PlaceholderID).content.replace('<tr class="xtbl_noresults"><td colspan="' + _this.ColSpan + '" align="center" class="xtbl_noresults">' + noresultsmessage + '</td></tr>');
   };
   XGrid.prototype.ResetSortGlyphs = function (xd_tbl){
-    var xd_thead = xd_tbl.select('thead tr');
-    var xd_th = xd_thead.select('th');
+    var xd_thead = xd_tbl.get('thead tr');
+    var xd_th = xd_thead.get('th');
     xd_th.class.remove('sortAsc');
     xd_th.class.remove('sortDesc');
     if (!this.Sort || (this.Sort.length == 0)) return;
     
-    var xd_thSort = xd_tbl.select('.thead' + this.Sort[0].substring(1));
+    var xd_thSort = xd_tbl.get('.thead' + this.Sort[0].substring(1));
     if (this.Sort[0][0] == '^') { xd_thSort.class.add('sortAsc'); }
     else { xd_thSort.class.add('sortDesc'); }
   };
@@ -320,7 +320,7 @@ exports = module.exports = function(jsh){
     }
     var xd_thSort = jsh.XDom(obj).parent();
     var xd_thead = xd_thSort.parent();
-    var xd_th = xd_thead.select('th');
+    var xd_th = xd_thead.get('th');
     xd_th.class.remove('sortAsc');
     xd_th.class.remove('sortDesc');
     if(newdir == '^') { xd_thSort.class.add('sortAsc'); }

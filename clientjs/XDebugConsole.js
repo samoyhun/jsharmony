@@ -257,11 +257,11 @@ exports = module.exports = function(jsh){
         '</label>';
     }
     this.xdDebugDialog = jsh.xd('.xdebugconsole');
-    this.xdDebugPanel = this.xdDebugDialog.select('.debug-panel');
-    this.xdDebugPanel.select('.debug-settings').content.append(settingsHtml);
-    this.xdDebugPanelMin = this.xdDebugDialog.select('.debug-panel-minimized');
-    this.xdDebugPanelBody = this.xdDebugPanel.select('.xdebuginfo-body');
-    var chkSource = this.xdDebugPanel.select('.xdebugconsole_source').elements;
+    this.xdDebugPanel = this.xdDebugDialog.get('.debug-panel');
+    this.xdDebugPanel.get('.debug-settings').content.append(settingsHtml);
+    this.xdDebugPanelMin = this.xdDebugDialog.get('.debug-panel-minimized');
+    this.xdDebugPanelBody = this.xdDebugPanel.get('.xdebuginfo-body');
+    var chkSource = this.xdDebugPanel.get('.xdebugconsole_source').elements;
     for (var i=0; i<chkSource.length; i++){
       if (this.settings.sources[chkSource[i].value]){
         chkSource[i].click();
@@ -288,7 +288,7 @@ exports = module.exports = function(jsh){
         _this.updateWebSocketSources();
       }
     });
-    this.xdDebugDialog.select('.controls i').on('click', function(){
+    this.xdDebugDialog.get('.controls i').on('click', function(){
       var action = XDom(this).data.action;
       if(action && _this[action]) _this[action]();
     });

@@ -161,7 +161,7 @@ var jsHarmony = function(options){
 
   this._instanceClass = this.XExt.escapeCSSClass(this._instance);
   this.xdroot = XDom(document);
-  this.xdom = this.xd = function(sel){ return this.xdroot.select(sel); };
+  this.xdom = this.xd = function(sel){ return this.xdroot.get(sel); };
   this.xdDialogBlock = null;
   this.globalsMonitorCache = {};
   this.globalsMonitorTimer = null;

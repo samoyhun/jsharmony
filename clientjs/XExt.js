@@ -130,7 +130,7 @@ exports = module.exports = function(jsh){
       var xdnew = XDom(newSpan);
       xdnew.data.val = val;
 
-      xdctrl.insertBefore(newSpan, xdctrl.select('.xtag_input').element);
+      xdctrl.insertBefore(newSpan, xdctrl.get('.xtag_input').element);
 
       XDom(xdnew, '.xtag_remove').on('click', function(e){
         if(xdctrl.class.contains('uneditable')) return;
@@ -1421,7 +1421,7 @@ exports = module.exports = function(jsh){
   //ondrop(dropval, anchor, e)
   XExt.TreeEnableDrop = function (ctrl, ondrop, drag_anchor_settings) {
     var xdctrl = XDom(ctrl);
-    var _treeitems = xdctrl.select('a.tree_item').elements;
+    var _treeitems = xdctrl.get('a.tree_item').elements;
     _.each(_treeitems, function(obj){
       var xdobj = XDom(obj);
       var dragCounter = 0;
@@ -1760,7 +1760,7 @@ exports = module.exports = function(jsh){
     var nodeid = undefined;
     if(nodevalue){
       //Get nodeid from nodevalue
-      var findNode = function(){ xdtree.select('.tree_item').elements.forEach(function(el){ if(XDom.getData(el, 'value')==nodevalue) nodeid = XDom.getData(el, 'id'); }); };
+      var findNode = function(){ xdtree.get('.tree_item').elements.forEach(function(el){ if(XDom.getData(el, 'value')==nodevalue) nodeid = XDom.getData(el, 'id'); }); };
       findNode();
 
       if(typeof nodeid == 'undefined'){
@@ -1812,7 +1812,7 @@ exports = module.exports = function(jsh){
   XExt.TreeExpandToSelected = function (ctrl) {
     var toptree = XDom(ctrl).parent('.xform_ctrl.tree');
     var rslt = [];
-    toptree.select('.tree_item.selected').elements.forEach(function(el){
+    toptree.get('.tree_item.selected').elements.forEach(function(el){
       var xdParent = XDom(el).parent();
       while (xdParent.length && (xdParent.element != toptree.element)) {
         XExt.TreeExpandNode(toptree.element, xdParent.data.id);
@@ -1824,7 +1824,7 @@ exports = module.exports = function(jsh){
   XExt.TreeExpandAll = function (ctrl) {
     var xdctrl = XDom(ctrl).parent('.xform_ctrl.tree');
     var xdTreeItem = XDom(xdctrl, '.tree_item');
-    if(!xdctrl.select('.tree_render_lazy').elements.length){
+    if(!xdctrl.get('.tree_render_lazy').elements.length){
       xdTreeItem.class.add('expanded');
       XDom(xdctrl, '.children').class.add('expanded');
       XDom(xdctrl, '.glyph').content.replace('&#x25e2;');
@@ -2418,7 +2418,7 @@ exports = module.exports = function(jsh){
     XDom(oldactive).blur();
     XDom(xdobj, '.xhintsmessage').content.replace(caption);
 
-    var hintsListing = xdobj.select('.xhints_listing').element;
+    var hintsListing = xdobj.get('.xhints_listing').element;
     var tmplRow = XDom(jsh.xdDialogBlock, 'script.xhints_rowtemplate').innerHTML;
     
     if(_.isArray(lov)) _.each(lov, function(item){
@@ -2434,7 +2434,7 @@ exports = module.exports = function(jsh){
 
     var getValues = function(){
       var rslt = [];
-      xdobj.select('.xhints_listing input[type="checkbox"]:checked').elements.forEach(function(obj){ rslt.push(XDom.getValue(obj)); });
+      xdobj.get('.xhints_listing input[type="checkbox"]:checked').elements.forEach(function(obj){ rslt.push(XDom.getValue(obj)); });
       return rslt;
     };
     var cancelfunc = XExt.dialogButtonFunc(hintsBox, oldactive, function () { if (onCancel) onCancel(); });
@@ -2533,9 +2533,9 @@ exports = module.exports = function(jsh){
           if(xgrid && (numOpens==1)) xgrid.Select();
           var xdSearchVal = jsh.xd(POPUP_CONTAINER + ' .xsearch_value');
           if (xdSearchVal.isVisible()) xdSearchVal.first().focus();
-          else if (jsh.xd(POPUP_CONTAINER).select('td a').length) XDom.focus(jsh.xd(POPUP_CONTAINER).select('td a').element);
+          else if (jsh.xd(POPUP_CONTAINER).get('td a').length) XDom.focus(jsh.xd(POPUP_CONTAINER).get('td a').element);
 
-          xDialogObj.bindDialogHandler(XDom(xDialogObj.obj, '.xpopupbox_content').element, 'scroll', function(){ jsh.refreshBodyHead(xdPopup.select('.xbodyhead').elements); });
+          xDialogObj.bindDialogHandler(XDom(xDialogObj.obj, '.xpopupbox_content').element, 'scroll', function(){ jsh.refreshBodyHead(xdPopup.get('.xbodyhead').elements); });
         };
         var onClosed = function () {
           if (parentobj && (typeof popupData[modelid].result !== 'undefined')) {
@@ -2557,7 +2557,7 @@ exports = module.exports = function(jsh){
 
         var panelWidth = null;
         var panelHeight = null;
-        var xsubformPanel = jsh.xd(POPUP_CONTAINER + '.xsubform').select('.xpanel').element;
+        var xsubformPanel = jsh.xd(POPUP_CONTAINER + '.xsubform').get('.xpanel').element;
         if(xsubformPanel) {
           panelWidth = xsubformPanel.style.width;
           panelHeight = xsubformPanel.style.height;
@@ -2653,7 +2653,7 @@ exports = module.exports = function(jsh){
     var parent = xdctrl.parent('.xcontext_parent');
     if (!parent.length) return true;
     var menuid = '._item_context_menu_' + parent.data.id;
-    if (!jsh.xdroot.select(menuid).length) return true;
+    if (!jsh.xdroot.get(menuid).length) return true;
     XExt.ShowContextMenu(menuid, xdctrl.data.value);
     return false;
   };
@@ -2767,7 +2767,7 @@ exports = module.exports = function(jsh){
   };
 
   XExt.selectClosest = function (elem, sel, filterFunc) {
-    var xdobj = XDom(elem).select(sel);
+    var xdobj = XDom(elem).get(sel);
     if (filterFunc) xdobj = xdobj.filter(filterFunc);
     if (xdobj.length) return xdobj.element;
     var xdparent = XDom(elem).parent();

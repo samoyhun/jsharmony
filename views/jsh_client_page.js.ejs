@@ -1004,7 +1004,7 @@ along with this package.  If not, see <http://www.gnu.org/licenses/>.
       jsh.xd('.xfileuploader_form').attr.action = jsh._BASEURL + '_ul/';
       XExt.clearFileInput(jsh.xd('.xfileuploader_file').element);
     };
-    xdFileUploader.select('.xfileuploader_title').content.replaceText(title);
+    xdFileUploader.get('.xfileuploader_title').content.replaceText(title);
     jsh.XExt.CustomPrompt(null, xdFileUploader.element, onInit);
   }
 

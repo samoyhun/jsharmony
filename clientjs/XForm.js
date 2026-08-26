@@ -141,7 +141,7 @@ exports = module.exports = function(jsh){
       this.Data._orig = null;
     }
     if (this.xData) {
-      jsh.xd(this.xData.PlaceholderID).select('.xform_ctrl.updated').class.remove('updated');
+      jsh.xd(this.xData.PlaceholderID).get('.xform_ctrl.updated').class.remove('updated');
     }
     this.IsDirty = false;
   };
@@ -190,7 +190,7 @@ exports = module.exports = function(jsh){
       if(row) {
         this.Data._row = row;
       }
-      else this.Data._row = jsh.xd(this.xData.PlaceholderID).select("tr[data-id='" + this.Index + "']").element;
+      else this.Data._row = jsh.xd(this.xData.PlaceholderID).get("tr[data-id='" + this.Index + "']").element;
     }
     return true;
   };
