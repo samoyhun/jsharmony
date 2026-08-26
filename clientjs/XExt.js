@@ -2299,6 +2299,7 @@ exports = module.exports = function(jsh){
     };
     XExt.execif(true,
       function(done){
+        jsh.xdDialogBlock.element.appendChild(customPrompt);
         if(onInit && options.asyncInit){
           onInit(xDialogObj, done);
         }
@@ -2334,7 +2335,6 @@ exports = module.exports = function(jsh){
             }));
           });
         }
-        jsh.xdDialogBlock.element.appendChild(customPrompt);
         xdobj.style.display = true;
         jsh.xdDialogBlock.style.display = true;
         if(jsh.XPage && jsh.XPage.LayoutOneColumn) jsh.XPage.LayoutOneColumn(customPrompt, { reset: true });
