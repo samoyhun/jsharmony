@@ -21,6 +21,7 @@ var _ = require('lodash');
 
 var XDom = function(target, options){ return new Selector(target, options); };
 XDom.renderers = {};
+XDom.handlers = {};
 exports = module.exports = XDom;
 
 XDom.with = function(options){
@@ -190,6 +191,8 @@ Object.defineProperty(P, 'animate', {
     var animate = XDom.animate.bind(XDom, this);
     animate.height = XDom.animate.height.bind(XDom, this);
     animate.opacity = XDom.animate.opacity.bind(XDom, this);
+    animate.display = XDom.animate.display.bind(XDom, this);
+    animate.class = XDom.animate.class.bind(XDom, this);
     return animate;
   },
 });
@@ -490,12 +493,37 @@ XDom.liveEvent = function(sel, handler){
   };
 };
 
+function genHandlerId(){
+  var id = '';
+  do {
+    id = Math.floor(Math.random()*10000000000000000);
+  } while(id in XDom.handlers);
+  return id;
+}
+
+function prop(obj, key, dflt){
+  if(!obj || !key) return undefined;
+  if(!(key in obj)) obj[key] = dflt;
+  return obj[key];
+}
+
 XDom.on = function(target, _eventName, handler, eventOptions){
   var eventNames = _eventName.split(' ');
   _.each(XDom.resolve(target), function(el){
     if(el && el.addEventListener){
       _.each(eventNames, function(eventName) {
+        var tag = '', idxdot = eventName.indexOf('.');
+        if(idxdot>=0){
+          tag = eventName.substr(idxdot+1);
+          eventName = eventName.substr(0, idxdot);
+        }
+        if(!eventName) return;
         el.addEventListener(eventName, handler, eventOptions);
+        if(tag && el.dataset){
+          var handlerId = el.dataset.xdom_handler;
+          if(!handlerId) el.dataset.xdom_handler = handlerId = genHandlerId();
+          prop(prop(prop(XDom.handlers, handlerId, {}), eventName, {}), tag, []).push({handler: handler, eventOptions: eventOptions});
+        }
       });
     }
   });
@@ -506,7 +534,20 @@ XDom.off = function(target, _eventName, handler, eventOptions){
   _.each(XDom.resolve(target), function(el){
     if(el && el.removeEventListener){
       _.each(eventNames, function(eventName) {
-        el.removeEventListener(eventName, handler, eventOptions);
+        var tag = '', idxdot = eventName.indexOf('.');
+        if(idxdot>=0){
+          tag = eventName.substr(idxdot+1);
+          eventName = eventName.substr(0, idxdot);
+        }
+        if(!eventName) return;
+        if(handler) el.removeEventListener(eventName, handler, eventOptions);
+        if(!handler && tag && el.dataset){
+          var handlers = prop(prop(prop(XDom.handlers, el.dataset.xdom_handler), eventName), tag);
+          if(handlers){
+            handlers.forEach(function(handler){ el.removeEventListener(eventName, handler.handler, handler.eventOptions); });
+            handlers.splice(0);
+          }
+        }
       });
     }
   });
@@ -735,6 +776,14 @@ function styleFuncPx(prop){
 }
 
 XDom.style = {
+  set: function(target){
+    return function(val){
+      for(var prop in val){
+        if(prop in XDom.style) XDom.style[prop](target, val[prop]);
+        else XDom.setStyle(target, prop, val[prop]);
+      }
+    };
+  },
   calc: function(target){
     var _el = XDom.resolve(target);
     if(!_el.length || !window.getComputedStyle) return undefined;
@@ -969,8 +1018,8 @@ XDom.animate = function(target, props, duration, onComplete, options) {
 
 /**
  * Animate the height of one or more elements
- * @param {overloaded} tgt    - this can be a XDom obj, element, selector string, or array of elements of which to be animated
- * @param {overloaded} to     - a boolean or number (true: extend to scrollheight, false: retract to height 0, null/undefined: toggle(true/false))
+ * @param {overloaded} tgt    - XDom obj, element, selector string, or array of elements of which to be animated
+ * @param {overloaded} to     - boolean or number (true: extend to scrollheight, false: retract to height 0, null/undefined: toggle(true/false))
  * @param {function} callback - callback called after animation is complete
  * @param {Number} duration   - durration of animation in ms
  * @returns undefined
@@ -1020,8 +1069,8 @@ XDom.animate.height = function(tgt, to, callback, duration){
 
 /**
  * Animate the opacity of one or more elements
- * @param {overloaded} tgt    - this can be a XDom obj, element, selector string, or array of elements of which to be animated
- * @param {overloaded} to     - a boolean or number (true: opacity=1, false: opacity=0, null/undefined: toggle)
+ * @param {overloaded} tgt    - XDom obj, element, selector string, or array of elements of which to be animated
+ * @param {overloaded} to     - boolean or number (true: opacity=1, false: opacity=0, null/undefined: toggle)
  * @param {function} callback - callback called after animation is complete
  * @param {Number} duration   - durration of animation in ms
  * @returns undefined
@@ -1056,8 +1105,8 @@ XDom.animate.opacity = function(tgt, to, callback, duration){
 
 /**
  * Change the display of one or more elements
- * @param {overloaded} tgt    - this can be a XDom obj, element, selector string, or array of elements of which to be animated
- * @param {overloaded} to     - a boolean (true: visible, false: hidden, null/undefined: toggle(true/false))
+ * @param {overloaded} tgt    - XDom obj, element, selector string, or array of elements of which to be animated
+ * @param {overloaded} to     - boolean (true: visible, false: hidden, null/undefined: toggle(true/false))
  * @param {function} callback - callback called after operation is complete
  * @returns undefined
  */
@@ -1080,6 +1129,30 @@ XDom.animate.display = function(tgt, to, callback){
       xdobj.style.display = false;
     }
   }
+  callback();
+};
+
+
+/**
+ * Change the display of one or more elements
+ * @param {overloaded} tgt    - XDom obj, element, selector string, or array of elements of which to be animated
+ * @param {string} className  - classes to add or remove
+ * @param {function} callback - callback called after operation is complete
+ * @returns undefined
+ */
+XDom.animate.class = function(tgt, className, callback){
+  if(!callback) callback = function(){};
+  var xdobj = new Selector(tgt);
+  var _el = xdobj.elements;
+  if(_el.length != 1) {_.map(_el, function(el){ XDom.animate.class(el, className, callback); }); return; }
+  var el = _el[0];
+
+  if(!el || !el.classList || !el.classList.contains) return;
+  var hasAllClass = true;
+  className.trim().split(' ').forEach(function(_className){ if(_className && !el.classList.contains(_className)) hasAllClass = false; });
+  
+  if(hasAllClass) xdobj.class.remove(className);
+  else xdobj.class.add(className);
   callback();
 };
 
