@@ -649,12 +649,17 @@ exports.deleteModelForm = function (req, res, fullmodelid, Q, P, onComplete) {
     _.each(filelist, function (file) {
       var filefield = _this.getFieldByName(model.fields, file);
       //Delete file in post-processing
-      fileops.push({ op: 'move', src: _this.jsh.Config.datadir + filefield.controlparams.data_folder + '/' + (filefield.controlparams.data_file_prefix||file) + '_' + keyval + ((filefield.controlparams._data_file_has_extension)?'%%%EXT%%%':''), dst: '' });
+      fileops.push({ op: 'move', src: _this.jsh.Config.datadir + filefield.controlparams.data_folder + '/' + (filefield.controlparams.data_file_prefix||file) + '_' + keyval + ((filefield.controlparams._data_file_has_extension)?'%%%EXT%%%':''), dest: '' });
       //Delete thumbnails in post-processing
       if (filefield.controlparams.thumbnails) for (var tname in filefield.controlparams.thumbnails) {
-        fileops.push({ op: 'move', src: _this.jsh.Config.datadir + filefield.controlparams.data_folder + '/' + (filefield.controlparams.data_file_prefix||filefield.name) + '_' + tname + '_' + keyval + ((filefield.controlparams._data_file_has_extension)?'%%%EXT%%%':''), dst: '' });
+        fileops.push({ op: 'move', src: _this.jsh.Config.datadir + filefield.controlparams.data_folder + '/' + (filefield.controlparams.data_file_prefix||filefield.name) + '_' + tname + '_' + keyval + ((filefield.controlparams._data_file_has_extension)?'%%%EXT%%%':''), dest: '' });
+      }
+      //Delete cache in post-processing
+      if (filefield.controlparams.cache) for (var cname in filefield.controlparams.cache) {
+        fileops.push({ op: 'move', src: _this.jsh.Config.datadir + filefield.controlparams.data_folder + '/' + (filefield.controlparams.data_file_prefix||filefield.name) + '_' + cname + '_' + keyval + ((filefield.controlparams._data_file_has_extension)?'%%%EXT%%%':''), dest: '' });
       }
     });
+    
     dbtasks['_POSTPROCESS'] = function (callback) {
       _this.ProcessFileOperationsDone(fileops, callback);
     };
