@@ -3357,18 +3357,20 @@ exports = module.exports = function(jsh){
     }
 
     var request = fetch(url, options).then(function(response){
-      if (response.ok) {
-        return response.json().then(function(json) {
-          if (options.success) options.success(json);
-          return json;
-        });
-      } else {
-        return response.text().then(function(text) {
-          response.responseText = text;
-          if (options.error) options.error(response);
-          return response;
-        });
-      }
+      return response.text().then(function(text) {
+        if (response.ok) {
+          try {
+            // if we use response.json, we won't be able to get the response text if it fails, and JSHAMRONY_REDIRECT and company expect it.
+            var json = JSON.parse(text);
+            if (options.success) options.success(json);
+            return json;
+          } catch (_) {} // eslint-disable-line no-empty
+        }
+        // not ok OR json decode failed.
+        response.responseText = text;
+        if (options.error) options.error(response);
+        return response;
+      });
     });
     options.error && request.catch(options.error);
     options.complete && request.finally(options.complete);
