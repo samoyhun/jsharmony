@@ -123,7 +123,7 @@ jsHarmonyServer.prototype.addDefaultRoutes = function () {
   _this.app.use(function (err, req, res, next) {
     var errorpage = 'error';
     if (req.jshsite && req.jshsite.show_system_errors) errorpage = 'error_debug';
-    _this.jsh.Log.error(err);
+    (req.isAuthenticated ? _this.jsh.Log.error : _this.jsh.Log.info)(err);
     _this.jsh.Log.info(err.stack);
     res.status(err.status || 500);
     res.render(_this.jsh.getView(req, errorpage, { disable_override: true }), {
